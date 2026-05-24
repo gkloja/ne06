@@ -475,6 +475,198 @@ body.light-mode .perfil-menu-btn:hover {
     text-align: center;
     font-size: 16px;
 }
+/* Modal de Perfil do Usuário */
+.perfil-modal-avatar {
+    width: 100px;
+    height: 100px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 4px solid var(--primary);
+    margin: 0 auto 16px;
+    display: block;
+}
+
+.perfil-modal-stats {
+    display: flex;
+    justify-content: center;
+    gap: 30px;
+    margin: 20px 0;
+    padding: 16px;
+    background: rgba(0,0,0,0.05);
+    border-radius: 16px;
+}
+
+.perfil-modal-stat {
+    text-align: center;
+    cursor: pointer;
+    transition: 0.2s;
+    padding: 8px 16px;
+    border-radius: 12px;
+}
+
+.perfil-modal-stat:hover {
+    background: rgba(0,0,0,0.1);
+}
+
+.perfil-modal-stat-value {
+    font-size: 22px;
+    font-weight: 700;
+    color: var(--primary);
+}
+
+.perfil-modal-stat-label {
+    font-size: 11px;
+    color: var(--text2);
+    margin-top: 4px;
+    font-weight: 600;
+}
+
+.perfil-modal-btn {
+    width: 100%;
+    padding: 12px;
+    border-radius: 30px;
+    border: none;
+    font-weight: 700;
+    font-size: 14px;
+    cursor: pointer;
+    transition: all 0.2s;
+    font-family: inherit;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    margin-bottom: 8px;
+}
+
+.perfil-modal-btn-seguir {
+    background: var(--primary);
+    color: white;
+}
+
+.perfil-modal-btn-seguir:hover {
+    background: var(--primary-dark);
+    transform: translateY(-2px);
+}
+
+.perfil-modal-btn-seguindo {
+    background: rgba(0,0,0,0.1);
+    color: var(--text2);
+    border: 1px solid var(--border);
+}
+
+.perfil-modal-btn-seguindo:hover {
+    background: #ef4444;
+    color: white;
+    border-color: #ef4444;
+}
+
+.perfil-modal-btn-mensagem {
+    background: rgba(0,0,0,0.1);
+    color: var(--text2);
+    border: 1px solid var(--border);
+}
+
+.perfil-modal-btn-mensagem:hover {
+    background: var(--primary);
+    color: white;
+    border-color: var(--primary);
+}
+
+/* Chat Privado */
+.chat-privado-container {
+    display: flex;
+    flex-direction: column;
+    height: 400px;
+}
+
+.chat-privado-messages {
+    flex: 1;
+    overflow-y: auto;
+    padding: 12px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.chat-privado-message {
+    max-width: 80%;
+    padding: 10px 14px;
+    border-radius: 18px;
+    font-size: 13px;
+    line-height: 1.4;
+    word-break: break-word;
+}
+
+.chat-privado-message-sent {
+    align-self: flex-end;
+    background: var(--primary);
+    color: white;
+    border-bottom-right-radius: 4px;
+}
+
+.chat-privado-message-received {
+    align-self: flex-start;
+    background: rgba(0,0,0,0.1);
+    border-bottom-left-radius: 4px;
+}
+
+.chat-privado-input-container {
+    display: flex;
+    gap: 8px;
+    padding: 12px;
+    border-top: 1px solid var(--border);
+    margin-top: auto;
+}
+
+.chat-privado-input {
+    flex: 1;
+    padding: 10px 16px;
+    border-radius: 24px;
+    border: 1px solid var(--border);
+    background: rgba(0,0,0,0.05);
+    color: inherit;
+    font-family: inherit;
+    font-size: 13px;
+    outline: none;
+}
+
+.chat-privado-input:focus {
+    border-color: var(--primary);
+}
+
+.chat-privado-send-btn {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background: var(--primary);
+    border: none;
+    color: white;
+    cursor: pointer;
+    transition: 0.2s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.chat-privado-send-btn:hover {
+    background: var(--primary-dark);
+    transform: scale(1.05);
+}
+
+/* Posts no modal de perfil */
+.perfil-modal-posts {
+    max-height: 400px;
+    overflow-y: auto;
+    margin-top: 16px;
+}
+
+.perfil-modal-post {
+    background: rgba(0,0,0,0.03);
+    border-radius: 12px;
+    padding: 12px;
+    margin-bottom: 8px;
+    border: 1px solid var(--border);
+}
 </style>
 </head>
 <body>
@@ -486,7 +678,7 @@ body.light-mode .perfil-menu-btn:hover {
     <div class="container nav-content">
         <div class="logo" onclick="mudarSecao('feed')">
             <img src="/IMG-20260523-WA0031.jpg" alt="NE Conecta">
-            <h1>NE<span>Conecta</span></h1>
+            <h1>NE<span> Conecta</span></h1>
         </div>
 <div class="menu" id="mainMenu">
     <a href="#" data-section="feed" class="active">Feed</a>
@@ -779,6 +971,328 @@ if (currentUser) {
         }
     }
 
+
+
+// ==================== CHAT PRIVADO ====================
+
+let chatPrivadoAtivo = null;
+
+function abrirChatPrivado(usuarioId, usuarioNome, usuarioAvatar) {
+    if (!currentUser) {
+        mostrarLoginPrompt();
+        return;
+    }
+    
+    chatPrivadoAtivo = usuarioId;
+    
+    Swal.fire({
+        title: `<div style="display: flex; align-items: center; gap: 10px; font-size: 16px;">
+                    <img src="${usuarioAvatar || 'https://ui-avatars.com/api/?name=' + encodeURIComponent(usuarioNome) + '&background=7c4dff&color=fff'}" 
+                         style="width: 36px; height: 36px; border-radius: 50%; object-fit: cover;">
+                    ${escapeHtml(usuarioNome)}
+                </div>`,
+        html: `
+            <div class="chat-privado-container">
+                <div class="chat-privado-messages" id="chatPrivadoMessages">
+                    <p style="text-align: center; color: var(--text2); padding: 40px 20px;">
+                        <i class="fas fa-lock" style="font-size: 24px; margin-bottom: 8px; display: block;"></i>
+                        Conversa privada com ${escapeHtml(usuarioNome)}
+                    </p>
+                </div>
+                <div class="chat-privado-input-container">
+                    <input type="text" class="chat-privado-input" id="chatPrivadoInput" 
+                           placeholder="Digite sua mensagem..." 
+                           onkeypress="if(event.key === 'Enter') enviarMensagemPrivada()">
+                    <button class="chat-privado-send-btn" onclick="enviarMensagemPrivada()">
+                        <i class="fas fa-paper-plane"></i>
+                    </button>
+                </div>
+            </div>
+        `,
+        showConfirmButton: false,
+        showCancelButton: true,
+        cancelButtonText: 'Fechar',
+        width: '450px',
+        didOpen: () => {
+            carregarMensagensPrivadas(usuarioId);
+            setTimeout(() => {
+                const input = document.getElementById('chatPrivadoInput');
+                if (input) input.focus();
+            }, 300);
+        },
+        willClose: () => {
+            chatPrivadoAtivo = null;
+        }
+    });
+}
+
+async function carregarMensagensPrivadas(outroUsuarioId) {
+    try {
+        const response = await fetch(`${API_URL}/cliente06/chat-privado/${currentUser.id}/${outroUsuarioId}`);
+        const mensagens = await response.json();
+        
+        const messagesContainer = document.getElementById('chatPrivadoMessages');
+        if (!messagesContainer) return;
+        
+        if (mensagens.length === 0) {
+            messagesContainer.innerHTML = `
+                <p style="text-align: center; color: var(--text2); padding: 40px 20px;">
+                    <i class="fas fa-comments" style="font-size: 24px; margin-bottom: 8px; display: block;"></i>
+                    Nenhuma mensagem ainda. Diga oi!
+                </p>`;
+            return;
+        }
+        
+        messagesContainer.innerHTML = mensagens.map(msg => {
+            const isSent = msg.remetenteId === currentUser.id;
+            return `
+                <div class="chat-privado-message ${isSent ? 'chat-privado-message-sent' : 'chat-privado-message-received'}">
+                    ${escapeHtml(msg.texto)}
+                    <div style="font-size: 9px; margin-top: 4px; opacity: 0.7;">${formatarData(msg.createdAt)}</div>
+                </div>
+            `;
+        }).join('');
+        
+        messagesContainer.scrollTop = messagesContainer.scrollHeight;
+    } catch (error) {
+        console.error('Erro ao carregar mensagens:', error);
+    }
+}
+
+async function enviarMensagemPrivada() {
+    if (!currentUser || !chatPrivadoAtivo) return;
+    
+    const input = document.getElementById('chatPrivadoInput');
+    const texto = input?.value?.trim();
+    if (!texto) return;
+    
+    try {
+        const response = await fetch(`${API_URL}/cliente06/chat-privado/enviar`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                remetenteId: currentUser.id,
+                destinatarioId: chatPrivadoAtivo,
+                texto: texto
+            })
+        });
+        
+        if (response.ok) {
+            input.value = '';
+            carregarMensagensPrivadas(chatPrivadoAtivo);
+        }
+    } catch (error) {
+        console.error('Erro ao enviar mensagem:', error);
+    }
+}
+// ==================== PERFIL DE USUÁRIO (MODAL) ====================
+
+async function abrirPerfilUsuario(usuarioId, usuarioNome, usuarioAvatar) {
+    if (!currentUser) {
+        mostrarLoginPrompt();
+        return;
+    }
+    
+    // Mostrar loading
+    Swal.fire({
+        title: 'Carregando perfil...',
+        allowOutsideClick: false,
+        didOpen: () => Swal.showLoading()
+    });
+    
+    try {
+        // Buscar dados do usuário
+        const response = await fetch(`${API_URL}/cliente06/seguidores/${usuarioId}`);
+        const dadosSeguidores = await response.json();
+        
+        // Buscar posts do usuário
+        const userPosts = posts.filter(p => p.author?.id === usuarioId);
+        
+        // Verificar se já está seguindo
+        const jaSegue = currentUser.seguindo?.includes(usuarioId) || false;
+        const seguidoresCount = dadosSeguidores.seguidores?.length || 0;
+        const seguindoCount = dadosSeguidores.seguindo?.length || 0;
+        
+        Swal.close();
+        
+        // Criar modal do perfil
+        Swal.fire({
+            title: '',
+            html: `
+                <div style="text-align: center;">
+                    <!-- Avatar e Nome -->
+                    <img src="${usuarioAvatar || 'https://ui-avatars.com/api/?name=' + encodeURIComponent(usuarioNome) + '&background=7c4dff&color=fff'}" 
+                         class="perfil-modal-avatar" 
+                         alt="Avatar"
+                         onerror="this.src='https://ui-avatars.com/api/?name=User&background=7c4dff&color=fff'">
+                    
+                    <h3 style="margin-bottom: 4px; font-size: 20px;">${escapeHtml(usuarioNome || 'Usuário')}</h3>
+                    <p style="color: var(--text2); font-size: 13px;">@${usuarioId.substring(0, 10)}</p>
+                    
+                    <!-- Estatísticas -->
+                    <div class="perfil-modal-stats">
+                        <div class="perfil-modal-stat" onclick="mostrarSeguidoresDeOutroUsuario('${usuarioId}', '${escapeHtml(usuarioNome)}')">
+                            <div class="perfil-modal-stat-value">${seguidoresCount}</div>
+                            <div class="perfil-modal-stat-label">Seguidores</div>
+                        </div>
+                        <div class="perfil-modal-stat" onclick="mostrarSeguindoDeOutroUsuario('${usuarioId}', '${escapeHtml(usuarioNome)}')">
+                            <div class="perfil-modal-stat-value">${seguindoCount}</div>
+                            <div class="perfil-modal-stat-label">Seguindo</div>
+                        </div>
+                        <div class="perfil-modal-stat">
+                            <div class="perfil-modal-stat-value">${userPosts.length}</div>
+                            <div class="perfil-modal-stat-label">Publicações</div>
+                        </div>
+                    </div>
+                    
+                    <!-- Botões de Ação -->
+                    ${usuarioId !== currentUser.id ? `
+                        <button class="perfil-modal-btn ${jaSegue ? 'perfil-modal-btn-seguindo' : 'perfil-modal-btn-seguir'}" 
+                                id="btnSeguirModal"
+                                onclick="${jaSegue ? `deixarDeSeguirModal('${usuarioId}')` : `seguirUsuarioModal('${usuarioId}', '${escapeHtml(usuarioNome)}')`}">
+                            ${jaSegue ? '<i class="fas fa-user-check"></i> Seguindo' : '<i class="fas fa-user-plus"></i> Seguir'}
+                        </button>
+                        
+                        <button class="perfil-modal-btn perfil-modal-btn-mensagem" 
+                                onclick="abrirChatPrivado('${usuarioId}', '${escapeHtml(usuarioNome)}', '${usuarioAvatar || ''}')">
+                            <i class="fas fa-comment"></i> Enviar Mensagem
+                        </button>
+                    ` : ''}
+                    
+                    <!-- Publicações -->
+                    <div style="margin-top: 16px; text-align: left;">
+                        <h4 style="margin-bottom: 12px; font-size: 14px; font-weight: 700;">
+                            <i class="fas fa-newspaper"></i> Publicações (${userPosts.length})
+                        </h4>
+                        <div class="perfil-modal-posts">
+                            ${userPosts.length > 0 ? 
+                                userPosts.slice(0, 5).map(post => `
+                                    <div class="perfil-modal-post">
+                                        <p style="font-size: 13px; margin-bottom: 6px;">${escapeHtml(post.text?.substring(0, 100) || '')}${post.text?.length > 100 ? '...' : ''}</p>
+                                        <small style="color: var(--text2);">${formatarData(post.createdAt)} • ${post.likes?.length || 0} curtidas</small>
+                                    </div>
+                                `).join('') 
+                                : '<p style="text-align: center; color: var(--text2); padding: 20px;">Nenhuma publicação</p>'
+                            }
+                        </div>
+                    </div>
+                </div>
+            `,
+            showConfirmButton: false,
+            showCancelButton: true,
+            cancelButtonText: 'Fechar',
+            width: '500px',
+            customClass: {
+                popup: 'perfil-modal-popup'
+            }
+        });
+        
+    } catch (error) {
+        Swal.close();
+        console.error('Erro ao abrir perfil:', error);
+        Swal.fire('Erro', 'Não foi possível carregar o perfil', 'error');
+    }
+}
+
+// Funções de seguir/deixar de seguir no modal
+async function seguirUsuarioModal(usuarioId, usuarioNome) {
+    await seguirUsuario(usuarioId);
+    // Fecha e reabre o modal para atualizar
+    Swal.close();
+    abrirPerfilUsuario(usuarioId, usuarioNome);
+}
+
+async function deixarDeSeguirModal(usuarioId, usuarioNome) {
+    const result = await Swal.fire({
+        title: 'Deixar de seguir?',
+        text: `Você deixará de seguir ${usuarioNome}`,
+        icon: 'question',
+        showCancelButton: true,
+        confirmButtonText: 'Sim',
+        cancelButtonText: 'Não'
+    });
+    
+    if (result.isConfirmed) {
+        await deixarDeSeguir(usuarioId);
+        Swal.close();
+        abrirPerfilUsuario(usuarioId, usuarioNome);
+    }
+}
+
+// Ver seguidores de outro usuário
+function mostrarSeguidoresDeOutroUsuario(usuarioId, usuarioNome) {
+    Swal.fire({
+        title: `Seguidores de ${usuarioNome}`,
+        text: 'Carregando...',
+        allowOutsideClick: false,
+        didOpen: async () => {
+            try {
+                const response = await fetch(`${API_URL}/cliente06/seguidores/${usuarioId}`);
+                const data = await response.json();
+                
+                let html = '<div style="max-height: 300px; overflow-y: auto;">';
+                if (data.seguidores && data.seguidores.length > 0) {
+                    data.seguidores.forEach(id => {
+                        html += `
+                            <div style="display: flex; align-items: center; gap: 10px; padding: 10px; border-bottom: 1px solid var(--border);">
+                                <img src="https://ui-avatars.com/api/?name=User&background=7c4dff&color=fff" 
+                                     style="width: 36px; height: 36px; border-radius: 50%; object-fit: cover;">
+                                <span>Usuário ${id.substring(0, 8)}...</span>
+                            </div>
+                        `;
+                    });
+                } else {
+                    html += '<p style="text-align: center; padding: 20px;">Nenhum seguidor</p>';
+                }
+                html += '</div>';
+                
+                Swal.getHtmlContainer().innerHTML = html;
+            } catch (error) {
+                Swal.getHtmlContainer().innerHTML = '<p>Erro ao carregar</p>';
+            }
+        },
+        showConfirmButton: false,
+        showCancelButton: true,
+        cancelButtonText: 'Fechar'
+    });
+}
+
+function mostrarSeguindoDeOutroUsuario(usuarioId, usuarioNome) {
+    Swal.fire({
+        title: `${usuarioNome} está seguindo`,
+        text: 'Carregando...',
+        allowOutsideClick: false,
+        didOpen: async () => {
+            try {
+                const response = await fetch(`${API_URL}/cliente06/seguidores/${usuarioId}`);
+                const data = await response.json();
+                
+                let html = '<div style="max-height: 300px; overflow-y: auto;">';
+                if (data.seguindo && data.seguindo.length > 0) {
+                    data.seguindo.forEach(id => {
+                        html += `
+                            <div style="display: flex; align-items: center; gap: 10px; padding: 10px; border-bottom: 1px solid var(--border);">
+                                <img src="https://ui-avatars.com/api/?name=User&background=7c4dff&color=fff" 
+                                     style="width: 36px; height: 36px; border-radius: 50%; object-fit: cover;">
+                                <span>Usuário ${id.substring(0, 8)}...</span>
+                            </div>
+                        `;
+                    });
+                } else {
+                    html += '<p style="text-align: center; padding: 20px;">Não está seguindo ninguém</p>';
+                }
+                html += '</div>';
+                
+                Swal.getHtmlContainer().innerHTML = html;
+            } catch (error) {
+                Swal.getHtmlContainer().innerHTML = '<p>Erro ao carregar</p>';
+            }
+        },
+        showConfirmButton: false,
+        showCancelButton: true,
+        cancelButtonText: 'Fechar'
+    });
+}
     // ==================== LOGIN/LOGOUT ====================
     
     function loginGoogle() {
@@ -955,11 +1469,12 @@ function removerCurtida(postId) {
     return `
         <div class="post-card" data-post-id="${post.id}">
             <div class="post-header">
-                <div class="post-avatar">
-                    <img src="${post.author?.avatar || 'https://ui-avatars.com/api/?name=' + encodeURIComponent(post.author?.nome || 'Usuário') + '&background=7c4dff&color=fff'}" 
-                         style="width:100%;height:100%;border-radius:50%;object-fit:cover;" 
-                         alt="Avatar">
-                </div>
+// No renderPost, atualize o avatar para ser clicável:
+<div class="post-avatar" onclick="event.stopPropagation(); abrirPerfilUsuario('${post.author?.id || ''}', '${escapeHtml(post.author?.nome || 'Usuário')}', '${post.author?.avatar || ''}')" style="cursor: pointer;">
+    <img src="${post.author?.avatar || 'https://ui-avatars.com/api/?name=' + encodeURIComponent(post.author?.nome || 'Usuário') + '&background=7c4dff&color=fff'}" 
+         style="width:100%;height:100%;border-radius:50%;object-fit:cover;" 
+         alt="Avatar">
+</div>
                 <div>
                     <div class="post-author">${post.anonymous ? 'Anônimo' : escapeHtml(post.author?.nome || 'Usuário')}</div>
                     <div class="post-time">${formatarData(post.createdAt)}</div>

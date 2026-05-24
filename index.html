@@ -2405,19 +2405,27 @@ body.light-mode .watch-empty-title { color: #111; }
         gap: 10px;
     }
     
+    /* CORREÇÃO: Player ocupa 100% da largura SEM ultrapassar */
     .watch-player-box {
         border-radius: 0;
-        width: 100vw;
-        margin-left: -12px;
-        margin-right: -12px;
-        /* Reduzir altura em mobile */
+        width: 100%;
+        max-width: 100%;
+        margin: 0;
         padding-bottom: 56.25%;
-        max-height: 250px;
+        max-height: none;
+    }
+    
+    /* Container do player wrapper - removendo padding para vídeo ocupar toda largura */
+    .watch-player-wrapper {
+        padding: 0;
+        margin: 0;
     }
     
     .watch-player-col {
         width: 100%;
         padding: 0;
+        max-width: 100%;
+        overflow: hidden;
     }
     
     .watch-chat-col {
@@ -2433,7 +2441,7 @@ body.light-mode .watch-empty-title { color: #111; }
     
     .watch-room-info-bar {
         margin: 8px 12px 0;
-        width: calc(100% - 24px);
+        width: auto;
     }
     
     .watch-room-actions {
@@ -2453,6 +2461,17 @@ body.light-mode .watch-empty-title { color: #111; }
     .watch-room-thumb-container {
         height: 110px;
     }
+    
+    /* Garantir que nada ultrapasse a tela */
+    .watch-container {
+        overflow-x: hidden;
+        max-width: 100vw;
+    }
+    
+    .watch-active-layout {
+        max-width: 100%;
+        overflow: hidden;
+    }
 }
 
 @media (max-width: 480px) {
@@ -2468,12 +2487,16 @@ body.light-mode .watch-empty-title { color: #111; }
         font-size: 16px;
     }
     
-    .watch-player-box {
-        max-height: 220px;
-    }
-    
     .watch-chat-box {
         height: 250px;
+    }
+    
+    /* Garantir que o player não ultrapasse */
+    .watch-player-box {
+        width: 100%;
+        max-width: 100vw;
+        margin: 0;
+        padding-bottom: 56.25%;
     }
 }
 </style>
@@ -2723,7 +2746,7 @@ body.light-mode .watch-empty-title { color: #111; }
     </div>
 </div>
 
-<div class="watch-container" id="watchContainer" style="display: none;">
+<div class="watch-container" id="watchContainer" style="display: none; overflow-x: hidden; max-width: 100vw;">
     <!-- Cabeçalho -->
     <div class="watch-header">
         <h2 class="watch-title">
@@ -2735,7 +2758,7 @@ body.light-mode .watch-empty-title { color: #111; }
     </div>
     
     <!-- Player Ativo + Chat (Layout lado a lado) -->
-    <div class="watch-player-wrapper" id="watchPlayerContainer" style="display: none;">
+<div class="watch-player-wrapper" id="watchPlayerContainer" style="display: none; overflow: hidden;">
         <div class="watch-active-layout">
             <!-- Coluna do Player -->
             <div class="watch-player-col">

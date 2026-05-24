@@ -1806,6 +1806,20 @@ body.light-mode .ranking-table tbody tr:hover {
     background: rgba(37,99,235,0.05) !important;
 }
 
+.ranking-table tbody tr {
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+/* Tooltip indicando que é clicável */
+.ranking-table tbody tr:hover::after {
+    content: '👁️ Ver perfil';
+    position: absolute;
+    right: 10px;
+    font-size: 10px;
+    color: #2563eb;
+    opacity: 0.8;
+}
 </style>
 </head>
 <body>
@@ -2234,35 +2248,21 @@ function mostrarRanking() {
         });
     });
     
-    if (currentUser.seguidores) {
-        currentUser.seguidores.forEach(id => userIds.add(id));
-    }
-    if (currentUser.seguindo) {
-        currentUser.seguindo.forEach(id => userIds.add(id));
-    }
+    if (currentUser.seguidores) currentUser.seguidores.forEach(id => userIds.add(id));
+    if (currentUser.seguindo) currentUser.seguindo.forEach(id => userIds.add(id));
     
     userIds.forEach(uid => {
         const userPosts = posts.filter(p => p.author?.id === uid).length;
-        const curtidas = posts
-            .filter(p => p.author?.id === uid)
-            .reduce((t, p) => t + (p.likes?.length || 0), 0);
-        const comentarios = posts
-            .reduce((t, p) => t + (p.comments?.filter(c => c.author?.id === uid).length || 0), 0);
-        
-        const xp = userPosts * LEVEL_CONFIG.xpPorPost + 
-                   curtidas * LEVEL_CONFIG.xpPorCurtidaRecebida + 
-                   comentarios * LEVEL_CONFIG.xpPorComentario;
-        
+        const curtidas = posts.filter(p => p.author?.id === uid).reduce((t, p) => t + (p.likes?.length || 0), 0);
+        const comentarios = posts.reduce((t, p) => t + (p.comments?.filter(c => c.author?.id === uid).length || 0), 0);
+        const xp = userPosts * LEVEL_CONFIG.xpPorPost + curtidas * LEVEL_CONFIG.xpPorCurtidaRecebida + comentarios * LEVEL_CONFIG.xpPorComentario;
         const nivel = getNivel(xp);
-        
         const autorPost = posts.find(p => p.author?.id === uid);
-        const nome = autorPost?.author?.nome || 'Usuário ' + uid.substring(0, 6);
-        const avatar = autorPost?.author?.avatar || '';
         
         usuarios.push({
             id: uid,
-            nome: nome,
-            avatar: avatar,
+            nome: autorPost?.author?.nome || 'Usuário ' + uid.substring(0, 6),
+            avatar: autorPost?.author?.avatar || '',
             xp: xp,
             nivel: nivel,
             posts: userPosts,
@@ -2276,88 +2276,50 @@ function mostrarRanking() {
     const uniqueUsers = [];
     const seenIds = new Set();
     usuarios.forEach(u => {
-        if (!seenIds.has(u.id)) {
-            seenIds.add(u.id);
-            uniqueUsers.push(u);
-        }
+        if (!seenIds.has(u.id)) { seenIds.add(u.id); uniqueUsers.push(u); }
     });
     
     const top20 = uniqueUsers.slice(0, 20);
     const minhaPosicao = top20.findIndex(u => u.id === currentUser.id) + 1;
     
-    // Construir HTML como string
-    let html = `
-        <div style="text-align: center; margin-bottom: 16px;">
-            ${minhaPosicao > 0 ? `
-                <p style="font-size: 13px; color: var(--text2);">
-                    🏆 Sua posição: <strong style="color: #FFD700;">#${minhaPosicao}</strong> de ${uniqueUsers.length} usuários
-                </p>
-            ` : `
-                <p style="font-size: 13px; color: var(--text2);">
-                    📊 Total de <strong>${uniqueUsers.length}</strong> usuários no ranking
-                </p>
-            `}
-        </div>
-        <div style="max-height: 400px; overflow-y: auto;">
-    `;
+    // Construir HTML
+    let html = `<div style="text-align:center;margin-bottom:12px;">`;
+    if (minhaPosicao > 0) {
+        html += `<p style="font-size:13px;">🏆 Sua posição: <strong style="color:#FFD700;">#${minhaPosicao}</strong> de ${uniqueUsers.length}</p>`;
+    } else {
+        html += `<p style="font-size:13px;">📊 ${uniqueUsers.length} usuários no ranking</p>`;
+    }
+    html += `</div><div style="max-height:380px;overflow-y:auto;" id="rankingListContainer">`;
     
     top20.forEach((u, index) => {
         const pos = index + 1;
-        let posicaoIcon = pos;
-        if (pos === 1) posicaoIcon = '🥇';
-        else if (pos === 2) posicaoIcon = '🥈';
-        else if (pos === 3) posicaoIcon = '🥉';
+        let icon = pos;
+        if (pos === 1) icon = '🥇';
+        else if (pos === 2) icon = '🥈';
+        else if (pos === 3) icon = '🥉';
         
         const isMe = u.id === currentUser.id;
-        // Escapar nome para evitar quebra de string
-        const nomeEscapado = u.nome.replace(/'/g, "\\'").replace(/"/g, '&quot;');
         const avatarUrl = u.avatar || 'https://ui-avatars.com/api/?name=' + encodeURIComponent(u.nome) + '&background=7c4dff&color=fff';
         
         html += `
-            <div onclick="Swal.close(); setTimeout(function(){ abrirPerfilUsuario('${u.id}', '${nomeEscapado}', '${u.avatar || ''}'); }, 200);" 
-                 style="display: flex; align-items: center; gap: 10px; padding: 10px 8px; 
-                        cursor: pointer; border-bottom: 1px solid var(--border);
-                        ${isMe ? 'background: rgba(37,99,235,0.08); font-weight: 700;' : ''}
-                        transition: all 0.2s;"
-                 onmouseover="this.style.background='${isMe ? 'rgba(37,99,235,0.12)' : 'rgba(0,0,0,0.03)'}';" 
-                 onmouseout="this.style.background='${isMe ? 'rgba(37,99,235,0.08)' : 'transparent'}';">
-                
-                <span style="font-size: ${pos <= 3 ? '20px' : '14px'}; font-weight: 700; width: 30px; text-align: center; flex-shrink: 0;">
-                    ${posicaoIcon}
-                </span>
-                
-                <img src="${avatarUrl}" 
-                     style="width: 32px; height: 32px; border-radius: 50%; object-fit: cover; flex-shrink: 0;"
-                     onerror="this.src='https://ui-avatars.com/api/?name=User&background=7c4dff&color=fff'">
-                
-                <div style="flex: 1; min-width: 0;">
-                    <div style="font-weight: 600; font-size: 13px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
-                        ${escapeHtml(u.nome)}${isMe ? ' <span style="color:#2563eb;font-size:11px;">(você)</span>' : ''}
-                    </div>
-                </div>
-                
-                <span style="display: inline-flex; align-items: center; gap: 4px; 
-                             background: rgba(255,215,0,0.15); border-radius: 20px; 
-                             padding: 3px 10px; font-size: 11px; font-weight: 700; 
-                             color: #FFD700; flex-shrink: 0;">
-                    ${u.nivel.icon} Nv. ${u.nivel.level}
-                </span>
-                
-                <span style="font-weight: 700; font-size: 12px; flex-shrink: 0; width: 70px; text-align: right;">
-                    ${u.xp.toLocaleString()} XP
-                </span>
-            </div>
-        `;
+            <div class="ranking-row" data-userid="${u.id}" data-nome="${escapeHtml(u.nome).replace(/"/g, '&quot;')}" data-avatar="${u.avatar || ''}"
+                 style="display:flex;align-items:center;gap:10px;padding:10px 8px;cursor:pointer;
+                        border-bottom:1px solid var(--border);transition:all 0.2s;
+                        ${isMe ? 'background:rgba(37,99,235,0.08);font-weight:700;' : ''}"
+                 onmouseover="this.style.background='${isMe ? 'rgba(37,99,235,0.12)' : 'rgba(0,0,0,0.04)'}'" 
+                 onmouseout="this.style.background='${isMe ? 'rgba(37,99,235,0.08)' : 'transparent'}'">
+                <span style="font-size:${pos<=3?'20px':'14px'};font-weight:700;width:30px;text-align:center;">${icon}</span>
+                <img src="${avatarUrl}" style="width:32px;height:32px;border-radius:50%;object-fit:cover;" onerror="this.src='https://ui-avatars.com/api/?name=User&background=7c4dff&color=fff'">
+                <div style="flex:1;min-width:0;"><span style="font-weight:600;font-size:13px;">${escapeHtml(u.nome)}${isMe?' <span style="color:#2563eb;font-size:11px;">(você)</span>':''}</span></div>
+                <span style="background:rgba(255,215,0,0.15);border-radius:20px;padding:3px 10px;font-size:11px;font-weight:700;color:#FFD700;">${u.nivel.icon} Nv.${u.nivel.level}</span>
+                <span style="font-weight:700;font-size:12px;width:70px;text-align:right;">${u.xp.toLocaleString()} XP</span>
+            </div>`;
     });
     
-    html += '</div>';
+    html += `</div>`;
     
     if (uniqueUsers.length > 20) {
-        html += `
-            <p style="text-align: center; margin-top: 12px; font-size: 11px; color: var(--text2);">
-                Mostrando top 20 de ${uniqueUsers.length} usuários
-            </p>
-        `;
+        html += `<p style="text-align:center;margin-top:8px;font-size:11px;opacity:0.7;">Top 20 de ${uniqueUsers.length} usuários</p>`;
     }
     
     Swal.fire({
@@ -2368,12 +2330,22 @@ function mostrarRanking() {
         cancelButtonText: 'Fechar',
         width: '500px',
         padding: '16px',
-        customClass: {
-            popup: 'ranking-modal-popup'
+        // 🔑 ADICIONAR EVENT LISTENERS DEPOIS QUE O MODAL ABRIR
+        didOpen: () => {
+            document.querySelectorAll('.ranking-row').forEach(row => {
+                row.addEventListener('click', function() {
+                    const userId = this.getAttribute('data-userid');
+                    const nome = this.getAttribute('data-nome');
+                    const avatar = this.getAttribute('data-avatar');
+                    Swal.close();
+                    setTimeout(() => {
+                        abrirPerfilUsuario(userId, nome, avatar);
+                    }, 200);
+                });
+            });
         }
     });
 }
-
 // ==================== SISTEMA DE RÁDIO (ABA NO MENU) ====================
 
 const radioStations = {

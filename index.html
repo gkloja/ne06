@@ -1208,18 +1208,42 @@ function verificarPostNaUrl() {
     const postId = urlParams.get('post');
     
     if (postId) {
-        // Aguardar o feed carregar
-        setTimeout(() => {
-            scrollAtePost(parseInt(postId));
-        }, 1500);
+        console.log('🔗 Post ID na URL:', postId);
+        
+        // Tentar encontrar o post a cada 500ms até encontrar ou desistir após 10 tentativas
+        let tentativas = 0;
+        const maxTentativas = 20; // 10 segundos
+        
+        const interval = setInterval(() => {
+            tentativas++;
+            console.log(`🔍 Tentativa ${tentativas} de encontrar post ${postId}...`);
+            
+            const encontrado = scrollAtePost(parseInt(postId));
+            
+            if (encontrado || tentativas >= maxTentativas) {
+                clearInterval(interval);
+                
+                if (!encontrado && tentativas >= maxTentativas) {
+                    console.log('❌ Post não encontrado após', maxTentativas, 'tentativas');
+                    Swal.fire({
+                        icon: 'info',
+                        title: 'Publicação não encontrada',
+                        text: 'A publicação pode ter sido removida ou ainda não foi aprovada.',
+                        confirmButtonText: 'OK'
+                    });
+                }
+            }
+        }, 500);
     }
 }
 
-// Fazer scroll até um post específico
+// Fazer scroll até um post específico - AGORA RETORNA true/false
 function scrollAtePost(postId) {
     const postElement = document.querySelector(`[data-post-id="${postId}"]`);
     
     if (postElement) {
+        console.log('✅ Post encontrado! Scrollando...');
+        
         // Destacar o post
         postElement.style.border = '2px solid #2563eb';
         postElement.style.boxShadow = '0 0 20px rgba(37, 99, 235, 0.3)';
@@ -1238,7 +1262,7 @@ function scrollAtePost(postId) {
         
         // Mostrar notificação
         Swal.fire({
-            icon: 'info',
+            icon: 'success',
             title: '📌 Publicação encontrada!',
             text: 'Você foi direcionado para a publicação compartilhada.',
             timer: 2500,
@@ -1246,14 +1270,11 @@ function scrollAtePost(postId) {
             toast: true,
             position: 'top-end'
         });
-    } else {
-        Swal.fire({
-            icon: 'info',
-            title: 'Publicação não encontrada',
-            text: 'A publicação pode ter sido removida ou ainda não foi aprovada.',
-            confirmButtonText: 'OK'
-        });
+        
+        return true;
     }
+    
+    return false;
 }
 // Mostrar modal com todos usuários online
 async function mostrarUsuariosOnline() {
@@ -1867,24 +1888,29 @@ function mostrarSeguindoDeOutroUsuario(usuarioId, usuarioNome) {
     }
 
     function renderizarFeed() {
-        const container = document.getElementById('postsContainer');
-        const aprovados = posts.filter(p => p.status === 'approved');
-        
-        if (aprovados.length === 0) {
-            container.innerHTML = `
-                <div class="login-prompt">
-                    <i class="fas fa-newspaper"></i>
-                    <h3>✨ Seja o primeiro a postar!</h3>
-                    <p>Compartilhe oportunidades, notícias e conecte-se com a comunidade.</p>
-                    ${!currentUser ? 
-                        '<button class="google-login-btn" onclick="loginGoogle()"><i class="fab fa-google"></i> Entrar para postar</button>' : 
-                        '<button class="btn-primary" onclick="abrirModalCriarPost()">Criar primeiro post</button>'}
-                </div>`;
-            return;
-        }
-        
-        container.innerHTML = aprovados.map(post => renderPost(post)).join('');
+    const container = document.getElementById('postsContainer');
+    const aprovados = posts.filter(p => p.status === 'approved');
+    
+    if (aprovados.length === 0) {
+        container.innerHTML = `
+            <div class="login-prompt">
+                <i class="fas fa-newspaper"></i>
+                <h3>✨ Seja o primeiro a postar!</h3>
+                <p>Compartilhe oportunidades, notícias e conecte-se com a comunidade.</p>
+                ${!currentUser ? 
+                    '<button class="google-login-btn" onclick="loginGoogle()"><i class="fab fa-google"></i> Entrar para postar</button>' : 
+                    '<button class="btn-primary" onclick="abrirModalCriarPost()">Criar primeiro post</button>'}
+            </div>`;
+        return;
     }
+    
+    container.innerHTML = aprovados.map(post => renderPost(post)).join('');
+    
+    // ✅ VERIFICAR POST NA URL APÓS RENDERIZAR
+    setTimeout(() => {
+        verificarPostNaUrl();
+    }, 300);
+}
 // ==================== SISTEMA DE LIKES COM LOCALSTORAGE ====================
 function usuarioJaCurtiu(postId) {
     const liked = localStorage.getItem(`liked_${currentUser?.id}_${postId}`);

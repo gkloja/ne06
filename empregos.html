@@ -15,6 +15,7 @@
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
 <link rel="icon" type="image/jpeg" href="/IMG-20260523-WA0031.jpg">
 <link rel="apple-touch-icon" href="/IMG-20260523-WA0031.jpg">
+
 <!-- SweetAlert -->
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
@@ -103,7 +104,7 @@
     }
     .nav-content { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
     .logo { display: flex; align-items: center; gap: 8px; cursor: pointer; }
-    .logo-circle { width: 38px; height: 38px; border-radius: 12px; background: linear-gradient(135deg, var(--primary), var(--primary-dark)); display: flex; align-items: center; justify-content: center; font-size: 18px; font-weight: 800; }
+    .logo img { width: 42px; height: 42px; border-radius: 50%; object-fit: cover; }
     .logo h1 { font-size: 18px; line-height: 1.2; }
     .logo span { color: var(--primary-light); }
     .menu { display: flex; gap: 8px; background: rgba(255,255,255,0.05); padding: 4px; border-radius: 40px; }
@@ -166,50 +167,15 @@
         top: 80px;
         height: fit-content;
     }
-    .chat-sidebar h3 {
-        font-size: 14px;
-        margin-bottom: 16px;
-        display: flex;
-        align-items: center;
-        gap: 8px;
-    }
-    .online-users {
-        display: flex;
-        flex-direction: column;
-        gap: 12px;
-    }
-    .online-user {
-        display: flex;
-        align-items: center;
-        gap: 10px;
-        padding: 8px;
-        border-radius: 12px;
-        cursor: pointer;
-        transition: 0.2s;
-    }
+    .chat-sidebar h3 { font-size: 14px; margin-bottom: 16px; display: flex; align-items: center; gap: 8px; }
+    .online-users { display: flex; flex-direction: column; gap: 12px; }
+    .online-user { display: flex; align-items: center; gap: 10px; padding: 8px; border-radius: 12px; cursor: pointer; transition: 0.2s; }
     .online-user:hover { background: rgba(124,77,255,0.1); }
-    .online-avatar {
-        width: 32px;
-        height: 32px;
-        border-radius: 50%;
-        background: linear-gradient(135deg, var(--primary), var(--primary-dark));
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        font-size: 14px;
-        object-fit: cover;
-    }
+    .online-avatar { width: 32px; height: 32px; border-radius: 50%; background: linear-gradient(135deg, var(--primary), var(--primary-dark)); display: flex; align-items: center; justify-content: center; font-size: 14px; object-fit: cover; }
     .online-info { flex: 1; }
     .online-name { font-size: 13px; font-weight: 600; }
     .online-status { font-size: 10px; color: #10b981; }
-    .online-dot {
-        width: 8px;
-        height: 8px;
-        background: #10b981;
-        border-radius: 50%;
-        display: inline-block;
-        margin-right: 4px;
-    }
+    .online-dot { width: 8px; height: 8px; background: #10b981; border-radius: 50%; display: inline-block; margin-right: 4px; }
 
     .chat-main {
         flex: 1;
@@ -222,13 +188,7 @@
         height: calc(100vh - 150px);
         overflow: hidden;
     }
-    .chat-header {
-        padding: 16px 20px;
-        border-bottom: 1px solid var(--border);
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-    }
+    .chat-header { padding: 16px 20px; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; }
     .chat-header h2 { font-size: 18px; display: flex; align-items: center; gap: 8px; }
     .chat-stats { font-size: 12px; color: var(--text2); }
 
@@ -249,35 +209,13 @@
         transition: 0.2s;
     }
     .chat-message:hover { background: rgba(124,77,255,0.05); }
-    .message-avatar {
-        width: 40px;
-        height: 40px;
-        border-radius: 50%;
-        background: linear-gradient(135deg, var(--primary), var(--primary-dark));
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        font-size: 18px;
-        font-weight: 600;
-        flex-shrink: 0;
-        object-fit: cover;
-    }
+    .message-avatar { width: 40px; height: 40px; border-radius: 50%; background: linear-gradient(135deg, var(--primary), var(--primary-dark)); display: flex; align-items: center; justify-content: center; font-size: 18px; font-weight: 600; flex-shrink: 0; object-fit: cover; }
     .message-content { flex: 1; }
-    .message-header {
-        display: flex;
-        align-items: baseline;
-        gap: 8px;
-        flex-wrap: wrap;
-        margin-bottom: 4px;
-    }
+    .message-header { display: flex; align-items: baseline; gap: 8px; flex-wrap: wrap; margin-bottom: 4px; }
     .message-author { font-weight: 700; font-size: 14px; }
     .message-time { font-size: 10px; color: var(--text2); }
     .message-text { font-size: 14px; line-height: 1.4; margin-bottom: 8px; word-break: break-word; }
-    .message-actions {
-        display: flex;
-        gap: 12px;
-        margin-top: 6px;
-    }
+    .message-actions { display: flex; gap: 12px; margin-top: 6px; }
     .message-action {
         background: none;
         border: none;
@@ -293,40 +231,12 @@
     }
     .message-action:hover { background: rgba(124,77,255,0.1); color: var(--primary); }
     .message-action.liked { color: #ef4444; }
-    .message-action.disabled {
-        opacity: 0.5;
-        cursor: not-allowed;
-    }
+    .message-action.disabled { opacity: 0.5; cursor: not-allowed; }
     
-    .replies-section {
-        margin-top: 12px;
-        padding-left: 20px;
-        border-left: 2px solid var(--primary);
-        display: none;
-        margin-bottom: 8px;
-    }
+    .replies-section { margin-top: 12px; padding-left: 20px; border-left: 2px solid var(--primary); display: none; margin-bottom: 8px; }
     .replies-section.show { display: block; }
-    .reply-message {
-        margin-top: 10px;
-        padding: 10px;
-        background: rgba(0,0,0,0.2);
-        border-radius: 12px;
-        font-size: 12px;
-        display: flex;
-        gap: 10px;
-    }
-    .reply-avatar {
-        width: 28px;
-        height: 28px;
-        border-radius: 50%;
-        background: var(--primary);
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        font-size: 11px;
-        font-weight: 600;
-        object-fit: cover;
-    }
+    .reply-message { margin-top: 10px; padding: 10px; background: rgba(0,0,0,0.2); border-radius: 12px; font-size: 12px; display: flex; gap: 10px; }
+    .reply-avatar { width: 28px; height: 28px; border-radius: 50%; background: var(--primary); display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 600; object-fit: cover; }
     .reply-content { flex: 1; }
     .reply-header { display: flex; align-items: baseline; gap: 8px; margin-bottom: 4px; flex-wrap: wrap; }
     .reply-author { font-weight: 600; font-size: 11px; }
@@ -354,10 +264,7 @@
         max-height: 100px;
     }
     .chat-input:focus { outline: none; border-color: var(--primary); }
-    .chat-options {
-        display: flex;
-        gap: 8px;
-    }
+    .chat-options { display: flex; gap: 8px; }
     .chat-option-btn {
         width: 40px;
         height: 40px;
@@ -391,30 +298,13 @@
         align-items: center;
         font-size: 12px;
     }
-    .cancel-reply {
-        background: none;
-        border: none;
-        color: var(--danger);
-        cursor: pointer;
-    }
+    .cancel-reply { background: none; border: none; color: var(--danger); cursor: pointer; }
 
     /* Post Cards */
     .feed-central { flex: 1; max-width: 600px; }
     .create-post-card { background: rgba(18,22,45,0.8); backdrop-filter: blur(12px); border-radius: 20px; padding: 16px; margin-bottom: 16px; border: 1px solid rgba(255,255,255,0.05); }
     .create-post-header { display: flex; align-items: center; gap: 12px; }
-    .create-post-avatar {
-        width: 44px;
-        height: 44px;
-        border-radius: 50%;
-        background: linear-gradient(135deg, var(--primary), var(--primary-dark));
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        font-size: 18px;
-        font-weight: 600;
-        flex-shrink: 0;
-        object-fit: cover;
-    }
+    .create-post-avatar { width: 44px; height: 44px; border-radius: 50%; background: linear-gradient(135deg, var(--primary), var(--primary-dark)); display: flex; align-items: center; justify-content: center; font-size: 18px; font-weight: 600; flex-shrink: 0; object-fit: cover; }
     .create-post-input { flex: 1; background: rgba(255,255,255,0.05); border: 1px solid var(--border); border-radius: 30px; padding: 12px 16px; cursor: pointer; color: var(--text2); font-size: 14px; }
     .create-post-input:hover { background: rgba(255,255,255,0.1); border-color: var(--primary); }
     .create-post-options { display: flex; gap: 8px; margin-top: 12px; padding-top: 12px; border-top: 1px solid var(--border); }
@@ -423,19 +313,7 @@
 
     .post-card { background: rgba(18,22,45,0.8); backdrop-filter: blur(12px); border-radius: 20px; padding: 16px; margin-bottom: 16px; border: 1px solid rgba(255,255,255,0.05); transition: 0.3s; }
     .post-header { display: flex; gap: 12px; margin-bottom: 12px; }
-    .post-avatar {
-        width: 44px;
-        height: 44px;
-        border-radius: 50%;
-        background: linear-gradient(135deg, var(--primary), var(--primary-dark));
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        font-size: 18px;
-        font-weight: 600;
-        flex-shrink: 0;
-        object-fit: cover;
-    }
+    .post-avatar { width: 44px; height: 44px; border-radius: 50%; background: linear-gradient(135deg, var(--primary), var(--primary-dark)); display: flex; align-items: center; justify-content: center; font-size: 18px; font-weight: 600; flex-shrink: 0; object-fit: cover; }
     .post-author { font-weight: 600; font-size: 14px; }
     .post-time { font-size: 11px; color: var(--text2); }
     .post-text { font-size: 14px; line-height: 1.5; margin-bottom: 12px; }
@@ -446,14 +324,19 @@
     .post-action-btn { flex: 1; display: flex; align-items: center; justify-content: center; gap: 6px; padding: 8px; border-radius: 12px; cursor: pointer; color: var(--text2); font-size: 13px; background: none; border: none; transition: 0.2s; }
     .post-action-btn:hover { background: rgba(124,77,255,0.1); color: var(--primary); }
     .post-action-btn.liked { color: #ef4444; }
-    .post-action-btn.disabled {
-        opacity: 0.5;
-        cursor: not-allowed;
+    .post-action-btn.disabled { opacity: 0.5; cursor: not-allowed; }
+    .post-action-btn.disabled:hover { background: none; transform: none; }
+
+    .login-prompt {
+        background: rgba(18,22,45,0.8);
+        border-radius: 20px;
+        padding: 30px;
+        text-align: center;
+        margin: 20px 0;
     }
-    .post-action-btn.disabled:hover {
-        background: none;
-        transform: none;
-    }
+    .login-prompt i { font-size: 48px; color: var(--primary); margin-bottom: 16px; }
+    .login-prompt h3 { margin-bottom: 8px; }
+    .login-prompt p { color: var(--text2); margin-bottom: 20px; }
 
     .vagas-grid, .noticias-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 16px; margin-top: 16px; }
     .job-card, .news-card { background: rgba(18,22,45,0.8); border-radius: 20px; padding: 16px; cursor: pointer; transition: 0.3s; border: 1px solid rgba(255,255,255,0.05); }
@@ -472,19 +355,7 @@
     .news-meta { font-size: 10px; color: var(--text2); }
 
     .perfil-card { background: rgba(18,22,45,0.8); border-radius: 24px; padding: 24px; text-align: center; }
-    .perfil-avatar {
-        width: 100px;
-        height: 100px;
-        border-radius: 50%;
-        background: linear-gradient(135deg, var(--primary), var(--primary-dark));
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        font-size: 40px;
-        font-weight: 700;
-        margin: 0 auto 16px;
-        object-fit: cover;
-    }
+    .perfil-avatar { width: 100px; height: 100px; border-radius: 50%; background: linear-gradient(135deg, var(--primary), var(--primary-dark)); display: flex; align-items: center; justify-content: center; font-size: 40px; font-weight: 700; margin: 0 auto 16px; object-fit: cover; }
     .perfil-name { font-size: 20px; font-weight: 700; margin-bottom: 4px; }
     .perfil-email { color: var(--text2); margin-bottom: 16px; font-size: 13px; word-break: break-all; }
 
@@ -511,21 +382,18 @@
         background: white;
         color: #1A1F2E;
         border: none;
-        padding: 10px 20px;
-        border-radius: 30px;
+        padding: 12px 24px;
+        border-radius: 40px;
         font-weight: 600;
         cursor: pointer;
-        display: flex;
+        display: inline-flex;
         align-items: center;
-        gap: 10px;
-        margin-top: 20px;
-        width: 100%;
-        justify-content: center;
+        gap: 12px;
+        font-size: 14px;
+        transition: 0.2s;
     }
-    .google-login-btn img {
-        width: 20px;
-        height: 20px;
-    }
+    .google-login-btn:hover { transform: scale(1.02); box-shadow: 0 4px 12px rgba(0,0,0,0.1); }
+    .google-login-btn img { width: 20px; height: 20px; }
 
     .footer { background: #0a0a0c; border-top: 1px solid var(--border); padding: 32px 0 16px; margin-top: 40px; }
     .footer-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 20px; margin-bottom: 24px; }
@@ -538,13 +406,11 @@
     .spinner { width: 32px; height: 32px; border: 3px solid var(--border); border-top-color: var(--primary); border-radius: 50%; animation: spin 0.8s linear infinite; margin: 0 auto 12px; }
     @keyframes spin { to { transform: rotate(360deg); } }
 
-    .login-message {
-        text-align: center;
-        padding: 40px;
-        background: rgba(18,22,45,0.6);
-        border-radius: 20px;
-        margin: 20px 0;
-    }
+    .skeleton-post { background: rgba(18,22,45,0.5); border-radius: 20px; padding: 16px; margin-bottom: 16px; animation: pulse 1.5s infinite; }
+    .skeleton-avatar { width: 44px; height: 44px; border-radius: 50%; background: rgba(255,255,255,0.1); margin-right: 12px; }
+    .skeleton-line { height: 14px; background: rgba(255,255,255,0.08); border-radius: 8px; margin-bottom: 8px; }
+    .skeleton-line-50 { width: 50%; }
+    @keyframes pulse { 0%, 100% { opacity: 0.5; } 50% { opacity: 0.8; } }
 
     .hide-on-mobile { display: block; }
     .show-on-mobile { display: none; }
@@ -572,10 +438,10 @@
 
 <nav class="navbar">
     <div class="container nav-content">
-<div class="logo" onclick="mudarSecao('feed')">
-    <img src="/IMG-20260523-WA0031.jpg" alt="NE Conecta" style="width: 45px; height: 45px; border-radius: 50%; object-fit: cover; background: transparent;">
-    <h1>NE<span>Conecta</span></h1>
-</div>
+        <div class="logo" onclick="mudarSecao('feed')">
+            <img src="/IMG-20260523-WA0031.jpg" alt="NE Conecta">
+            <h1>NE<span>Conecta</span></h1>
+        </div>
         <div class="menu" id="mainMenu">
             <a href="#" data-section="feed" class="active">Feed</a>
             <a href="#" data-section="empregos">Empregos</a>
@@ -645,17 +511,20 @@
             <div class="create-post-card" id="createPostCard">
                 <div class="create-post-header">
                     <div class="create-post-avatar" id="currentUserAvatar">👤</div>
-                    <div class="create-post-input" onclick="if(currentUser) abrirModalCriarPost(); else loginGoogle()">
+                    <div class="create-post-input" onclick="if(currentUser) abrirModalCriarPost(); else mostrarLoginPrompt()">
                         <i class="fas fa-pen"></i> O que você está pensando?
                     </div>
                 </div>
                 <div class="create-post-options">
-                    <button class="post-option" onclick="if(currentUser) abrirModalCriarPost('foto'); else loginGoogle()"><i class="fas fa-image"></i> Foto</button>
-                    <button class="post-option" onclick="if(currentUser) abrirModalCriarPost('video'); else loginGoogle()"><i class="fas fa-video"></i> Vídeo</button>
-                    <button class="post-option" onclick="if(currentUser) abrirModalCriarPost('enquete'); else loginGoogle()"><i class="fas fa-chart-simple"></i> Enquete</button>
+                    <button class="post-option" onclick="if(currentUser) abrirModalCriarPost('foto'); else mostrarLoginPrompt()"><i class="fas fa-image"></i> Foto</button>
+                    <button class="post-option" onclick="if(currentUser) abrirModalCriarPost('video'); else mostrarLoginPrompt()"><i class="fas fa-video"></i> Vídeo</button>
+                    <button class="post-option" onclick="if(currentUser) abrirModalCriarPost('enquete'); else mostrarLoginPrompt()"><i class="fas fa-chart-simple"></i> Enquete</button>
                 </div>
             </div>
-            <div id="postsContainer"><div class="loading-spinner"><div class="spinner"></div><p>Carregando feed...</p></div></div>
+            <div id="postsContainer">
+                <div class="skeleton-post"><div style="display: flex;"><div class="skeleton-avatar"></div><div style="flex:1"><div class="skeleton-line"></div><div class="skeleton-line skeleton-line-50"></div></div></div><div class="skeleton-line" style="margin-top: 12px;"></div><div class="skeleton-line"></div></div>
+                <div class="skeleton-post"><div style="display: flex;"><div class="skeleton-avatar"></div><div style="flex:1"><div class="skeleton-line"></div><div class="skeleton-line skeleton-line-50"></div></div></div><div class="skeleton-line" style="margin-top: 12px;"></div><div class="skeleton-line"></div></div>
+            </div>
         </main>
 
         <div class="vagas-container" id="vagasContainer" style="display: none;"></div>
@@ -720,6 +589,7 @@
                 };
                 localStorage.setItem('currentUser', JSON.stringify(currentUser));
                 atualizarPerfilUI();
+                // Recarregar tudo após login
                 carregarPosts();
                 if (currentSection === 'chat') carregarChat();
                 if (currentSection === 'perfil') renderizarPerfil();
@@ -734,11 +604,42 @@
         });
     }
 
+    function mostrarLoginPrompt() {
+        Swal.fire({
+            title: 'Faça login para interagir',
+            html: `<div style="text-align: center;">
+                <i class="fas fa-google" style="font-size: 48px; color: #7c4dff; margin-bottom: 16px;"></i>
+                <p>Você precisa estar logado para curtir, comentar e publicar.</p>
+                <button class="google-login-btn" style="margin-top: 20px;" onclick="loginGoogle()">
+                    <img src="https://www.google.com/favicon.ico" alt="Google"> Entrar com Google
+                </button>
+            </div>`,
+            showConfirmButton: false,
+            showCancelButton: true,
+            cancelButtonText: 'Fechar'
+        });
+    }
+
     function loginGoogle() {
+        Swal.fire({
+            title: 'Entrando...',
+            text: 'Aguarde enquanto fazemos login com Google',
+            allowOutsideClick: false,
+            didOpen: () => Swal.showLoading()
+        });
+        
         window.signInWithPopup(window.auth, window.googleProvider)
-            .catch((error) => {
+            .then((result) => {
+                Swal.close();
+                Swal.fire('Bem-vindo!', `Olá ${result.user.displayName}!`, 'success');
+            }).catch((error) => {
+                Swal.close();
                 console.error('Erro no login:', error);
-                Swal.fire('Erro', 'Não foi possível fazer login com Google', 'error');
+                if (error.code === 'auth/unauthorized-domain') {
+                    Swal.fire('Erro de configuração', 'O domínio não está autorizado no Firebase. Use o login alternativo.', 'error');
+                } else {
+                    Swal.fire('Erro', 'Não foi possível fazer login com Google', 'error');
+                }
             });
     }
 
@@ -815,10 +716,10 @@
                     </div>
                     <div class="message-text">${escapeHtml(msg.texto)}</div>
                     <div class="message-actions">
-                        <button class="message-action ${isLiked ? 'liked' : ''} ${!podeInteragir ? 'disabled' : ''}" onclick="podeInteragir ? likeMensagem(${msg.id}) : loginGoogle()">
+                        <button class="message-action ${isLiked ? 'liked' : ''} ${!podeInteragir ? 'disabled' : ''}" onclick="podeInteragir ? likeMensagem(${msg.id}) : mostrarLoginPrompt()">
                             <i class="fas fa-heart"></i> ${msg.likes?.length || 0}
                         </button>
-                        <button class="message-action ${!podeInteragir ? 'disabled' : ''}" onclick="podeInteragir ? responderMensagem(${msg.id}, '${escapeHtml(msg.usuario?.nome || 'Usuário')}') : loginGoogle()">
+                        <button class="message-action ${!podeInteragir ? 'disabled' : ''}" onclick="podeInteragir ? responderMensagem(${msg.id}, '${escapeHtml(msg.usuario?.nome || 'Usuário')}') : mostrarLoginPrompt()">
                             <i class="fas fa-reply"></i> Responder
                         </button>
                     </div>
@@ -847,13 +748,11 @@
     }
 
     async function likeMensagem(id) {
-        if (!currentUser) { loginGoogle(); return; }
-        
+        if (!currentUser) { mostrarLoginPrompt(); return; }
         if (usuarioJaCurtiuMensagem(id)) {
             Swal.fire('Aviso', 'Você já curtiu esta mensagem!', 'info');
             return;
         }
-        
         try {
             const response = await fetch(`${API_URL}/cliente06/chat-global/mensagens/${id}/like`, {
                 method: 'POST',
@@ -881,7 +780,7 @@
     }
 
     async function responderMensagem(id, nome) {
-        if (!currentUser) { loginGoogle(); return; }
+        if (!currentUser) { mostrarLoginPrompt(); return; }
         respondendoPara = { id, nome };
         document.getElementById('replyIndicator').style.display = 'flex';
         document.getElementById('replyToName').innerText = nome;
@@ -894,8 +793,7 @@
     }
 
     async function enviarMensagem() {
-        if (!currentUser) { loginGoogle(); return; }
-        
+        if (!currentUser) { mostrarLoginPrompt(); return; }
         const input = document.getElementById('chatInput');
         const texto = input.value.trim();
         if (!texto) return;
@@ -948,23 +846,26 @@
         const onlineDiv = document.getElementById('onlineUsers');
         if (!onlineDiv) return;
         const usuariosUnicos = [...new Set(mensagensChat.filter(m => !m.anonimo).map(m => m.usuario?.nome))].slice(0, 10);
-        onlineDiv.innerHTML = usuariosUnicos.map(nome => `
-            <div class="online-user">
-                <div class="online-avatar"><img src="https://ui-avatars.com/api/?name=${encodeURIComponent(nome)}&background=7c4dff&color=fff" style="width:100%;height:100%;border-radius:50%;object-fit:cover;"></div>
-                <div class="online-info">
-                    <div class="online-name">${escapeHtml(nome)}</div>
-                    <div class="online-status"><span class="online-dot"></span> Online</div>
+        if (usuariosUnicos.length === 0) {
+            onlineDiv.innerHTML = '<p style="text-align:center;color:var(--text2);">Ninguém online no momento</p>';
+        } else {
+            onlineDiv.innerHTML = usuariosUnicos.map(nome => `
+                <div class="online-user">
+                    <div class="online-avatar"><img src="https://ui-avatars.com/api/?name=${encodeURIComponent(nome)}&background=7c4dff&color=fff" style="width:100%;height:100%;border-radius:50%;object-fit:cover;"></div>
+                    <div class="online-info">
+                        <div class="online-name">${escapeHtml(nome)}</div>
+                        <div class="online-status"><span class="online-dot"></span> Online</div>
+                    </div>
                 </div>
-            </div>
-        `).join('');
-        if (usuariosUnicos.length === 0) onlineDiv.innerHTML = '<p style="text-align:center;color:var(--text2);">Ninguém online no momento</p>';
+            `).join('');
+        }
     }
 
     // Botões do chat
     document.getElementById('sendBtn')?.addEventListener('click', enviarMensagem);
     document.getElementById('chatInput')?.addEventListener('keypress', (e) => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); enviarMensagem(); } });
     document.getElementById('anonimoBtn')?.addEventListener('click', () => {
-        if (!currentUser) { loginGoogle(); return; }
+        if (!currentUser) { mostrarLoginPrompt(); return; }
         anonimoAtivo = !anonimoAtivo;
         document.getElementById('anonimoBtn').style.background = anonimoAtivo ? 'var(--primary)' : 'rgba(124,77,255,0.2)';
         Swal.fire({ title: anonimoAtivo ? 'Modo anônimo ativado' : 'Modo anônimo desativado', icon: 'info', toast: true, position: 'top-end', showConfirmButton: false, timer: 1500 });
@@ -983,19 +884,27 @@
 
     async function carregarPosts() {
         const container = document.getElementById('postsContainer');
-        container.innerHTML = `<div class="loading-spinner"><div class="spinner"></div><p>Carregando feed...</p></div>`;
+        // Skeleton loading
+        container.innerHTML = `
+            <div class="skeleton-post"><div style="display: flex;"><div class="skeleton-avatar"></div><div style="flex:1"><div class="skeleton-line"></div><div class="skeleton-line skeleton-line-50"></div></div></div><div class="skeleton-line" style="margin-top: 12px;"></div><div class="skeleton-line"></div></div>
+            <div class="skeleton-post"><div style="display: flex;"><div class="skeleton-avatar"></div><div style="flex:1"><div class="skeleton-line"></div><div class="skeleton-line skeleton-line-50"></div></div></div><div class="skeleton-line" style="margin-top: 12px;"></div><div class="skeleton-line"></div></div>
+        `;
+        
         try {
             const res = await fetch(`${API_URL}/cliente06/posts`);
             posts = res.ok ? await res.json() : [];
             renderizarFeed();
-        } catch (e) { container.innerHTML = `<div class="loading-spinner"><i class="fas fa-exclamation-triangle"></i><p>Erro ao carregar</p><button class="btn-secondary" onclick="carregarPosts()">Tentar</button></div>`; }
+        } catch (e) { 
+            console.error('Erro ao carregar posts:', e);
+            container.innerHTML = `<div class="loading-spinner"><i class="fas fa-exclamation-triangle"></i><p>Erro ao carregar feed</p><button class="btn-secondary" onclick="carregarPosts()">Tentar novamente</button></div>`;
+        }
     }
 
     function renderizarFeed() {
         const container = document.getElementById('postsContainer');
         const aprovados = posts.filter(p => p.status === 'approved');
         if (aprovados.length === 0) {
-            container.innerHTML = `<div class="loading-spinner"><i class="fas fa-newspaper"></i><p>Nenhum post ainda.</p></div>`;
+            container.innerHTML = `<div class="login-prompt"><i class="fas fa-newspaper"></i><h3>Nenhum post ainda</h3><p>Seja o primeiro a compartilhar algo!</p>${!currentUser ? '<button class="google-login-btn" onclick="loginGoogle()"><img src="https://www.google.com/favicon.ico" alt="Google"> Entrar para postar</button>' : '<button class="btn-primary" onclick="abrirModalCriarPost()">Criar primeiro post</button>'}</div>`;
             return;
         }
         container.innerHTML = aprovados.map(post => renderPost(post)).join('');
@@ -1015,10 +924,10 @@
                 ${post.media ? `<div class="post-media">${post.mediaType === 'video' ? `<video controls src="${post.media}"></video>` : `<img src="${post.media}" alt="Post">`}</div>` : ''}
                 <div class="post-stats"><span><i class="fas fa-heart"></i> ${post.likes?.length || 0}</span><span><i class="fas fa-comment"></i> ${post.comments?.length || 0}</span></div>
                 <div class="post-actions">
-                    <button class="post-action-btn ${isLiked ? 'liked' : ''} ${!podeInteragir ? 'disabled' : ''}" onclick="podeInteragir ? likePost(${post.id}) : loginGoogle()">
+                    <button class="post-action-btn ${isLiked ? 'liked' : ''} ${!podeInteragir ? 'disabled' : ''}" onclick="podeInteragir ? likePost(${post.id}) : mostrarLoginPrompt()">
                         <i class="fas fa-heart"></i> Curtir
                     </button>
-                    <button class="post-action-btn ${!podeInteragir ? 'disabled' : ''}" onclick="podeInteragir ? abrirComentarios(${post.id}) : loginGoogle()">
+                    <button class="post-action-btn ${!podeInteragir ? 'disabled' : ''}" onclick="podeInteragir ? abrirComentarios(${post.id}) : mostrarLoginPrompt()">
                         <i class="fas fa-comment"></i> Comentar
                     </button>
                     <button class="post-action-btn" onclick="compartilharPost()">
@@ -1030,7 +939,7 @@
     }
 
     async function likePost(postId) {
-        if (!currentUser) { loginGoogle(); return; }
+        if (!currentUser) { mostrarLoginPrompt(); return; }
         try {
             await fetch(`${API_URL}/cliente06/posts/${postId}/like`, {
                 method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ userId: currentUser.id })
@@ -1040,7 +949,7 @@
     }
 
     async function abrirComentarios(postId) {
-        if (!currentUser) { loginGoogle(); return; }
+        if (!currentUser) { mostrarLoginPrompt(); return; }
         const post = posts.find(p => p.id === postId);
         if (!post) return;
         
@@ -1092,7 +1001,7 @@
     }
 
     function candidatarVaga() {
-        if (!currentUser) { Swal.fire('Faça login', 'Você precisa estar logado para se candidatar', 'info'); return; }
+        if (!currentUser) { mostrarLoginPrompt(); return; }
         Swal.fire('Sucesso!', `Candidatura enviada para ${selectedVaga?.empresa}! Boa sorte! 🍀`, 'success');
         fecharModal();
     }
@@ -1139,7 +1048,7 @@
 
     // ==================== CRIAR POST ====================
     function abrirModalCriarPost(tipo = null) {
-        if (!currentUser) { loginGoogle(); return; }
+        if (!currentUser) { mostrarLoginPrompt(); return; }
         mediaType = tipo;
         document.getElementById('mediaUrlGroup').style.display = tipo === 'foto' || tipo === 'video' ? 'block' : 'none';
         document.getElementById('pollContainer').style.display = tipo === 'enquete' ? 'block' : 'none';

@@ -641,6 +641,120 @@
 .fa-external-link-alt {
     opacity: 0.7;
 }
+/* ========== ESTILOS DA ENQUETE ========== */
+.poll-container {
+    background: rgba(0,0,0,0.2);
+    border-radius: 16px;
+    padding: 16px;
+    margin: 12px 0;
+    border: 1px solid rgba(124,77,255,0.2);
+}
+.poll-question {
+    font-weight: 700;
+    font-size: 14px;
+    margin-bottom: 12px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+.poll-option {
+    background: rgba(255,255,255,0.05);
+    border-radius: 12px;
+    padding: 10px 12px;
+    margin-bottom: 8px;
+    cursor: pointer;
+    transition: all 0.2s;
+    border: 1px solid transparent;
+}
+.poll-option:hover {
+    background: rgba(124,77,255,0.15);
+    border-color: rgba(124,77,255,0.3);
+    transform: translateX(4px);
+}
+.poll-option.voted {
+    background: rgba(124,77,255,0.2);
+    border-color: var(--primary);
+    cursor: default;
+}
+.poll-option-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 6px;
+    font-size: 13px;
+}
+.poll-option-text {
+    font-weight: 500;
+}
+.poll-option-percent {
+    color: var(--primary-light);
+    font-weight: 600;
+}
+.poll-bar-container {
+    height: 6px;
+    background: rgba(255,255,255,0.1);
+    border-radius: 10px;
+    overflow: hidden;
+}
+.poll-bar-fill {
+    height: 100%;
+    background: linear-gradient(90deg, var(--primary), var(--primary-light));
+    width: 0%;
+    border-radius: 10px;
+    transition: width 0.5s ease;
+}
+.poll-total {
+    font-size: 11px;
+    color: var(--text2);
+    margin-top: 10px;
+    text-align: right;
+}
+.poll-voted-badge {
+    display: inline-block;
+    background: rgba(16,185,129,0.2);
+    color: #10b981;
+    font-size: 10px;
+    padding: 2px 8px;
+    border-radius: 20px;
+    margin-left: 8px;
+}
+/* Garantir que iframes e vídeos sejam responsivos */
+.post-media iframe,
+.post-text iframe {
+    max-width: 100%;
+    border-radius: 12px;
+    margin: 10px 0;
+}
+
+.post-media video,
+.post-text video {
+    max-width: 100%;
+    border-radius: 12px;
+    margin: 10px 0;
+    background: #000;
+}
+
+.post-media img,
+.post-text img {
+    max-width: 100%;
+    border-radius: 12px;
+    margin: 10px 0;
+    display: block;
+}
+
+/* Melhorar exibição de links no texto */
+.post-text a,
+.message-text a {
+    color: #7c4dff;
+    text-decoration: underline;
+    word-break: break-all;
+    transition: all 0.2s;
+}
+
+.post-text a:hover,
+.message-text a:hover {
+    color: #9d6bff;
+}
 </style>
 </head>
 <body>
@@ -1089,12 +1203,12 @@
     }
 
     function renderPost(post) {
-    const isLiked = currentUser ? (post.likes?.includes(currentUser.id) || false) : false;
+    const isLiked = currentUser ? usuarioJaCurtiu(post.id) : false;
     const podeInteragir = currentUser !== null;
     const comentariosCount = post.comments?.length || 0;
     
     return `
-        <div class="post-card">
+        <div class="post-card" data-post-id="${post.id}">
             <div class="post-header">
                 <div class="post-avatar">
                     <img src="${post.author?.avatar || 'https://ui-avatars.com/api/?name=' + encodeURIComponent(post.author?.nome || 'Usuário') + '&background=7c4dff&color=fff'}" 
@@ -1106,15 +1220,48 @@
                     <div class="post-time">${formatarData(post.createdAt)}</div>
                 </div>
             </div>
-            <!-- APLICAR LINKS CLICÁVEIS NO TEXTO DO POST -->
-<div class="post-text">${tornarLinksClicaveis(post.text || '')}</div>
-            ${post.media ? `<div class="post-media">${post.mediaType === 'video' ? `<video controls src="${post.media}"></video>` : `<img src="${post.media}" alt="Post">`}</div>` : ''}
+            <div class="post-text">${tornarLinksClicaveis(post.text || '')}</div>
+${post.media ? (() => {
+    // Verifica se é link do YouTube
+    const youtubeMatch = post.media.match(/(?:https?:\/\/)?(?:www\.)?(?:youtube\.com\/watch\?v=|youtu\.be\/)([\w-]+)/);
+    if (youtubeMatch) {
+        return `<div class="post-media">
+                    <iframe width="100%" height="315" 
+                            src="https://www.youtube.com/embed/${youtubeMatch[1]}" 
+                            frameborder="0" 
+                            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
+                            allowfullscreen
+                            style="border-radius: 16px; max-width: 100%;">
+                    </iframe>
+                </div>`;
+    }
+    // Verifica se é imagem
+    if (post.media.match(/\.(jpg|jpeg|png|gif|webp)(\?.*)?$/i) || post.mediaType === 'image') {
+        return `<div class="post-media">
+                    <img src="${post.media}" alt="Post" style="width:100%; max-height: 400px; object-fit: cover;" loading="lazy" onerror="this.parentElement.style.display='none'">
+                </div>`;
+    }
+    // Verifica se é vídeo
+    if (post.media.match(/\.(mp4|webm|ogg)(\?.*)?$/i) || post.mediaType === 'video') {
+        return `<div class="post-media">
+                    <video controls style="width:100%; max-height: 400px; border-radius: 16px;">
+                        <source src="${post.media}" type="video/mp4">
+                        Seu navegador não suporta vídeos.
+                    </video>
+                </div>`;
+    }
+    // Se for outro tipo de link, mostra como link
+    return `<div class="post-media">
+                <a href="${post.media}" target="_blank" style="color: #7c4dff; text-decoration: underline;">
+                    <i class="fas fa-external-link-alt"></i> ${post.media}
+                </a>
+            </div>`;
+})() : ''} 
+            ${post.poll ? renderPoll(post.poll, post.id) : ''}
             <div class="post-stats">
                 <span><i class="fas fa-heart"></i> ${post.likes?.length || 0} curtidas</span>
                 <span><i class="fas fa-comment"></i> ${comentariosCount} ${comentariosCount === 1 ? 'comentário' : 'comentários'}</span>
             </div>
-            
-            <!-- Mostrar últimos 2 comentários -->
             ${comentariosCount > 0 ? `
                 <div style="margin: 8px 0; padding: 8px 0; border-top: 1px solid var(--border);">
                     ${(post.comments || []).slice(-2).map(c => `
@@ -1124,8 +1271,7 @@
                             <div style="flex: 1; background: rgba(255,255,255,0.03); padding: 6px 10px; border-radius: 12px;">
                                 <span style="font-weight: 600; font-size: 11px;">${escapeHtml(c.author?.nome || 'Anônimo')}</span>
                                 <span style="font-size: 10px; color: var(--text2); margin-left: 6px;">${formatarData(c.createdAt)}</span>
-                                <!-- APLICAR LINKS CLICÁVEIS NOS COMENTÁRIOS -->
-<p style="font-size: 12px; margin-top: 2px;">${tornarLinksClicaveis(c.text || '')}</p>
+                                <p style="font-size: 12px; margin-top: 2px;">${tornarLinksClicaveis(c.text || '')}</p>
                             </div>
                         </div>
                     `).join('')}
@@ -1137,10 +1283,9 @@
                     ` : ''}
                 </div>
             ` : ''}
-            
             <div class="post-actions">
                 <button class="post-action-btn ${isLiked ? 'liked' : ''}" onclick="${podeInteragir ? `likePost(${post.id})` : `mostrarLoginPrompt()`}">
-                    <i class="fas fa-heart"></i> Curtir
+                    <i class="fas fa-heart"></i> ${isLiked ? 'Curtido' : 'Curtir'}
                 </button>
                 <button class="post-action-btn" onclick="${podeInteragir ? `abrirComentarios(${post.id})` : `mostrarLoginPrompt()`}">
                     <i class="fas fa-comment"></i> Comentar
@@ -1292,7 +1437,75 @@ async function adicionarComentario(postId) {
     }
 }
 
+// ==================== SISTEMA DE VOTOS NA ENQUETE ====================
+function usuarioJaVotou(pollId, userId) {
+    const voted = localStorage.getItem(`poll_voted_${pollId}_${userId}`);
+    return voted === 'true';
+}
 
+function salvarVoto(pollId) {
+    localStorage.setItem(`poll_voted_${pollId}_${currentUser.id}`, 'true');
+}
+
+function renderPoll(poll, postId) {
+    const totalVotes = poll.options.reduce((s, o) => s + (o.votes || 0), 0);
+    const jaVotou = currentUser ? usuarioJaVotou(poll.id, currentUser.id) : false;
+    
+    return `
+        <div class="poll-container" data-poll-id="${poll.id}">
+            <div class="poll-question">
+                <i class="fas fa-chart-simple"></i> ${escapeHtml(poll.question || 'Enquete')}
+                ${jaVotou ? '<span class="poll-voted-badge"><i class="fas fa-check"></i> Você já votou</span>' : ''}
+            </div>
+            ${poll.options.map(opt => {
+                const percent = totalVotes ? ((opt.votes || 0) / totalVotes * 100).toFixed(1) : 0;
+                return `
+                    <div class="poll-option ${jaVotou ? 'voted' : ''}" 
+                         onclick="${!jaVotou && currentUser ? `votarEnquete(${postId}, '${opt.text.replace(/'/g, "\\'")}')` : (!currentUser ? `mostrarLoginPrompt()` : '')}">
+                        <div class="poll-option-header">
+                            <span class="poll-option-text">${escapeHtml(opt.text)}</span>
+                            <span class="poll-option-percent">${percent}%</span>
+                        </div>
+                        <div class="poll-bar-container">
+                            <div class="poll-bar-fill" style="width: ${percent}%"></div>
+                        </div>
+                    </div>
+                `;
+            }).join('')}
+            <div class="poll-total">
+                <i class="fas fa-users"></i> Total de votos: ${totalVotes}
+            </div>
+        </div>
+    `;
+}
+
+async function votarEnquete(postId, optionText) {
+    if (!currentUser) { mostrarLoginPrompt(); return; }
+    const post = posts.find(p => p.id === postId);
+    if (!post?.poll) return;
+    if (usuarioJaVotou(post.poll.id, currentUser.id)) {
+        Swal.fire('Aviso', 'Você já votou nesta enquete!', 'info');
+        return;
+    }
+    try {
+        salvarVoto(post.poll.id);
+        const response = await fetch(`${API_URL}/cliente06/posts/${postId}/poll`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ userId: currentUser.id, option: optionText })
+        });
+        if (response.ok) {
+            carregarPosts();
+            Swal.fire({ icon: 'success', title: 'Voto computado!', text: 'Obrigado por participar!', timer: 2000, showConfirmButton: false });
+        } else {
+            localStorage.removeItem(`poll_voted_${post.poll.id}_${currentUser.id}`);
+            Swal.fire('Erro', 'Não foi possível votar', 'error');
+        }
+    } catch (error) {
+        localStorage.removeItem(`poll_voted_${post.poll.id}_${currentUser.id}`);
+        Swal.fire('Erro', error.message, 'error');
+    }
+}
     function compartilharPost() {
         navigator.clipboard.writeText(window.location.href);
         Swal.fire('🔗 Link copiado!', 'Compartilhe com seus amigos!', 'success');
@@ -1300,15 +1513,26 @@ async function adicionarComentario(postId) {
 
     // ==================== CRIAÇÃO DE POSTS ====================
     
-    function abrirModalCriarPost(tipo = null) {
-        if (!currentUser) { mostrarLoginPrompt(); return; }
-        mediaType = tipo;
-        document.getElementById('mediaUrlGroup').style.display = (tipo === 'foto' || tipo === 'video') ? 'block' : 'none';
-        document.getElementById('pollContainer').style.display = tipo === 'enquete' ? 'block' : 'none';
-        document.getElementById('postText').value = '';
-        document.getElementById('mediaUrl').value = '';
-        document.getElementById('createPostModal').style.display = 'flex';
+function abrirModalCriarPost(tipo = null) {
+    if (!currentUser) { mostrarLoginPrompt(); return; }
+    mediaType = tipo;
+    document.getElementById('mediaUrlGroup').style.display = (tipo === 'foto' || tipo === 'video') ? 'block' : 'none';
+    document.getElementById('pollContainer').style.display = tipo === 'enquete' ? 'block' : 'none';
+    document.getElementById('postText').value = '';
+    document.getElementById('mediaUrl').value = '';
+    
+    // MELHORIA: Placeholder específico para cada tipo
+    const mediaInput = document.getElementById('mediaUrl');
+    if (mediaInput) {
+        if (tipo === 'foto') {
+            mediaInput.placeholder = 'URL da imagem (ex: https://exemplo.com/foto.jpg)';
+        } else if (tipo === 'video') {
+            mediaInput.placeholder = 'URL do vídeo ou link do YouTube (ex: https://youtube.com/watch?v=...)';
+        }
     }
+    
+    document.getElementById('createPostModal').style.display = 'flex';
+}
 
     function adicionarOpcaoEnquete() {
         const container = document.getElementById('pollOptions');
@@ -1734,15 +1958,44 @@ function renderMensagem(msg) {
 function tornarLinksClicaveis(texto) {
     if (!texto) return '';
     
-    // Expressão regular para detectar URLs
-    const urlRegex = /(https?:\/\/[^\s<]+)/g;
-    
     // Primeiro escapa o HTML para segurança
     let textoEscapado = escapeHtml(texto);
     
-    // Depois substitui URLs por links clicáveis
-    return textoEscapado.replace(urlRegex, (url) => {
-        // Remove caracteres de pontuação do final da URL
+    // Converte links do YouTube em players embed
+    const youtubeRegex = /(?:https?:\/\/)?(?:www\.)?(?:youtube\.com\/watch\?v=|youtu\.be\/)([\w-]+)/gi;
+    textoEscapado = textoEscapado.replace(youtubeRegex, (match, videoId) => {
+        return `<div class="post-media" style="margin: 10px 0;">
+                    <iframe width="100%" height="315" 
+                            src="https://www.youtube.com/embed/${videoId}" 
+                            frameborder="0" 
+                            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
+                            allowfullscreen
+                            style="border-radius: 12px; max-width: 100%;">
+                    </iframe>
+                </div>`;
+    });
+    
+    // Converte links de imagens em tags <img>
+    textoEscapado = textoEscapado.replace(/(https?:\/\/[^\s]+\.(?:jpg|jpeg|png|gif|webp|bmp)(?:\?[^\s]*)?)/gi, (match) => {
+        return `<div class="post-media" style="margin: 10px 0;">
+                    <img src="${match}" alt="Imagem" style="max-width: 100%; border-radius: 12px; max-height: 400px; object-fit: cover;" 
+                         onerror="this.style.display='none'" loading="lazy">
+                </div>`;
+    });
+    
+    // Converte links de vídeos (mp4, webm, etc.) em players
+    textoEscapado = textoEscapado.replace(/(https?:\/\/[^\s]+\.(?:mp4|webm|ogg)(?:\?[^\s]*)?)/gi, (match) => {
+        return `<div class="post-media" style="margin: 10px 0;">
+                    <video controls style="width: 100%; max-height: 400px; border-radius: 12px;">
+                        <source src="${match}" type="video/mp4">
+                        Seu navegador não suporta vídeos.
+                    </video>
+                </div>`;
+    });
+    
+    // Converte outras URLs em links clicáveis
+    const urlRegex = /(https?:\/\/[^\s<]+)/g;
+    textoEscapado = textoEscapado.replace(urlRegex, (url) => {
         let cleanUrl = url.replace(/[.,;:!?]$/, '');
         return `<a href="${cleanUrl}" target="_blank" rel="noopener noreferrer" 
                    style="color: #7c4dff; text-decoration: underline; word-break: break-all;" 
@@ -1750,6 +2003,8 @@ function tornarLinksClicaveis(texto) {
                    <i class="fas fa-external-link-alt" style="font-size: 10px; margin-right: 4px;"></i>${cleanUrl}
                 </a>`;
     });
+    
+    return textoEscapado;
 }
     function escapeHtml(str) {
     if (!str) return '';

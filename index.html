@@ -1459,6 +1459,344 @@ body.light-mode .poll-option {
     background: rgba(37,99,235,0.08);
     border-color: #2563eb;
 }
+/* ========== PERFIL - REDESIGN PROFISSIONAL ========== */
+
+/* Container do perfil */
+.perfil-container {
+    width: 100%;
+    max-width: 100%;
+    padding: 0;
+    margin: 0 auto;
+}
+
+/* Card principal do perfil */
+.perfil-card {
+    background: #1A1A1A;
+    border-radius: 24px;
+    padding: 0;
+    text-align: center;
+    border: none;
+    overflow: hidden;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+}
+
+body.light-mode .perfil-card {
+    background: #FFFFFF;
+    border: none;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.06);
+}
+
+/* Cabeçalho do perfil com gradiente */
+.perfil-header {
+    background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
+    padding: 30px 20px 20px;
+    text-align: center;
+    position: relative;
+}
+
+body.light-mode .perfil-header {
+    background: linear-gradient(135deg, #f0f4ff 0%, #e8eeff 50%, #dbe4ff 100%);
+}
+
+/* Avatar */
+.perfil-avatar {
+    width: 90px;
+    height: 90px;
+    border-radius: 50%;
+    background: #111;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 36px;
+    font-weight: 700;
+    margin: 0 auto 12px;
+    object-fit: cover;
+    border: 4px solid rgba(255,255,255,0.2);
+    box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+}
+
+body.light-mode .perfil-avatar {
+    border: 4px solid rgba(37,99,235,0.3);
+    box-shadow: 0 4px 15px rgba(37,99,235,0.15);
+}
+
+/* Nome e email */
+.perfil-nome {
+    font-size: 22px;
+    font-weight: 800;
+    color: white;
+    margin-bottom: 2px;
+}
+
+body.light-mode .perfil-nome {
+    color: #111;
+}
+
+.perfil-email {
+    color: rgba(255,255,255,0.7);
+    font-size: 13px;
+    margin-bottom: 12px;
+}
+
+body.light-mode .perfil-email {
+    color: #666;
+}
+
+/* ========== NÍVEL E XP ========== */
+
+.perfil-level-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    background: rgba(255,255,255,0.15);
+    border: 2px solid rgba(255,215,0,0.5);
+    border-radius: 30px;
+    padding: 6px 14px;
+    margin-bottom: 12px;
+    backdrop-filter: blur(10px);
+}
+
+body.light-mode .perfil-level-badge {
+    background: rgba(37,99,235,0.1);
+    border-color: rgba(37,99,235,0.3);
+}
+
+.perfil-level-icon {
+    font-size: 20px;
+}
+
+.perfil-level-text {
+    font-weight: 700;
+    font-size: 14px;
+    color: #FFD700;
+}
+
+body.light-mode .perfil-level-text {
+    color: #2563eb;
+}
+
+.perfil-level-number {
+    font-weight: 800;
+    font-size: 16px;
+    color: #FFD700;
+}
+
+body.light-mode .perfil-level-number {
+    color: #2563eb;
+}
+
+/* Barra de XP */
+.perfil-xp-container {
+    padding: 0 20px;
+    margin-bottom: 4px;
+}
+
+.perfil-xp-info {
+    display: flex;
+    justify-content: space-between;
+    font-size: 11px;
+    color: rgba(255,255,255,0.6);
+    margin-bottom: 4px;
+}
+
+body.light-mode .perfil-xp-info {
+    color: #888;
+}
+
+.perfil-xp-bar {
+    height: 6px;
+    background: rgba(255,255,255,0.1);
+    border-radius: 10px;
+    overflow: hidden;
+}
+
+body.light-mode .perfil-xp-bar {
+    background: #E5E5E5;
+}
+
+.perfil-xp-fill {
+    height: 100%;
+    background: linear-gradient(90deg, #FFD700, #FFA500);
+    border-radius: 10px;
+    transition: width 0.5s ease;
+    width: 0%;
+}
+
+/* ========== ESTATÍSTICAS ========== */
+
+.perfil-stats {
+    display: flex;
+    justify-content: center;
+    gap: 0;
+    padding: 0;
+    background: transparent;
+    border-radius: 0;
+    margin: 0;
+    border-top: 1px solid rgba(255,255,255,0.1);
+    border-bottom: 1px solid rgba(255,255,255,0.1);
+}
+
+body.light-mode .perfil-stats {
+    border-top: 1px solid #E5E5E5;
+    border-bottom: 1px solid #E5E5E5;
+}
+
+.perfil-stat-item {
+    flex: 1;
+    text-align: center;
+    padding: 16px 8px;
+    cursor: pointer;
+    transition: all 0.2s;
+    border-right: 1px solid rgba(255,255,255,0.1);
+}
+
+body.light-mode .perfil-stat-item {
+    border-right: 1px solid #E5E5E5;
+}
+
+.perfil-stat-item:last-child {
+    border-right: none;
+}
+
+.perfil-stat-item:hover {
+    background: rgba(255,255,255,0.05);
+}
+
+body.light-mode .perfil-stat-item:hover {
+    background: #F5F5F5;
+}
+
+.perfil-stat-value {
+    font-size: 20px;
+    font-weight: 800;
+    color: white;
+    margin-bottom: 2px;
+}
+
+body.light-mode .perfil-stat-value {
+    color: #111;
+}
+
+.perfil-stat-label {
+    font-size: 10px;
+    color: rgba(255,255,255,0.5);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+body.light-mode .perfil-stat-label {
+    color: #888;
+}
+
+/* ========== MENU DO PERFIL ========== */
+
+.perfil-menu {
+    display: flex;
+    flex-direction: column;
+    padding: 8px 16px 16px;
+}
+
+.perfil-menu-btn {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    width: 100%;
+    padding: 14px 16px;
+    background: transparent;
+    border: none;
+    border-radius: 12px;
+    color: white;
+    font-family: inherit;
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s;
+    text-align: left;
+}
+
+body.light-mode .perfil-menu-btn {
+    color: #111;
+}
+
+.perfil-menu-btn:hover {
+    background: rgba(255,255,255,0.05);
+}
+
+body.light-mode .perfil-menu-btn:hover {
+    background: #F5F5F5;
+}
+
+.perfil-menu-btn i:first-child {
+    width: 24px;
+    text-align: center;
+    font-size: 16px;
+}
+
+.perfil-menu-btn.danger {
+    color: #ef4444;
+}
+
+.perfil-menu-btn.danger:hover {
+    background: rgba(239,68,68,0.1);
+}
+
+/* ========== RANKING MODAL ========== */
+.ranking-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.ranking-table th {
+    text-align: left;
+    padding: 10px 8px;
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    color: var(--text2);
+    border-bottom: 1px solid var(--border);
+}
+
+.ranking-table td {
+    padding: 10px 8px;
+    font-size: 13px;
+    border-bottom: 1px solid var(--border);
+}
+
+.ranking-top1 {
+    font-size: 24px;
+}
+
+.ranking-top2 {
+    font-size: 20px;
+}
+
+.ranking-top3 {
+    font-size: 18px;
+}
+
+.ranking-user-me {
+    background: rgba(37,99,235,0.08);
+    font-weight: 700;
+}
+
+.ranking-avatar {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    object-fit: cover;
+}
+
+.ranking-level-badge-sm {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    background: rgba(255,215,0,0.15);
+    border-radius: 20px;
+    padding: 3px 10px;
+    font-size: 11px;
+    font-weight: 700;
+    color: #FFD700;
+}
 </style>
 </head>
 <body>
@@ -1777,7 +2115,230 @@ function salvarSessao() {
         
         return false;
     }
+    
+    
+    
+    // ==================== SISTEMA DE NÍVEIS E XP ====================
 
+// Configuração de níveis
+const LEVEL_CONFIG = {
+    xpPorPost: 10,
+    xpPorCurtidaRecebida: 2,
+    xpPorComentario: 5,
+    xpPorSeguidor: 15,
+    xpPorCompartilhamento: 8,
+};
+
+// Níveis e XP necessário
+const LEVELS = [
+    { level: 1, name: 'Iniciante', icon: '🌱', xpRequired: 0 },
+    { level: 2, name: 'Aprendiz', icon: '📚', xpRequired: 100 },
+    { level: 3, name: 'Contribuidor', icon: '⭐', xpRequired: 250 },
+    { level: 4, name: 'Especialista', icon: '💎', xpRequired: 500 },
+    { level: 5, name: 'Veterano', icon: '🏆', xpRequired: 1000 },
+    { level: 6, name: 'Mestre', icon: '👑', xpRequired: 2000 },
+    { level: 7, name: 'Líder', icon: '🚀', xpRequired: 3500 },
+    { level: 8, name: 'Influenciador', icon: '🌟', xpRequired: 5000 },
+    { level: 9, name: 'Visionário', icon: '🔮', xpRequired: 7500 },
+    { level: 10, name: 'Lenda', icon: '💫', xpRequired: 10000 },
+];
+
+// Calcular XP total do usuário
+function calcularXP() {
+    if (!currentUser) return 0;
+    
+    const userId = currentUser.id;
+    
+    // Contar posts do usuário
+    const userPosts = posts.filter(p => p.author?.id === userId).length;
+    
+    // Contar curtidas recebidas
+    const curtidasRecebidas = posts
+        .filter(p => p.author?.id === userId)
+        .reduce((total, p) => total + (p.likes?.length || 0), 0);
+    
+    // Contar comentários feitos
+    const comentariosFeitos = posts
+        .reduce((total, p) => {
+            return total + (p.comments?.filter(c => c.author?.id === userId).length || 0);
+        }, 0);
+    
+    // Seguidores
+    const seguidores = currentUser.seguidores?.length || 0;
+    
+    // Calcular XP
+    let xp = 0;
+    xp += userPosts * LEVEL_CONFIG.xpPorPost;
+    xp += curtidasRecebidas * LEVEL_CONFIG.xpPorCurtidaRecebida;
+    xp += comentariosFeitos * LEVEL_CONFIG.xpPorComentario;
+    xp += seguidores * LEVEL_CONFIG.xpPorSeguidor;
+    
+    return xp;
+}
+
+// Obter nível atual baseado no XP
+function getNivel(xp) {
+    let nivelAtual = LEVELS[0];
+    
+    for (let i = LEVELS.length - 1; i >= 0; i--) {
+        if (xp >= LEVELS[i].xpRequired) {
+            nivelAtual = LEVELS[i];
+            break;
+        }
+    }
+    
+    // Próximo nível
+    const nextIndex = LEVELS.findIndex(l => l.level === nivelAtual.level) + 1;
+    const proximoNivel = nextIndex < LEVELS.length ? LEVELS[nextIndex] : null;
+    
+    // XP necessário para o próximo nível
+    const xpParaProximo = proximoNivel ? proximoNivel.xpRequired - nivelAtual.xpRequired : 0;
+    const xpAtualNoNivel = xp - nivelAtual.xpRequired;
+    const progresso = proximoNivel ? Math.floor((xpAtualNoNivel / xpParaProximo) * 100) : 100;
+    
+    return {
+        ...nivelAtual,
+        xp: xp,
+        progresso: Math.min(progresso, 100),
+        xpParaProximo: xpParaProximo,
+        xpAtualNoNivel: xpAtualNoNivel,
+        proximoNivel: proximoNivel
+    };
+}
+
+// ==================== RANKING ====================
+
+function mostrarRanking() {
+    if (!currentUser) {
+        mostrarLoginPrompt();
+        return;
+    }
+    
+    // Calcular XP para todos os usuários conhecidos
+    const usuarios = [];
+    const userIds = new Set();
+    
+    // Coletar todos os IDs únicos
+    posts.forEach(p => {
+        if (p.author?.id) userIds.add(p.author.id);
+        p.comments?.forEach(c => {
+            if (c.author?.id) userIds.add(c.author.id);
+        });
+    });
+    
+    userIds.forEach(uid => {
+        const userPosts = posts.filter(p => p.author?.id === uid).length;
+        const curtidas = posts
+            .filter(p => p.author?.id === uid)
+            .reduce((t, p) => t + (p.likes?.length || 0), 0);
+        const comentarios = posts
+            .reduce((t, p) => t + (p.comments?.filter(c => c.author?.id === uid).length || 0), 0);
+        
+        const xp = userPosts * LEVEL_CONFIG.xpPorPost + 
+                   curtidas * LEVEL_CONFIG.xpPorCurtidaRecebida + 
+                   comentarios * LEVEL_CONFIG.xpPorComentario;
+        
+        const nivel = getNivel(xp);
+        
+        // Buscar nome do autor
+        const autorPost = posts.find(p => p.author?.id === uid);
+        const nome = autorPost?.author?.nome || 'Usuário';
+        const avatar = autorPost?.author?.avatar || '';
+        
+        usuarios.push({
+            id: uid,
+            nome: nome,
+            avatar: avatar,
+            xp: xp,
+            nivel: nivel,
+            posts: userPosts,
+            curtidas: curtidas,
+            comentarios: comentarios
+        });
+    });
+    
+    // Ordenar por XP (maior primeiro)
+    usuarios.sort((a, b) => b.xp - a.xp);
+    
+    // Remover duplicados
+    const uniqueUsers = [];
+    const seenIds = new Set();
+    usuarios.forEach(u => {
+        if (!seenIds.has(u.id)) {
+            seenIds.add(u.id);
+            uniqueUsers.push(u);
+        }
+    });
+    
+    // Top 20
+    const top20 = uniqueUsers.slice(0, 20);
+    
+    // Encontrar posição do usuário atual
+    const minhaPosicao = top20.findIndex(u => u.id === currentUser.id) + 1;
+    
+    let html = `
+        <div style="text-align: center; margin-bottom: 16px;">
+            ${minhaPosicao > 0 ? `
+                <p style="font-size: 13px; color: var(--text2);">
+                    🏆 Sua posição: <strong style="color: #FFD700;">#${minhaPosicao}</strong>
+                </p>
+            ` : ''}
+        </div>
+        <table class="ranking-table">
+            <thead>
+                <tr>
+                    <th>#</th>
+                    <th>Usuário</th>
+                    <th>Nível</th>
+                    <th>XP</th>
+                </tr>
+            </thead>
+            <tbody>
+    `;
+    
+    top20.forEach((u, index) => {
+        const pos = index + 1;
+        let posicaoIcon = pos;
+        if (pos === 1) posicaoIcon = '🥇';
+        else if (pos === 2) posicaoIcon = '🥈';
+        else if (pos === 3) posicaoIcon = '🥉';
+        
+        const isMe = u.id === currentUser.id;
+        
+        html += `
+            <tr class="${isMe ? 'ranking-user-me' : ''}">
+                <td style="font-size: ${pos <= 3 ? '18px' : '13px'}; font-weight: 700;">
+                    ${posicaoIcon}
+                </td>
+                <td>
+                    <div style="display: flex; align-items: center; gap: 8px;">
+                        <img src="${u.avatar || 'https://ui-avatars.com/api/?name=' + encodeURIComponent(u.nome) + '&background=7c4dff&color=fff'}" 
+                             class="ranking-avatar" 
+                             onerror="this.src='https://ui-avatars.com/api/?name=User&background=7c4dff&color=fff'">
+                        <span>${escapeHtml(u.nome)}${isMe ? ' <small style="color:#2563eb;">(você)</small>' : ''}</span>
+                    </div>
+                </td>
+                <td>
+                    <span class="ranking-level-badge-sm">
+                        ${u.nivel.icon} Nv. ${u.nivel.level}
+                    </span>
+                </td>
+                <td><strong>${u.xp.toLocaleString()}</strong> XP</td>
+            </tr>
+        `;
+    });
+    
+    html += '</tbody></table>';
+    
+    Swal.fire({
+        title: '🏆 Ranking NE Conecta',
+        html: html,
+        showConfirmButton: false,
+        showCancelButton: true,
+        cancelButtonText: 'Fechar',
+        width: '550px'
+    });
+}
 
 // ==================== SISTEMA DE RÁDIO (ABA NO MENU) ====================
 
@@ -4175,10 +4736,16 @@ async function enviarVaga() {
     if (!currentUser) {
         container.innerHTML = `
             <div class="perfil-card">
-                <div class="perfil-avatar">👤</div>
-                <div class="perfil-name">Visitante</div>
-                <div class="perfil-email">Faça login para ver seu perfil</div>
-                <button class="google-login-btn" onclick="loginGoogle()"><i class="fab fa-google"></i> Entrar com Google</button>
+                <div class="perfil-header">
+                    <div class="perfil-avatar" style="background: #333;">👤</div>
+                    <div class="perfil-nome">Visitante</div>
+                    <div class="perfil-email">Faça login para ver seu perfil</div>
+                </div>
+                <div class="perfil-menu" style="padding-top: 20px;">
+                    <button class="perfil-menu-btn" onclick="loginGoogle()">
+                        <i class="fab fa-google"></i> Entrar com Google
+                    </button>
+                </div>
             </div>`;
         return;
     }
@@ -4186,58 +4753,81 @@ async function enviarVaga() {
     const userPosts = posts.filter(p => p.author?.id === currentUser.id).length;
     const seguidores = currentUser.seguidores || [];
     const seguindo = currentUser.seguindo || [];
+    const curtidasRecebidas = posts
+        .filter(p => p.author?.id === currentUser.id)
+        .reduce((t, p) => t + (p.likes?.length || 0), 0);
+    
+    const xp = calcularXP();
+    const nivel = getNivel(xp);
     
     container.innerHTML = `
-        <div class="perfil-card" style="text-align: left;">
-            <!-- Cabeçalho do Perfil -->
-            <div style="text-align: center; margin-bottom: 20px;">
+        <div class="perfil-card">
+            <div class="perfil-header">
                 <div class="perfil-avatar">
                     <img src="${currentUser.avatar}" style="width:100%;height:100%;border-radius:50%;object-fit:cover;" alt="Avatar">
                 </div>
-                <div class="perfil-name">${escapeHtml(currentUser.nome)}</div>
+                <div class="perfil-nome">${escapeHtml(currentUser.nome)}</div>
                 <div class="perfil-email">${escapeHtml(currentUser.email)}</div>
+                
+                <!-- Level Badge -->
+                <div class="perfil-level-badge">
+                    <span class="perfil-level-icon">${nivel.icon}</span>
+                    <span class="perfil-level-text">${nivel.name}</span>
+                    <span class="perfil-level-number">Nv. ${nivel.level}</span>
+                </div>
+                
+                <!-- Barra de XP -->
+                <div class="perfil-xp-container">
+                    <div class="perfil-xp-info">
+                        <span>${nivel.xpAtualNoNivel} / ${nivel.xpParaProximo} XP</span>
+                        <span>${nivel.proximoNivel ? 'Próximo: ' + nivel.proximoNivel.icon + ' Nv. ' + nivel.proximoNivel.level : '✨ Máximo!'}</span>
+                    </div>
+                    <div class="perfil-xp-bar">
+                        <div class="perfil-xp-fill" style="width: ${nivel.progresso}%;"></div>
+                    </div>
+                </div>
             </div>
             
             <!-- Estatísticas -->
-            <div style="display: flex; justify-content: center; gap: 30px; margin-bottom: 24px; padding: 16px; background: var(--card-bg); border-radius: 16px;">
-                <div style="text-align: center; cursor: pointer;" onclick="mostrarListaSeguindo()">
-                    <div style="font-size: 20px; font-weight: 700;">${seguindo.length}</div>
-                    <div style="font-size: 11px; color: var(--text2);">Seguindo</div>
+            <div class="perfil-stats">
+                <div class="perfil-stat-item" onclick="mostrarMinhasPublicacoes()">
+                    <div class="perfil-stat-value">${userPosts}</div>
+                    <div class="perfil-stat-label">Posts</div>
                 </div>
-                <div style="text-align: center; cursor: pointer;" onclick="mostrarListaSeguidores()">
-                    <div style="font-size: 20px; font-weight: 700;" id="seguidoresCount">${seguidores.length}</div>
-                    <div style="font-size: 11px; color: var(--text2);">Seguidores</div>
+                <div class="perfil-stat-item" onclick="mostrarListaSeguidores()">
+                    <div class="perfil-stat-value">${seguidores.length}</div>
+                    <div class="perfil-stat-label">Seguidores</div>
                 </div>
-                <div style="text-align: center;">
-                    <div style="font-size: 20px; font-weight: 700;">${userPosts}</div>
-                    <div style="font-size: 11px; color: var(--text2);">Publicações</div>
+                <div class="perfil-stat-item" onclick="mostrarListaSeguindo()">
+                    <div class="perfil-stat-value">${seguindo.length}</div>
+                    <div class="perfil-stat-label">Seguindo</div>
+                </div>
+                <div class="perfil-stat-item">
+                    <div class="perfil-stat-value">${curtidasRecebidas}</div>
+                    <div class="perfil-stat-label">Curtidas</div>
                 </div>
             </div>
             
-            <!-- Menu de Opções -->
-            <div style="display: flex; flex-direction: column; gap: 4px;">
+            <!-- Menu -->
+            <div class="perfil-menu">
                 <button class="perfil-menu-btn" onclick="mostrarMinhasPublicacoes()">
                     <i class="fas fa-newspaper"></i> Minhas Publicações
                     <i class="fas fa-chevron-right" style="margin-left: auto;"></i>
                 </button>
-<button class="perfil-menu-btn" onclick="mostrarConversasPrivadas()">
-    <i class="fas fa-envelope"></i> Mensagens Privadas
-    <span id="msgNaoLidas" style="margin-left: auto; background: #ef4444; color: white; border-radius: 20px; padding: 2px 8px; font-size: 10px; display: none;">0</span>
-    <i class="fas fa-chevron-right" style="margin-left: 4px;"></i>
-</button>
+                <button class="perfil-menu-btn" onclick="mostrarRanking()">
+                    <i class="fas fa-trophy" style="color: #FFD700;"></i> Ranking
+                    <i class="fas fa-chevron-right" style="margin-left: auto;"></i>
+                </button>
+                <button class="perfil-menu-btn" onclick="mostrarConversasPrivadas()">
+                    <i class="fas fa-envelope"></i> Mensagens Privadas
+                    <span id="msgNaoLidas" style="margin-left: auto; background: #ef4444; color: white; border-radius: 20px; padding: 2px 8px; font-size: 10px; display: none;">0</span>
+                    <i class="fas fa-chevron-right" style="margin-left: 4px;"></i>
+                </button>
                 <button class="perfil-menu-btn" onclick="abrirConfiguracoes()">
                     <i class="fas fa-cog"></i> Configurações
                     <i class="fas fa-chevron-right" style="margin-left: auto;"></i>
                 </button>
-                <button class="perfil-menu-btn" onclick="abrirPrivacidade()">
-                    <i class="fas fa-shield-alt"></i> Privacidade
-                    <i class="fas fa-chevron-right" style="margin-left: auto;"></i>
-                </button>
-                <button class="perfil-menu-btn" onclick="abrirAjuda()">
-                    <i class="fas fa-question-circle"></i> Ajuda
-                    <i class="fas fa-chevron-right" style="margin-left: auto;"></i>
-                </button>
-                <button class="perfil-menu-btn" onclick="logoutGoogle()" style="color: #ef4444; border-color: rgba(239,68,68,0.3);">
+                <button class="perfil-menu-btn danger" onclick="logoutGoogle()">
                     <i class="fas fa-sign-out-alt"></i> Sair
                     <i class="fas fa-chevron-right" style="margin-left: auto;"></i>
                 </button>

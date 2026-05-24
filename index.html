@@ -2703,9 +2703,10 @@ body.light-mode .watch-chat-input {
     </div>
     
     <div class="watch-player-wrapper" id="watchPlayerContainer" style="display: none;">
-        <div class="watch-player-container">
-            <iframe id="watchPlayer" src="" allow="autoplay; encrypted-media" allowfullscreen></iframe>
-        </div>
+<!-- Substitua o iframe por uma div -->
+<div class="watch-player-container">
+    <div id="watchPlayer"></div>
+</div>
         
         <div class="watch-room-header">
             <div class="watch-room-header-info">
@@ -2910,12 +2911,148 @@ function getNivel(xp) {
         proximoNivel: proximoNivel
     };
 }
-
-// ==================== WATCH PARTY (VERSÃO PROFISSIONAL) ====================
+// ==================== WATCH PARTY (SINCRONIZAÇÃO REAL) ====================
 
 let watchRoomAtual = null;
 let watchSyncInterval = null;
-let watchChatLoaded = false;
+let watchPlayer = null;
+let watchPlayerReady = false;
+let watchCurrentTime = 0;
+let watchIsPlaying = false;
+let watchRoomStartTime = null;
+
+// Carregar API do YouTube
+function loadYouTubeAPI() {
+    if (document.getElementById('youtube-api')) return;
+    
+    const tag = document.createElement('script');
+    tag.id = 'youtube-api';
+    tag.src = 'https://www.youtube.com/iframe_api';
+    const firstScriptTag = document.getElementsByTagName('script')[0];
+    firstScriptTag.parentNode.insertBefore(tag, firstScriptTag);
+}
+
+// Chamado quando API do YouTube está pronta
+function onYouTubeIframeAPIReady() {
+    console.log('✅ YouTube API pronta');
+}
+
+// Criar player do YouTube
+function criarYouTubePlayer(videoId) {
+    if (watchPlayer) {
+        watchPlayer.destroy();
+    }
+    
+    watchPlayer = new YT.Player('watchPlayer', {
+        height: '100%',
+        width: '100%',
+        videoId: videoId,
+        playerVars: {
+            autoplay: 0,
+            controls: 0, // Sem controles (não pode adiantar/voltar)
+            disablekb: 1, // Desabilitar teclado
+            modestbranding: 1,
+            rel: 0,
+            showinfo: 0,
+            fs: 0, // Sem tela cheia
+            iv_load_policy: 3,
+        },
+        events: {
+            onReady: onPlayerReady,
+            onStateChange: onPlayerStateChange
+        }
+    });
+}
+
+function onPlayerReady(event) {
+    watchPlayerReady = true;
+    console.log('✅ Player pronto');
+    
+    // Buscar tempo atual da sala
+    if (watchRoomAtual) {
+        sincronizarTempo();
+    }
+}
+
+function onPlayerStateChange(event) {
+    // YT.PlayerState.PLAYING = 1, PAUSED = 2
+    if (event.data === 1) {
+        watchIsPlaying = true;
+    } else if (event.data === 2) {
+        watchIsPlaying = false;
+    } else if (event.data === 0) {
+        // Vídeo acabou - fechar sala
+        if (watchRoomAtual) {
+            Swal.fire({
+                icon: 'info',
+                title: '🎬 Vídeo finalizado!',
+                text: 'O vídeo terminou. A sala será fechada.',
+                timer: 3000,
+                showConfirmButton: false
+            });
+            setTimeout(() => {
+                fecharSalaWatch(watchRoomAtual);
+                sairSalaWatch();
+            }, 3000);
+        }
+    }
+}
+
+// Sincronizar tempo com o servidor
+async function sincronizarTempo() {
+    if (!watchRoomAtual || !watchPlayerReady || !watchPlayer) return;
+    
+    try {
+        const response = await fetch(`${API_URL}/cliente06/watch-rooms/${watchRoomAtual}`);
+        const room = await response.json();
+        
+        if (room && room.playerState) {
+            const serverTime = room.playerState.currentTime || 0;
+            const serverPlaying = room.playerState.isPlaying || false;
+            const serverTimestamp = room.playerState.timestamp || Date.now();
+            
+            // Calcular quanto tempo passou desde a última atualização
+            const elapsed = (Date.now() - serverTimestamp) / 1000;
+            const estimatedTime = serverPlaying ? serverTime + elapsed : serverTime;
+            
+            // Sincronizar player (com tolerância de 2 segundos)
+            const playerTime = await watchPlayer.getCurrentTime();
+            if (Math.abs(playerTime - estimatedTime) > 2) {
+                watchPlayer.seekTo(estimatedTime, true);
+            }
+            
+            // Sincronizar play/pause
+            if (serverPlaying && playerTime !== 1) {
+                watchPlayer.playVideo();
+            } else if (!serverPlaying) {
+                watchPlayer.pauseVideo();
+            }
+        }
+    } catch (error) {
+        console.error('Erro ao sincronizar:', error);
+    }
+}
+
+// Reportar estado do player para o servidor
+async function reportarEstado() {
+    if (!watchRoomAtual || !watchPlayerReady || !watchPlayer) return;
+    
+    try {
+        const currentTime = await watchPlayer.getCurrentTime();
+        const playerState = await watchPlayer.getPlayerState();
+        const isPlaying = (playerState === 1);
+        
+        await fetch(`${API_URL}/cliente06/watch-rooms/${watchRoomAtual}/sync`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                currentTime: currentTime,
+                isPlaying: isPlaying,
+                timestamp: Date.now()
+            })
+        });
+    } catch (error) {}
+}
 
 // Carregar lista de salas
 async function carregarWatchRooms() {
@@ -2977,9 +3114,7 @@ async function criarSalaWatch() {
     
     const { value: videoUrl } = await Swal.fire({
         title: '🎬 Criar Sala de Vídeo',
-        html: `
-            <p style="font-size:13px;color:var(--text2);margin-bottom:12px;">Cole o link do YouTube para assistir com a comunidade</p>
-        `,
+        html: `<p style="font-size:13px;color:var(--text2);margin-bottom:12px;">Cole o link do YouTube</p>`,
         input: 'url',
         inputPlaceholder: 'https://www.youtube.com/watch?v=...',
         showCancelButton: true,
@@ -2987,8 +3122,8 @@ async function criarSalaWatch() {
         confirmButtonColor: '#ef4444',
         cancelButtonText: 'Cancelar',
         inputValidator: (value) => {
-            if (!value) return 'Digite o link do vídeo!';
-            if (!getYouTubeId(value)) return 'Link do YouTube inválido! Cole o link completo.';
+            if (!value) return 'Digite o link!';
+            if (!getYouTubeId(value)) return 'Link inválido!';
         }
     });
     
@@ -2998,27 +3133,28 @@ async function criarSalaWatch() {
         title: '📝 Nome da Sala',
         input: 'text',
         inputValue: 'Sala de ' + currentUser.nome,
-        inputPlaceholder: 'Dê um nome para sua sala...',
+        inputPlaceholder: 'Dê um nome...',
         showCancelButton: true,
-        confirmButtonText: 'Criar Sala',
+        confirmButtonText: 'Criar',
         confirmButtonColor: '#ef4444',
         cancelButtonText: 'Voltar'
     });
     
     if (!title) return;
     
-    Swal.fire({ title: 'Criando sala...', allowOutsideClick: false, didOpen: () => Swal.showLoading() });
+    Swal.fire({ title: 'Criando...', allowOutsideClick: false, didOpen: () => Swal.showLoading() });
     
     try {
+        const videoId = getYouTubeId(videoUrl);
         const response = await fetch(`${API_URL}/cliente06/watch-rooms`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
-                title: title,
-                videoUrl: videoUrl,
+                title, videoUrl, videoId,
                 creator: currentUser.nome,
                 creatorId: currentUser.id,
-                creatorAvatar: currentUser.avatar
+                creatorAvatar: currentUser.avatar,
+                playerState: { currentTime: 0, isPlaying: false, timestamp: Date.now() }
             })
         });
         
@@ -3031,7 +3167,7 @@ async function criarSalaWatch() {
         }
     } catch (error) {
         Swal.close();
-        Swal.fire('Erro', 'Não foi possível criar a sala', 'error');
+        Swal.fire('Erro', 'Não foi possível criar', 'error');
     }
 }
 
@@ -3040,27 +3176,26 @@ async function entrarSalaWatch(roomId) {
     if (!currentUser) { mostrarLoginPrompt(); return; }
     
     watchRoomAtual = roomId;
-    watchChatLoaded = false;
     
     try {
         const response = await fetch(`${API_URL}/cliente06/watch-rooms/${roomId}`);
         const room = await response.json();
         
-        const videoId = getYouTubeId(room.videoUrl);
+        const videoId = room.videoId || getYouTubeId(room.videoUrl);
         
-        // Montar player
-        document.getElementById('watchPlayer').src = `https://www.youtube.com/embed/${videoId}?autoplay=1&enablejsapi=1`;
+        // Atualizar UI
         document.getElementById('watchRoomTitle').textContent = room.title;
         document.getElementById('watchCreator').textContent = room.creator;
         document.getElementById('watchViewers').textContent = (room.viewers || 0) + 1;
-        
-        // Limpar chat
-        document.getElementById('watchChat').innerHTML = '<p style="text-align:center;color:var(--text2);padding:20px;font-size:13px;">💬 Envie uma mensagem no chat</p>';
+        document.getElementById('watchChat').innerHTML = '<p style="text-align:center;color:var(--text2);padding:20px;">💬 Chat da sala</p>';
         document.getElementById('watchChatInput').value = '';
         
         document.getElementById('watchPlayerContainer').style.display = 'block';
         document.getElementById('watchRoomsList').style.display = 'none';
         document.querySelector('.watch-header').style.display = 'none';
+        
+        // Criar player do YouTube
+        criarYouTubePlayer(videoId);
         
         // Registrar entrada
         await fetch(`${API_URL}/cliente06/watch-rooms/${roomId}/join`, {
@@ -3069,44 +3204,58 @@ async function entrarSalaWatch(roomId) {
             body: JSON.stringify({ userId: currentUser.id, userName: currentUser.nome })
         });
         
-        // Sincronizar
+        // Iniciar sincronização
         if (watchSyncInterval) clearInterval(watchSyncInterval);
-        watchSyncInterval = setInterval(() => sincronizarWatch(roomId), 3000);
-        sincronizarWatch(roomId);
+        watchSyncInterval = setInterval(() => {
+            sincronizarTempo();
+            sincronizarChat(roomId);
+        }, 3000);
+        
+        // Reportar estado a cada 5 segundos
+        setInterval(() => {
+            if (watchRoomAtual === roomId) reportarEstado();
+        }, 5000);
+        
+        sincronizarChat(roomId);
         
     } catch (error) {
-        console.error('Erro ao entrar na sala:', error);
+        console.error('Erro:', error);
     }
 }
 
-// Sincronizar
-async function sincronizarWatch(roomId) {
+// Sincronizar chat
+async function sincronizarChat(roomId) {
     try {
         const response = await fetch(`${API_URL}/cliente06/watch-rooms/${roomId}`);
         const room = await response.json();
         
         document.getElementById('watchViewers').textContent = room.viewers || 0;
         
-        // Atualizar chat
         const chatDiv = document.getElementById('watchChat');
         if (room.chat && room.chat.length > 0) {
-            chatDiv.innerHTML = room.chat.slice(-30).map(msg => `
-                <div class="watch-chat-msg">
-                    <img src="${msg.userAvatar || 'https://ui-avatars.com/api/?name=' + encodeURIComponent(msg.userName || 'U') + '&background=ef4444&color=fff'}" 
-                         class="watch-chat-avatar" onerror="this.src='https://ui-avatars.com/api/?name=U&background=ef4444&color=fff'"
-                         onclick="abrirPerfilUsuario('${msg.userId || ''}', '${escapeHtml(msg.userName || '')}', '${msg.userAvatar || ''}')">
-                    <div class="watch-chat-content">
-                        <span class="watch-chat-author" onclick="abrirPerfilUsuario('${msg.userId || ''}', '${escapeHtml(msg.userName || '')}', '${msg.userAvatar || ''}')">${escapeHtml(msg.userName || 'Anônimo')}</span>
-                        <div class="watch-chat-text">${escapeHtml(msg.text)}</div>
+            chatDiv.innerHTML = room.chat.slice(-30).map(msg => {
+                const avatarUrl = msg.userAvatar || `https://ui-avatars.com/api/?name=${encodeURIComponent(msg.userName || 'U')}&background=ef4444&color=fff`;
+                return `
+                    <div class="watch-chat-msg">
+                        <img src="${avatarUrl}" class="watch-chat-avatar" 
+                             onerror="this.src='https://ui-avatars.com/api/?name=U&background=ef4444&color=fff'"
+                             onclick="event.stopPropagation(); abrirPerfilUsuario('${msg.userId || ''}', '${escapeHtml(msg.userName || '').replace(/'/g, "\\'")}', '${(msg.userAvatar || '').replace(/'/g, "\\'")}')"
+                             style="cursor:pointer;" title="Ver perfil">
+                        <div class="watch-chat-content">
+                            <span class="watch-chat-author" 
+                                  onclick="event.stopPropagation(); abrirPerfilUsuario('${msg.userId || ''}', '${escapeHtml(msg.userName || '').replace(/'/g, "\\'")}', '${(msg.userAvatar || '').replace(/'/g, "\\'")}')"
+                                  style="cursor:pointer;">${escapeHtml(msg.userName || 'Anônimo')}</span>
+                            <div class="watch-chat-text">${escapeHtml(msg.text)}</div>
+                        </div>
                     </div>
-                </div>
-            `).join('');
+                `;
+            }).join('');
             chatDiv.scrollTop = chatDiv.scrollHeight;
         }
     } catch (error) {}
 }
 
-// Enviar mensagem
+// Enviar mensagem no chat
 async function enviarMsgWatch() {
     if (!currentUser || !watchRoomAtual) return;
     
@@ -3127,25 +3276,42 @@ async function enviarMsgWatch() {
         });
         
         input.value = '';
-        sincronizarWatch(watchRoomAtual);
+        sincronizarChat(watchRoomAtual);
     } catch (error) {}
 }
 
 // Sair da sala
 function sairSalaWatch() {
+    if (watchPlayer) {
+        watchPlayer.destroy();
+        watchPlayer = null;
+    }
+    watchPlayerReady = false;
     if (watchSyncInterval) clearInterval(watchSyncInterval);
     watchRoomAtual = null;
-    document.getElementById('watchPlayer').src = '';
+    
     document.getElementById('watchPlayerContainer').style.display = 'none';
     document.getElementById('watchRoomsList').style.display = '';
     document.querySelector('.watch-header').style.display = '';
     carregarWatchRooms();
 }
 
+// Fechar sala (quando vídeo acaba)
+async function fecharSalaWatch(roomId) {
+    try {
+        await fetch(`${API_URL}/cliente06/watch-rooms/${roomId}/close`, { method: 'POST' });
+    } catch (error) {}
+}
+
+// Extrair ID do YouTube
 function getYouTubeId(url) {
+    if (!url) return null;
     const match = url.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/|youtube\.com\/embed\/)([\w-]+)/);
     return match ? match[1] : null;
 }
+
+// Carregar API do YouTube ao iniciar
+
 // ==================== RANKING ====================
 
 function mostrarRanking() {
@@ -6564,7 +6730,7 @@ setInterval(verificarNotificacoes, 30000);
     // 1. Configura o tema
     initTheme();
     initRadio()
-    
+    loadYouTubeAPI();
     // 2. Tenta restaurar a sessão
     const sessaoRestaurada = restaurarSessao();
     

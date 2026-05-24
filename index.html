@@ -2321,37 +2321,72 @@ function removerArquivoMidia() {
     document.getElementById('uploadProgress').style.display = 'none';
 }
 
-// Enviar para o servidor
+// Enviar para o servidor (USA A API BRONXYSHOST)
 async function enviarMidiaParaServidor(file) {
-    if (!file) return null;
+    if (!file) {
+        console.error('❌ Nenhum arquivo selecionado');
+        return null;
+    }
+    
+    console.log('📤 Iniciando upload...');
+    console.log('📁 Arquivo:', file.name, file.type, (file.size / 1024 / 1024).toFixed(2) + 'MB');
     
     const formData = new FormData();
-    formData.append('arquivo_midia', file);
-    formData.append('user_id', currentUser.id);
-    formData.append('user_nome', currentUser.nome);
+    formData.append('arquivo_midia', file); // Nome do campo que o backend espera
+    formData.append('user_id', currentUser?.id || 'anonimo');
+    formData.append('user_nome', currentUser?.nome || 'Usuário');
     
     document.getElementById('uploadProgress').style.display = 'block';
     document.getElementById('progressText').textContent = 'Enviando arquivo...';
     
     try {
-        const response = await fetch(`${API_URL}/cliente06/midia-upload`, {
+        const url = `${API_URL}/cliente06/midia-upload`;
+        console.log('🌐 Enviando para:', url);
+        
+        const response = await fetch(url, {
             method: 'POST',
             body: formData
         });
         
-        const data = await response.json();
+        console.log('📥 Status:', response.status);
         
-        if (data.success) {
+        const data = await response.json();
+        console.log('📦 Resposta:', data);
+        
+        // VERIFICA 'sucesso' (com 's' minúsculo) que é o que o backend retorna
+        if (data.sucesso) {
             document.getElementById('progressBar').style.width = '100%';
-            document.getElementById('progressText').textContent = '✅ Link gerado! Arquivo será removido em 1h.';
+            document.getElementById('progressText').textContent = '✅ Link gerado com sucesso!';
             midiaIdAtual = data.midia.id;
+            
+            console.log('✅ Upload concluído! URL:', data.midia.url);
+            
+            // Mostrar o link gerado para o usuário
+            Swal.fire({
+                icon: 'success',
+                title: 'Upload concluído!',
+                html: `
+                    <p style="font-size:13px;">Link gerado com sucesso:</p>
+                    <input type="text" value="${data.midia.url}" readonly 
+                           style="width:100%;padding:8px;border-radius:8px;border:1px solid #ccc;margin-top:8px;text-align:center;font-size:11px;"
+                           onclick="this.select()">
+                    <p style="font-size:10px;color:#888;margin-top:6px;">${data.midia.tipo === 'image' ? '🖼️ Imagem' : '🎬 Vídeo'} • ${data.midia.tamanho}</p>
+                `,
+                confirmButtonText: 'OK'
+            });
+            
             return data.midia.url;
         } else {
-            throw new Error(data.error || 'Erro no upload');
+            throw new Error(data.erro || 'Erro no upload');
         }
     } catch (error) {
-        console.error('Erro no upload:', error);
-        Swal.fire('Erro', error.message, 'error');
+        console.error('❌ Erro no upload:', error);
+        Swal.fire({
+            icon: 'error',
+            title: 'Erro no upload',
+            text: error.message || 'Não foi possível enviar o arquivo',
+            footer: 'Verifique se o servidor está online e a rota /cliente06/midia-upload existe'
+        });
         document.getElementById('uploadProgress').style.display = 'none';
         return null;
     }
@@ -2361,13 +2396,15 @@ async function enviarMidiaParaServidor(file) {
 async function deletarMidiaAposUso(midiaId) {
     if (!midiaId) return;
     try {
-        await fetch(`${API_URL}/cliente06/midia-deletar-apos-uso`, {
+        const response = await fetch(`${API_URL}/cliente06/midia-deletar-apos-uso`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ midia_id: midiaId })
         });
+        const data = await response.json();
+        console.log('🗑️ Mídia removida:', data);
     } catch (error) {
-        console.error('Erro ao deletar:', error);
+        console.error('Erro ao deletar mídia:', error);
     }
 }
     async function enviarPost() {

@@ -2241,7 +2241,6 @@ function mostrarRanking() {
     const usuarios = [];
     const userIds = new Set();
     
-    // Coletar todos os IDs únicos
     posts.forEach(p => {
         if (p.author?.id) userIds.add(p.author.id);
         p.comments?.forEach(c => {
@@ -2249,7 +2248,6 @@ function mostrarRanking() {
         });
     });
     
-    // Também adicionar seguidores/seguindo
     if (currentUser.seguidores) {
         currentUser.seguidores.forEach(id => userIds.add(id));
     }
@@ -2271,7 +2269,6 @@ function mostrarRanking() {
         
         const nivel = getNivel(xp);
         
-        // Buscar informações do autor
         const autorPost = posts.find(p => p.author?.id === uid);
         const nome = autorPost?.author?.nome || 'Usuário ' + uid.substring(0, 6);
         const avatar = autorPost?.author?.avatar || '';
@@ -2288,10 +2285,8 @@ function mostrarRanking() {
         });
     });
     
-    // Ordenar por XP (maior primeiro)
     usuarios.sort((a, b) => b.xp - a.xp);
     
-    // Remover duplicados
     const uniqueUsers = [];
     const seenIds = new Set();
     usuarios.forEach(u => {
@@ -2301,12 +2296,10 @@ function mostrarRanking() {
         }
     });
     
-    // Top 20
     const top20 = uniqueUsers.slice(0, 20);
-    
-    // Encontrar posição do usuário atual
     const minhaPosicao = top20.findIndex(u => u.id === currentUser.id) + 1;
     
+    // Construir HTML como string
     let html = `
         <div style="text-align: center; margin-bottom: 16px;">
             ${minhaPosicao > 0 ? `
@@ -2319,16 +2312,7 @@ function mostrarRanking() {
                 </p>
             `}
         </div>
-        <table class="ranking-table">
-            <thead>
-                <tr>
-                    <th>#</th>
-                    <th>Usuário</th>
-                    <th>Nível</th>
-                    <th>XP</th>
-                </tr>
-            </thead>
-            <tbody>
+        <div style="max-height: 400px; overflow-y: auto;">
     `;
     
     top20.forEach((u, index) => {
@@ -2339,38 +2323,49 @@ function mostrarRanking() {
         else if (pos === 3) posicaoIcon = '🥉';
         
         const isMe = u.id === currentUser.id;
+        // Escapar nome para evitar quebra de string
+        const nomeEscapado = u.nome.replace(/'/g, "\\'").replace(/"/g, '&quot;');
+        const avatarUrl = u.avatar || 'https://ui-avatars.com/api/?name=' + encodeURIComponent(u.nome) + '&background=7c4dff&color=fff';
         
         html += `
-            <tr class="${isMe ? 'ranking-user-me' : ''}" 
-                style="cursor: pointer; transition: all 0.2s;" 
-                onclick="Swal.close(); abrirPerfilUsuario('${u.id}', '${escapeHtml(u.nome).replace(/'/g, "\\'")}', '${u.avatar || ''}')"
-                onmouseover="this.style.background='rgba(37,99,235,0.05)';" 
-                onmouseout="this.style.background='${isMe ? 'rgba(37,99,235,0.08)' : 'transparent'}';">
-                <td style="font-size: ${pos <= 3 ? '18px' : '13px'}; font-weight: 700;">
+            <div onclick="Swal.close(); setTimeout(function(){ abrirPerfilUsuario('${u.id}', '${nomeEscapado}', '${u.avatar || ''}'); }, 200);" 
+                 style="display: flex; align-items: center; gap: 10px; padding: 10px 8px; 
+                        cursor: pointer; border-bottom: 1px solid var(--border);
+                        ${isMe ? 'background: rgba(37,99,235,0.08); font-weight: 700;' : ''}
+                        transition: all 0.2s;"
+                 onmouseover="this.style.background='${isMe ? 'rgba(37,99,235,0.12)' : 'rgba(0,0,0,0.03)'}';" 
+                 onmouseout="this.style.background='${isMe ? 'rgba(37,99,235,0.08)' : 'transparent'}';">
+                
+                <span style="font-size: ${pos <= 3 ? '20px' : '14px'}; font-weight: 700; width: 30px; text-align: center; flex-shrink: 0;">
                     ${posicaoIcon}
-                </td>
-                <td>
-                    <div style="display: flex; align-items: center; gap: 8px;">
-                        <img src="${u.avatar || 'https://ui-avatars.com/api/?name=' + encodeURIComponent(u.nome) + '&background=7c4dff&color=fff'}" 
-                             class="ranking-avatar" 
-                             onerror="this.src='https://ui-avatars.com/api/?name=' + encodeURIComponent(u.nome.substring(0,2)) + '&background=7c4dff&color=fff'"
-                             style="width: 32px; height: 32px; border-radius: 50%; object-fit: cover;">
-                        <span>${escapeHtml(u.nome)}${isMe ? ' <small style="color:#2563eb;font-weight:700;">(você)</small>' : ''}</span>
+                </span>
+                
+                <img src="${avatarUrl}" 
+                     style="width: 32px; height: 32px; border-radius: 50%; object-fit: cover; flex-shrink: 0;"
+                     onerror="this.src='https://ui-avatars.com/api/?name=User&background=7c4dff&color=fff'">
+                
+                <div style="flex: 1; min-width: 0;">
+                    <div style="font-weight: 600; font-size: 13px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
+                        ${escapeHtml(u.nome)}${isMe ? ' <span style="color:#2563eb;font-size:11px;">(você)</span>' : ''}
                     </div>
-                </td>
-                <td>
-                    <span class="ranking-level-badge-sm">
-                        ${u.nivel.icon} Nv. ${u.nivel.level}
-                    </span>
-                </td>
-                <td><strong>${u.xp.toLocaleString()}</strong> XP</td>
-            </tr>
+                </div>
+                
+                <span style="display: inline-flex; align-items: center; gap: 4px; 
+                             background: rgba(255,215,0,0.15); border-radius: 20px; 
+                             padding: 3px 10px; font-size: 11px; font-weight: 700; 
+                             color: #FFD700; flex-shrink: 0;">
+                    ${u.nivel.icon} Nv. ${u.nivel.level}
+                </span>
+                
+                <span style="font-weight: 700; font-size: 12px; flex-shrink: 0; width: 70px; text-align: right;">
+                    ${u.xp.toLocaleString()} XP
+                </span>
+            </div>
         `;
     });
     
-    html += '</tbody></table>';
+    html += '</div>';
     
-    // Se tem mais de 20 usuários
     if (uniqueUsers.length > 20) {
         html += `
             <p style="text-align: center; margin-top: 12px; font-size: 11px; color: var(--text2);">
@@ -2385,7 +2380,8 @@ function mostrarRanking() {
         showConfirmButton: false,
         showCancelButton: true,
         cancelButtonText: 'Fechar',
-        width: '550px',
+        width: '500px',
+        padding: '16px',
         customClass: {
             popup: 'ranking-modal-popup'
         }

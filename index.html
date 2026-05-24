@@ -825,11 +825,644 @@ body.light-mode .online-user-card {
     animation: highlightPost 1.5s ease-in-out 3;
     border-color: #2563eb !important;
 }
+
+
+/* ========== PÁGINA DE RÁDIO ========== */
+.radio-page-container {
+    width: 100%;
+    max-width: 100%;
+    margin: 0 auto;
+    padding: 20px 16px;
+}
+
+.radio-player-card {
+    background: #1A1A1A;
+    border: 1px solid #333;
+    border-radius: 20px;
+    padding: 24px 20px;
+    margin-bottom: 20px;
+    text-align: center;
+}
+
+body.light-mode .radio-player-card {
+    background: #FFFFFF;
+    border: 2px solid #111;
+}
+
+.radio-logo-grande {
+    width: 80px;
+    height: 80px;
+    border-radius: 16px;
+    object-fit: cover;
+    border: 3px solid #10b981;
+    animation: radioPulse 2s infinite;
+}
+
+@keyframes radioPulse {
+    0%, 100% { box-shadow: 0 0 0 0 rgba(16,185,129,0.4); }
+    50% { box-shadow: 0 0 20px 5px rgba(16,185,129,0.2); }
+}
+
+.radio-nome-grande {
+    font-size: 18px;
+    font-weight: 700;
+    margin: 12px 0 4px;
+}
+
+body.light-mode .radio-nome-grande {
+    color: #111;
+}
+
+.radio-segmento-grande {
+    font-size: 12px;
+    color: var(--text2);
+    margin-bottom: 4px;
+}
+
+.radio-status-grande {
+    font-size: 12px;
+    font-weight: 600;
+    margin-bottom: 16px;
+}
+
+.radio-status-live {
+    color: #10b981;
+}
+
+.radio-status-paused {
+    color: #888;
+}
+
+.radio-controls-row {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 16px;
+    margin-bottom: 16px;
+}
+
+.radio-btn-nav {
+    width: 38px;
+    height: 38px;
+    border-radius: 50%;
+    border: 1px solid var(--border);
+    background: rgba(0,0,0,0.05);
+    cursor: pointer;
+    color: inherit;
+    font-size: 14px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: 0.2s;
+}
+
+body.light-mode .radio-btn-nav {
+    background: #F5F5F5;
+    border-color: #CCC;
+}
+
+.radio-btn-nav:hover {
+    background: #2563eb;
+    color: white;
+    border-color: #2563eb;
+}
+
+.radio-btn-play-grande {
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    border: none;
+    background: #10b981;
+    color: white;
+    cursor: pointer;
+    font-size: 22px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: 0.2s;
+    box-shadow: 0 4px 15px rgba(16,185,129,0.3);
+}
+
+.radio-btn-play-grande:hover {
+    background: #059669;
+    transform: scale(1.05);
+}
+
+.radio-volume-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    max-width: 200px;
+    margin: 0 auto;
+}
+
+.radio-volume-row i {
+    font-size: 12px;
+    color: var(--text2);
+}
+
+.radio-volume-slider {
+    flex: 1;
+    height: 4px;
+    cursor: pointer;
+    -webkit-appearance: none;
+    background: #333;
+    border-radius: 2px;
+    outline: none;
+}
+
+body.light-mode .radio-volume-slider {
+    background: #E5E5E5;
+}
+
+.radio-volume-slider::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    width: 14px;
+    height: 14px;
+    border-radius: 50%;
+    background: #10b981;
+    cursor: pointer;
+}
+
+.radio-section-title {
+    font-size: 14px;
+    font-weight: 700;
+    margin-bottom: 12px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+body.light-mode .radio-section-title {
+    color: #111;
+}
+
+.radio-station-card {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px;
+    border-radius: 12px;
+    cursor: pointer;
+    margin-bottom: 8px;
+    border: 1px solid var(--border);
+    transition: 0.2s;
+}
+
+.radio-station-card:hover {
+    background: rgba(0,0,0,0.03);
+}
+
+body.light-mode .radio-station-card:hover {
+    background: #F5F5F5;
+}
+
+.radio-station-card.active {
+    background: rgba(16,185,129,0.08);
+    border-color: #10b981;
+}
+
+body.light-mode .radio-station-card.active {
+    background: rgba(16,185,129,0.05);
+    border-color: #10b981;
+}
+
+.radio-station-card-logo {
+    width: 44px;
+    height: 44px;
+    border-radius: 10px;
+    object-fit: cover;
+    flex-shrink: 0;
+}
+
+.radio-station-card-info {
+    flex: 1;
+    min-width: 0;
+}
+
+.radio-station-card-name {
+    font-weight: 700;
+    font-size: 14px;
+}
+
+body.light-mode .radio-station-card-name {
+    color: #111;
+}
+
+.radio-station-card-meta {
+    font-size: 11px;
+    color: var(--text2);
+}
+
+.radio-playing-icon {
+    color: #10b981;
+    font-size: 18px;
+    animation: radioPulse 1s infinite;
+}
+
+#radioAudioPlayer {
+    display: none;
+}
+
+/* Reações nos comentários */
+.comentario-reacoes {
+    display: flex;
+    gap: 4px;
+    margin-top: 6px;
+    flex-wrap: wrap;
+}
+
+.comentario-reacao-btn {
+    background: rgba(0,0,0,0.05);
+    border: 1px solid transparent;
+    border-radius: 20px;
+    padding: 3px 8px;
+    font-size: 13px;
+    cursor: pointer;
+    transition: all 0.2s;
+    display: inline-flex;
+    align-items: center;
+    gap: 3px;
+}
+
+body.light-mode .comentario-reacao-btn {
+    background: #F1F5F9;
+}
+
+.comentario-reacao-btn:hover {
+    background: rgba(37,99,235,0.1);
+    border-color: #2563eb;
+    transform: scale(1.05);
+}
+
+.comentario-reacao-btn.active {
+    background: rgba(37,99,235,0.15);
+    border-color: #2563eb;
+}
+
+.comentario-reacao-count {
+    font-size: 11px;
+    font-weight: 600;
+    color: #888;
+}
+
+.comentario-reacao-btn.active .comentario-reacao-count {
+    color: #2563eb;
+}
+
+/* Botão de adicionar reação */
+.comentario-add-reacao {
+    background: none;
+    border: 1px dashed var(--border);
+    border-radius: 50%;
+    width: 24px;
+    height: 24px;
+    cursor: pointer;
+    font-size: 11px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    color: #888;
+    transition: 0.2s;
+}
+
+.comentario-add-reacao:hover {
+    border-color: #2563eb;
+    color: #2563eb;
+    background: rgba(37,99,235,0.1);
+}
+/* ========== POST CARDS - ESTILO THREADS ========== */
+.post-card {
+    background: #1A1A1A;
+    border-radius: 16px;
+    padding: 16px;
+    margin-bottom: 12px;
+    border: none;
+    transition: 0.2s;
+}
+
+body.light-mode .post-card {
+    background: #FFFFFF;
+    border: none;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.04);
+}
+
+.post-card:hover {
+    background: #1E1E1E;
+}
+
+body.light-mode .post-card:hover {
+    background: #FAFAFA;
+}
+
+/* Cabeçalho do post */
+.post-header {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    margin-bottom: 8px;
+}
+
+.post-avatar {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background: #111;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 16px;
+    font-weight: 700;
+    flex-shrink: 0;
+    object-fit: cover;
+    cursor: pointer;
+}
+
+body.light-mode .post-avatar {
+    background: #E5E5E5;
+}
+
+.post-header-info {
+    flex: 1;
+    min-width: 0;
+}
+
+.post-author-row {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    flex-wrap: wrap;
+}
+
+.post-author {
+    font-weight: 600;
+    font-size: 14px;
+    cursor: pointer;
+}
+
+body.light-mode .post-author {
+    color: #111;
+}
+
+.post-time {
+    font-size: 12px;
+    color: #999;
+}
+
+body.light-mode .post-time {
+    color: #888;
+}
+
+/* Menu de opções (3 pontinhos) */
+.post-menu-btn {
+    background: none;
+    border: none;
+    color: #888;
+    cursor: pointer;
+    padding: 4px 8px;
+    border-radius: 50%;
+    font-size: 16px;
+    transition: 0.2s;
+    flex-shrink: 0;
+}
+
+.post-menu-btn:hover {
+    background: rgba(0,0,0,0.1);
+    color: inherit;
+}
+
+body.light-mode .post-menu-btn:hover {
+    background: #F0F0F0;
+}
+
+/* Texto do post */
+.post-text {
+    font-size: 15px;
+    line-height: 1.5;
+    margin-bottom: 8px;
+    padding-left: 50px;
+    word-break: break-word;
+}
+
+body.light-mode .post-text {
+    color: #222;
+}
+
+/* Mídia */
+.post-media {
+    border-radius: 12px;
+    overflow: hidden;
+    margin: 8px 0 8px 50px;
+    border: 1px solid var(--border);
+}
+
+/* Ações (curtir, comentar, compartilhar, etc) */
+.post-actions-row {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+    padding: 4px 0 0 50px;
+}
+
+.post-action-icon {
+    background: none;
+    border: none;
+    color: #888;
+    cursor: pointer;
+    font-size: 18px;
+    padding: 6px;
+    border-radius: 50%;
+    transition: 0.2s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.post-action-icon:hover {
+    background: rgba(0,0,0,0.08);
+    color: inherit;
+}
+
+body.light-mode .post-action-icon:hover {
+    background: #F0F0F0;
+}
+
+.post-action-icon.liked {
+    color: #ef4444;
+}
+
+.post-action-icon.liked:hover {
+    background: rgba(239,68,68,0.1);
+}
+
+/* Stats */
+.post-stats-text {
+    font-size: 13px;
+    color: #888;
+    padding: 4px 0 4px 50px;
+    margin-bottom: 0;
+}
+
+.post-stats-text span {
+    cursor: pointer;
+}
+
+.post-stats-text span:hover {
+    text-decoration: underline;
+}
+
+/* Comentários no feed */
+.post-comments-preview {
+    padding-left: 50px;
+    margin-top: 4px;
+}
+
+.post-comment-item {
+    display: flex;
+    gap: 8px;
+    padding: 4px 0;
+    font-size: 13px;
+}
+
+.post-comment-avatar {
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    object-fit: cover;
+    flex-shrink: 0;
+}
+
+.post-comment-content {
+    flex: 1;
+}
+
+.post-comment-author {
+    font-weight: 600;
+    font-size: 12px;
+    cursor: pointer;
+}
+
+.post-comment-text {
+    font-size: 13px;
+    line-height: 1.4;
+    word-break: break-word;
+}
+
+body.light-mode .post-comment-text {
+    color: #333;
+}
+
+.post-comment-time {
+    font-size: 10px;
+    color: #999;
+    margin-left: 6px;
+}
+
+/* Ver mais comentários */
+.post-ver-mais {
+    font-size: 12px;
+    color: #888;
+    cursor: pointer;
+    padding: 4px 0;
+    background: none;
+    border: none;
+}
+
+.post-ver-mais:hover {
+    color: #2563eb;
+}
+
+/* Modal de menu do post */
+.post-menu-modal {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    background: #1A1A1A;
+    border-radius: 20px 20px 0 0;
+    padding: 20px;
+    z-index: 3000;
+    animation: slideUp 0.3s ease;
+}
+
+body.light-mode .post-menu-modal {
+    background: #FFFFFF;
+    box-shadow: 0 -5px 20px rgba(0,0,0,0.1);
+}
+
+@keyframes slideUp {
+    from { transform: translateY(100%); }
+    to { transform: translateY(0); }
+}
+
+.post-menu-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0,0,0,0.5);
+    z-index: 2999;
+}
+
+.post-menu-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 14px 0;
+    font-size: 15px;
+    cursor: pointer;
+    border: none;
+    background: none;
+    color: inherit;
+    width: 100%;
+    text-align: left;
+    border-bottom: 1px solid var(--border);
+}
+
+.post-menu-item:last-child {
+    border-bottom: none;
+}
+
+.post-menu-item:hover {
+    opacity: 0.7;
+}
+
+.post-menu-item.danger {
+    color: #ef4444;
+}
+
+/* Enquete estilo Threads */
+.poll-container {
+    margin-left: 50px;
+    margin-bottom: 8px;
+    background: transparent;
+    border: none;
+    padding: 0;
+}
+
+.poll-option {
+    background: rgba(0,0,0,0.05);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 10px 12px;
+    margin-bottom: 6px;
+    cursor: pointer;
+    transition: 0.2s;
+}
+
+body.light-mode .poll-option {
+    background: #F5F5F5;
+}
+
+.poll-option:hover {
+    background: rgba(37,99,235,0.08);
+    border-color: #2563eb;
+}
 </style>
 </head>
 <body>
 
-<button class="floating-theme" id="floatingThemeBtn"><i class="fas fa-moon"></i></button>
 <button class="scroll-top" id="scrollTop"><i class="fas fa-arrow-up"></i></button>
 
 <nav class="navbar">
@@ -850,6 +1483,7 @@ body.light-mode .online-user-card {
     <a href="#" data-section="feed" class="active">Feed</a>
     <a href="#" data-section="empregos">Empregos</a>
     <a href="#" data-section="chat">Chat</a>
+    <a href="#" data-section="radio">Rádio</a>
     <a href="#" data-section="criar">Criar</a>
     <a href="#" data-section="noticias">Notícias</a>
     <a href="#" data-section="perfil">Perfil</a>
@@ -862,13 +1496,14 @@ body.light-mode .online-user-card {
     </div>
 </nav>
 <div class="bottom-nav show-on-mobile">
-    <div class="bottom-nav-items">
-        <button class="bottom-nav-item active" data-section="feed"><i class="fas fa-home"></i><span>Feed</span></button>
-        <button class="bottom-nav-item" data-section="empregos"><i class="fas fa-briefcase"></i><span>Empregos</span></button>
-        <button class="bottom-nav-item" data-section="criar"><i class="fas fa-plus-circle"></i><span>Criar</span></button>
-        <button class="bottom-nav-item" data-section="chat"><i class="fas fa-comments"></i><span>Chat</span></button>
-        <button class="bottom-nav-item" data-section="perfil"><i class="fas fa-user"></i><span>Perfil</span></button>
-    </div>
+<div class="bottom-nav-items">
+    <button class="bottom-nav-item active" data-section="feed"><i class="fas fa-home"></i><span>Feed</span></button>
+    <button class="bottom-nav-item" data-section="empregos"><i class="fas fa-briefcase"></i><span>Empregos</span></button>
+    <button class="bottom-nav-item" data-section="radio"><i class="fas fa-radio"></i><span>Rádio</span></button>
+    <button class="bottom-nav-item" data-section="criar"><i class="fas fa-plus-circle"></i><span>Criar</span></button>
+    <button class="bottom-nav-item" data-section="chat"><i class="fas fa-comments"></i><span>Chat</span></button>
+    <button class="bottom-nav-item" data-section="perfil"><i class="fas fa-user"></i><span>Perfil</span></button>
+</div>
 </div>
 
 <div class="container">
@@ -930,10 +1565,48 @@ body.light-mode .online-user-card {
             </div>
         </main>
 
-        <div class="vagas-container" id="vagasContainer" style="display: none;"></div>
-        <div class="noticias-container" id="noticiasContainer" style="display: none;"></div>
-        <div class="perfil-container" id="perfilContainer" style="display: none;"></div>
+<div class="vagas-container" id="vagasContainer" style="display: none;"></div>
+<div class="noticias-container" id="noticiasContainer" style="display: none;"></div>
+<div class="perfil-container" id="perfilContainer" style="display: none;"></div>
 
+<!-- NOVO: Container do Rádio -->
+<div class="radio-page-container" id="radioPageContainer" style="display: none;">
+    <h2 class="radio-page-title">
+        <i class="fas fa-broadcast-tower"></i> Rádio NE Conecta
+    </h2>
+    
+    <!-- Player Principal -->
+    <div class="radio-player-card">
+        <img id="radioLogoGrande" class="radio-logo-grande" src="https://cdn-icons-png.flaticon.com/512/2965/2965874.png" alt="Rádio">
+        <h3 id="radioNomeGrande" class="radio-nome-grande">Selecione uma estação</h3>
+        <p id="radioSegmentoGrande" class="radio-segmento-grande">Notícias • Nordeste</p>
+        <p id="radioStatusGrande" class="radio-status-grande radio-status-paused">⏸️ Pausado</p>
+        
+        <div class="radio-controls-row">
+            <button class="radio-btn-nav" onclick="estacaoAnterior()">
+                <i class="fas fa-backward"></i>
+            </button>
+            <button id="radioBtnPlayGrande" class="radio-btn-play-grande" onclick="toggleRadioPlay()">
+                <i class="fas fa-play"></i>
+            </button>
+            <button class="radio-btn-nav" onclick="estacaoProxima()">
+                <i class="fas fa-forward"></i>
+            </button>
+        </div>
+        
+        <div class="radio-volume-row">
+            <i class="fas fa-volume-down"></i>
+            <input type="range" class="radio-volume-slider" id="radioVolumePage" min="0" max="100" value="70" oninput="changeRadioVolume(this.value)">
+            <i class="fas fa-volume-up"></i>
+        </div>
+    </div>
+    
+    <!-- Lista de Estações -->
+    <h3 class="radio-section-title">
+        <i class="fas fa-list"></i> Estações Disponíveis
+    </h3>
+    <div class="radio-stations-list" id="radioStationsPageList"></div>
+</div>
         <aside class="sidebar-right hide-on-mobile">
             <div class="trending-card">
                 <h3><i class="fas fa-fire"></i> Trends</h3>
@@ -1106,6 +1779,144 @@ function salvarSessao() {
     }
 
 
+// ==================== SISTEMA DE RÁDIO (ABA NO MENU) ====================
+
+const radioStations = {
+    noticias: { name:"📰 Central de Notícias NE", logo:"https://cdn-icons-png.flaticon.com/512/2965/2965874.png", streamUrl:"https://e-spo-106.fabricahost.com.br/cbnfortaleza?f=1779645005N01KSDHQFHVDHHGC201N821ZMH6&tid=01KSDHQFHVYH7JW4T7N0KZ1GN8", segment:"Notícias 24h", city:"Nordeste" },
+    forro: { name:"🎵 Rádio Forró Nordestino", logo:"https://cdn-icons-png.flaticon.com/512/2997/2997587.png", streamUrl:"https://server12.srvsh.com.br:7298/stream", segment:"Forró", city:"Caruaru, PE" },
+    mpb: { name:"🎶 MPB Brasil", logo:"https://cdn-icons-png.flaticon.com/512/2997/2997460.png", streamUrl:"http://server02.ouvir.radio.br:8050/stream", segment:"MPB, Samba", city:"Salvador, BA" }
+};
+
+let currentStation = 'noticias';
+let isRadioPlaying = false;
+const stationKeys = Object.keys(radioStations);
+
+function initRadio() {
+    const audio = document.getElementById('radioAudioPlayer');
+    if (!audio) return;
+    
+    audio.volume = 0.7;
+    
+    audio.addEventListener('play', () => { isRadioPlaying = true; updateRadioPageUI(); });
+    audio.addEventListener('pause', () => { isRadioPlaying = false; updateRadioPageUI(); });
+    audio.addEventListener('error', () => {
+        const statusEl = document.getElementById('radioStatusGrande');
+        if (statusEl) { statusEl.textContent = '⚠️ Erro no stream'; statusEl.style.color = '#ef4444'; }
+    });
+}
+
+function carregarRadioPage() {
+    renderRadioPageList();
+    updateRadioPageUI();
+}
+
+function loadStation(key) {
+    const station = radioStations[key];
+    if (!station) return;
+    currentStation = key;
+    
+    const logoEl = document.getElementById('radioLogoGrande');
+    const nameEl = document.getElementById('radioNomeGrande');
+    const segEl = document.getElementById('radioSegmentoGrande');
+    
+    if (logoEl) logoEl.src = station.logo;
+    if (nameEl) nameEl.textContent = station.name;
+    if (segEl) segEl.textContent = station.segment + ' • ' + station.city;
+    
+    const audio = document.getElementById('radioAudioPlayer');
+    audio.src = station.streamUrl;
+    audio.load();
+    
+    renderRadioPageList();
+    audio.play().catch(() => {});
+    updateRadioPageUI();
+}
+
+function toggleRadioPlay() {
+    const audio = document.getElementById('radioAudioPlayer');
+    if (isRadioPlaying) { audio.pause(); } else { audio.play().catch(() => {}); }
+}
+
+function changeRadioVolume(v) {
+    document.getElementById('radioAudioPlayer').volume = v / 100;
+}
+
+function estacaoProxima() {
+    const idx = stationKeys.indexOf(currentStation);
+    const next = (idx + 1) % stationKeys.length;
+    loadStation(stationKeys[next]);
+}
+
+function estacaoAnterior() {
+    const idx = stationKeys.indexOf(currentStation);
+    const prev = (idx - 1 + stationKeys.length) % stationKeys.length;
+    loadStation(stationKeys[prev]);
+}
+
+function updateRadioPageUI() {
+    const playBtn = document.getElementById('radioBtnPlayGrande');
+    const statusEl = document.getElementById('radioStatusGrande');
+    const logoEl = document.getElementById('radioLogoGrande');
+    
+    if (playBtn) {
+        playBtn.innerHTML = isRadioPlaying ? '<i class="fas fa-pause"></i>' : '<i class="fas fa-play"></i>';
+    }
+    if (statusEl) {
+        statusEl.textContent = isRadioPlaying ? '🔴 Ao vivo' : '⏸️ Pausado';
+        statusEl.className = isRadioPlaying ? 'radio-status-grande radio-status-live' : 'radio-status-grande radio-status-paused';
+    }
+    if (logoEl) {
+        if (isRadioPlaying) {
+            logoEl.classList.add('playing');
+        } else {
+            logoEl.classList.remove('playing');
+        }
+    }
+}
+
+function renderRadioPageList() {
+    const container = document.getElementById('radioStationsPageList');
+    if (!container) return;
+    
+    container.innerHTML = stationKeys.map(key => {
+        const s = radioStations[key];
+        const isActive = currentStation === key;
+        return `
+            <div class="radio-station-card ${isActive ? 'active' : ''}" onclick="loadStation('${key}')">
+                <img class="radio-station-card-logo" src="${s.logo}" alt="${s.name}" 
+                     onerror="this.src='https://cdn-icons-png.flaticon.com/512/2965/2965874.png'">
+                <div class="radio-station-card-info">
+                    <div class="radio-station-card-name">${s.name}</div>
+                    <div class="radio-station-card-meta">${s.segment} • ${s.city}</div>
+                </div>
+                ${isActive && isRadioPlaying ? '<span class="radio-playing-indicator">🔊</span>' : ''}
+            </div>
+        `;
+    }).join('');
+}
+
+function renderRadioPageList() {
+    const container = document.getElementById('radioStationsPageList');
+    if (!container) return;
+    
+    container.innerHTML = stationKeys.map(key => {
+        const s = radioStations[key];
+        const isActive = currentStation === key;
+        return `
+            <div onclick="loadStation('${key}')" 
+                 style="display:flex;align-items:center;gap:12px;padding:12px;border-radius:12px;cursor:pointer;
+                        ${isActive ? 'background:rgba(16,185,129,0.1);border:1px solid #10b981;' : 'border:1px solid var(--border);'}">
+                <img src="${s.logo}" style="width:44px;height:44px;border-radius:10px;object-fit:cover;" 
+                     onerror="this.src='https://cdn-icons-png.flaticon.com/512/2965/2965874.png'">
+                <div style="flex:1;">
+                    <div style="font-weight:700;font-size:14px;">${s.name}</div>
+                    <div style="font-size:11px;color:var(--text2);">${s.segment} • ${s.city}</div>
+                </div>
+                ${isActive && isRadioPlaying ? '<span style="color:#10b981;font-size:20px;">🔊</span>' : ''}
+            </div>
+        `;
+    }).join('');
+}
 // ==================== SISTEMA DE ONLINE ====================
 
 let onlinePingInterval = null;
@@ -1924,63 +2735,292 @@ function salvarCurtida(postId) {
 function removerCurtida(postId) {
     localStorage.removeItem(`liked_${currentUser?.id}_${postId}`);
 }
+
+// ==================== MENU DO POST ====================
+
+function abrirMenuPost(postId) {
+    const post = posts.find(p => p.id === postId);
+    if (!post) return;
+    
+    const isAuthor = currentUser && post.author?.id === currentUser.id;
+    
+    // Criar overlay
+    const overlay = document.createElement('div');
+    overlay.className = 'post-menu-overlay';
+    overlay.onclick = () => {
+        overlay.remove();
+        menu.remove();
+    };
+    document.body.appendChild(overlay);
+    
+    // Criar menu
+    const menu = document.createElement('div');
+    menu.className = 'post-menu-modal';
+    
+    let html = '';
+    
+    if (isAuthor) {
+        html += `
+            <button class="post-menu-item" onclick="editarPost(${postId})">
+                <i class="fas fa-pen"></i> Editar publicação
+            </button>
+            <button class="post-menu-item danger" onclick="excluirPost(${postId})">
+                <i class="fas fa-trash-alt"></i> Excluir publicação
+            </button>
+        `;
+    }
+    
+    html += `
+        <button class="post-menu-item" onclick="denunciarPost(${postId})">
+            <i class="fas fa-flag"></i> Denunciar publicação
+        </button>
+        <button class="post-menu-item" onclick="compartilharPost(${postId})">
+            <i class="fas fa-share"></i> Compartilhar
+        </button>
+        <button class="post-menu-item" onclick="fecharMenuPost()">
+            <i class="fas fa-times"></i> Cancelar
+        </button>
+    `;
+    
+    menu.innerHTML = html;
+    document.body.appendChild(menu);
+}
+
+function fecharMenuPost() {
+    document.querySelector('.post-menu-overlay')?.remove();
+    document.querySelector('.post-menu-modal')?.remove();
+}
+
+// ==================== DENUNCIAR POST ====================
+
+async function denunciarPost(postId) {
+    if (!currentUser) { mostrarLoginPrompt(); return; }
+    
+    fecharMenuPost();
+    
+    const { value: motivo } = await Swal.fire({
+        title: '🚩 Denunciar publicação',
+        input: 'select',
+        inputOptions: {
+            'spam': 'Spam',
+            'conteudo_inapropriado': 'Conteúdo inapropriado',
+            'discurso_odio': 'Discurso de ódio',
+            'assedio': 'Assédio',
+            'informacao_falsa': 'Informação falsa',
+            'outro': 'Outro motivo'
+        },
+        inputPlaceholder: 'Selecione o motivo',
+        showCancelButton: true,
+        confirmButtonText: 'Denunciar',
+        confirmButtonColor: '#ef4444',
+        cancelButtonText: 'Cancelar'
+    });
+    
+    if (!motivo) return;
+    
+    try {
+        await fetch(`${API_URL}/cliente06/posts/${postId}/denunciar`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                userId: currentUser.id,
+                motivo: motivo
+            })
+        });
+        
+        Swal.fire({
+            icon: 'success',
+            title: 'Denúncia enviada',
+            text: 'Obrigado por nos avisar. Nossa equipe irá analisar.',
+            timer: 2500,
+            showConfirmButton: false
+        });
+    } catch (error) {
+        Swal.fire('Erro', 'Não foi possível enviar a denúncia', 'error');
+    }
+}
+
+// ==================== EDITAR POST ====================
+
+async function editarPost(postId) {
+    const post = posts.find(p => p.id === postId);
+    if (!post || post.author?.id !== currentUser?.id) return;
+    
+    fecharMenuPost();
+    
+    const { value: newText } = await Swal.fire({
+        title: '✏️ Editar publicação',
+        input: 'textarea',
+        inputValue: post.text || '',
+        inputPlaceholder: 'Edite sua publicação...',
+        showCancelButton: true,
+        confirmButtonText: 'Salvar',
+        cancelButtonText: 'Cancelar',
+        inputValidator: (value) => {
+            if (!value.trim()) return 'O texto não pode estar vazio!';
+        }
+    });
+    
+    if (!newText) return;
+    
+    Swal.fire({
+        title: 'Salvando...',
+        allowOutsideClick: false,
+        didOpen: () => Swal.showLoading()
+    });
+    
+    try {
+        const response = await fetch(`${API_URL}/cliente06/posts/${postId}`, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                userId: currentUser.id,
+                text: newText
+            })
+        });
+        
+        Swal.close();
+        
+        if (response.ok) {
+            Swal.fire({
+                icon: 'success',
+                title: 'Publicação editada!',
+                timer: 2000,
+                showConfirmButton: false
+            });
+            carregarPosts();
+        } else {
+            Swal.fire('Erro', 'Não foi possível editar', 'error');
+        }
+    } catch (error) {
+        Swal.close();
+        Swal.fire('Erro', 'Erro de conexão', 'error');
+    }
+}
+
+// ==================== EXCLUIR POST (ATUALIZADO) ====================
+
+async function excluirPost(postId) {
+    const post = posts.find(p => p.id === postId);
+    if (!post || post.author?.id !== currentUser?.id) return;
+    
+    fecharMenuPost();
+    
+    const result = await Swal.fire({
+        icon: 'warning',
+        title: 'Excluir publicação?',
+        text: 'Esta ação não pode ser desfeita!',
+        showCancelButton: true,
+        confirmButtonText: 'Sim, excluir',
+        confirmButtonColor: '#ef4444',
+        cancelButtonText: 'Cancelar'
+    });
+    
+    if (!result.isConfirmed) return;
+    
+    Swal.fire({
+        title: 'Excluindo...',
+        allowOutsideClick: false,
+        didOpen: () => Swal.showLoading()
+    });
+    
+    try {
+// Na função excluirPost, mude a URL:
+const response = await fetch(`${API_URL}/cliente06/posts/${postId}/excluir`, {
+    method: 'DELETE',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ userId: currentUser.id })
+});
+        
+        Swal.close();
+        
+        if (response.ok) {
+            posts = posts.filter(p => p.id !== postId);
+            renderizarFeed();
+            Swal.fire({
+                icon: 'success',
+                title: '✅ Excluído!',
+                timer: 2000,
+                showConfirmButton: false
+            });
+        } else {
+            const data = await response.json();
+            Swal.fire('Erro', data.error || 'Não foi possível excluir', 'error');
+        }
+    } catch (error) {
+        Swal.close();
+        Swal.fire('Erro', 'Erro de conexão', 'error');
+    }
+}
     function renderPost(post) {
     const isLiked = currentUser ? usuarioJaCurtiu(post.id) : false;
     const podeInteragir = currentUser !== null;
     const comentariosCount = post.comments?.length || 0;
+    const isAuthor = currentUser && post.author?.id === currentUser.id;
     
     return `
         <div class="post-card" data-post-id="${post.id}">
             <div class="post-header">
-<div class="post-avatar" onclick="event.stopPropagation(); abrirPerfilUsuario('${post.author?.id || ''}', '${escapeHtml(post.author?.nome || 'Usuário')}', '${post.author?.avatar || ''}')" style="cursor: pointer;">
-    <img src="${post.author?.avatar || 'https://ui-avatars.com/api/?name=' + encodeURIComponent(post.author?.nome || 'Usuário') + '&background=7c4dff&color=fff'}" 
-         style="width:100%;height:100%;border-radius:50%;object-fit:cover;" 
-         alt="Avatar">
-</div>
-                <div>
-                    <div class="post-author">${post.anonymous ? 'Anônimo' : escapeHtml(post.author?.nome || 'Usuário')}</div>
-                    <div class="post-time">${formatarData(post.createdAt)}</div>
+                <div class="post-avatar" onclick="event.stopPropagation(); abrirPerfilUsuario('${post.author?.id || ''}', '${escapeHtml(post.author?.nome || 'Usuário')}', '${post.author?.avatar || ''}')">
+                    <img src="${post.author?.avatar || 'https://ui-avatars.com/api/?name=' + encodeURIComponent(post.author?.nome || 'Usuário') + '&background=7c4dff&color=fff'}" 
+                         style="width:100%;height:100%;border-radius:50%;object-fit:cover;" alt="Avatar">
                 </div>
+                <div class="post-header-info">
+                    <div class="post-author-row">
+                        <span class="post-author" onclick="abrirPerfilUsuario('${post.author?.id || ''}', '${escapeHtml(post.author?.nome || 'Usuário')}', '${post.author?.avatar || ''}')">${post.anonymous ? 'Anônimo' : escapeHtml(post.author?.nome || 'Usuário')}</span>
+                        <span class="post-time">· ${formatarData(post.createdAt)}</span>
+                    </div>
+                </div>
+                <button class="post-menu-btn" onclick="event.stopPropagation(); abrirMenuPost(${post.id})" title="Mais opções">
+                    <i class="fas fa-ellipsis-h"></i>
+                </button>
             </div>
+            
             <div class="post-text">${tornarLinksClicaveis(post.text || '')}</div>
-${post.media ? renderMedia(post.media, post.mediaType) : ''}
+            
+            ${post.media ? `<div class="post-media">${renderMedia(post.media, post.mediaType)}</div>` : ''}
             ${post.poll ? renderPoll(post.poll, post.id) : ''}
-            <div class="post-stats">
-                <span><i class="fas fa-heart"></i> ${post.likes?.length || 0} curtidas</span>
-                <span><i class="fas fa-comment"></i> ${comentariosCount} ${comentariosCount === 1 ? 'comentário' : 'comentários'}</span>
+            
+            ${comentariosCount > 0 || post.likes?.length > 0 ? `
+                <div class="post-stats-text">
+                    ${post.likes?.length > 0 ? `<span onclick="${podeInteragir ? `abrirCurtidas(${post.id})` : ''}">${post.likes?.length} curtida${post.likes?.length !== 1 ? 's' : ''}</span>` : ''}
+                    ${post.likes?.length > 0 && comentariosCount > 0 ? ' · ' : ''}
+                    ${comentariosCount > 0 ? `<span>${comentariosCount} comentário${comentariosCount !== 1 ? 's' : ''}</span>` : ''}
+                </div>
+            ` : ''}
+            
+            <div class="post-actions-row">
+                <button class="post-action-icon ${isLiked ? 'liked' : ''}" onclick="${podeInteragir ? `likePost(${post.id})` : `mostrarLoginPrompt()`}" title="Curtir">
+                    <i class="${isLiked ? 'fas' : 'far'} fa-heart"></i>
+                </button>
+                <button class="post-action-icon" onclick="${podeInteragir ? `abrirComentarios(${post.id})` : `mostrarLoginPrompt()`}" title="Comentar">
+                    <i class="far fa-comment"></i>
+                </button>
+                <button class="post-action-icon" onclick="compartilharPost(${post.id})" title="Compartilhar">
+                    <i class="far fa-paper-plane"></i>
+                </button>
             </div>
+            
             ${comentariosCount > 0 ? `
-                <div style="margin: 8px 0; padding: 8px 0; border-top: 1px solid var(--border);">
+                <div class="post-comments-preview">
                     ${(post.comments || []).slice(-2).map(c => `
-                        <div style="display: flex; gap: 8px; padding: 6px 0; align-items: flex-start;">
-                            <img src="${c.author?.avatar || 'https://ui-avatars.com/api/?name=' + encodeURIComponent(c.author?.nome || 'U') + '&background=7c4dff&color=fff'}" 
-                                 style="width: 28px; height: 28px; border-radius: 50%; object-fit: cover; flex-shrink: 0;">
-                            <div style="flex: 1; background: rgba(255,255,255,0.03); padding: 6px 10px; border-radius: 12px;">
-                                <span style="font-weight: 600; font-size: 11px;">${escapeHtml(c.author?.nome || 'Anônimo')}</span>
-                                <span style="font-size: 10px; color: var(--text2); margin-left: 6px;">${formatarData(c.createdAt)}</span>
-                                <p style="font-size: 12px; margin-top: 2px;">${tornarLinksClicaveis(c.text || '')}</p>
+                        <div class="post-comment-item">
+                            <img class="post-comment-avatar" src="${c.author?.avatar || 'https://ui-avatars.com/api/?name=U&background=7c4dff&color=fff'}" 
+                                 onerror="this.src='https://ui-avatars.com/api/?name=U&background=7c4dff&color=fff'">
+                            <div class="post-comment-content">
+                                <span class="post-comment-author">${escapeHtml(c.author?.nome || 'Anônimo')}</span>
+                                <span class="post-comment-text">${escapeHtml(c.text?.substring(0, 80) || '')}${c.text?.length > 80 ? '...' : ''}</span>
+                                <span class="post-comment-time">${formatarData(c.createdAt)}</span>
                             </div>
                         </div>
                     `).join('')}
                     ${comentariosCount > 2 ? `
-                        <button class="post-action-btn" onclick="${podeInteragir ? `abrirComentarios(${post.id})` : `mostrarLoginPrompt()`}" 
-                                style="font-size: 11px; padding: 4px 8px; width: auto; margin-top: 4px; color: var(--text2);">
-                            <i class="fas fa-comments"></i> Ver todos os ${comentariosCount} comentários
+                        <button class="post-ver-mais" onclick="${podeInteragir ? `abrirComentarios(${post.id})` : `mostrarLoginPrompt()`}">
+                            Ver todos os ${comentariosCount} comentários
                         </button>
                     ` : ''}
                 </div>
             ` : ''}
-            <div class="post-actions">
-                <button class="post-action-btn ${isLiked ? 'liked' : ''}" onclick="${podeInteragir ? `likePost(${post.id})` : `mostrarLoginPrompt()`}">
-                    <i class="fas fa-heart"></i> ${isLiked ? 'Curtido' : 'Curtir'}
-                </button>
-                <button class="post-action-btn" onclick="${podeInteragir ? `abrirComentarios(${post.id})` : `mostrarLoginPrompt()`}">
-                    <i class="fas fa-comment"></i> Comentar
-                </button>
-<button class="post-action-btn" onclick="compartilharPost(${post.id})">
-                    <i class="fas fa-share"></i> Compartilhar
-                </button>
-            </div>
         </div>
     `;
 }
@@ -2081,56 +3121,67 @@ async function abrirComentarios(postId) {
                 <p style="font-size: 12px; margin-top: 4px;">Seja o primeiro a comentar!</p>
             </div>`;
     } else {
-        htmlComentarios = comentarios.map(c => `
-            <div class="chat-message" style="margin-bottom: 12px; background: rgba(255,255,255,0.03);">
-                <div class="message-avatar">
-                    <img src="${c.author?.avatar || 'https://ui-avatars.com/api/?name=' + encodeURIComponent(c.author?.nome || 'Usuário') + '&background=7c4dff&color=fff'}" 
-                         style="width:100%;height:100%;border-radius:50%;object-fit:cover;" 
-                         alt="Avatar">
-                </div>
-                <div class="message-content">
-                    <div class="message-header">
-                        <span class="message-author">${escapeHtml(c.author?.nome || 'Anônimo')}</span>
-                        <span class="message-time">${formatarData(c.createdAt)}</span>
+        htmlComentarios = comentarios.map(c => {
+            const reacoes = c.reacoes || {};
+            return `
+                <div style="display: flex; gap: 10px; padding: 10px; margin-bottom: 8px; border-radius: 12px; background: rgba(0,0,0,0.03); border: 1px solid var(--border);">
+                    <img src="${c.author?.avatar || 'https://ui-avatars.com/api/?name=' + encodeURIComponent(c.author?.nome || 'U') + '&background=7c4dff&color=fff'}" 
+                         style="width: 36px; height: 36px; border-radius: 50%; object-fit: cover; flex-shrink: 0;"
+                         onerror="this.src='https://ui-avatars.com/api/?name=User&background=7c4dff&color=fff'">
+                    <div style="flex: 1;">
+                        <div style="display: flex; align-items: baseline; gap: 8px; margin-bottom: 4px;">
+                            <span style="font-weight: 700; font-size: 13px;">${escapeHtml(c.author?.nome || 'Anônimo')}</span>
+                            <span style="font-size: 10px; color: var(--text2);">${formatarData(c.createdAt)}</span>
+                        </div>
+                        <div style="font-size: 13px; line-height: 1.4; word-break: break-word;">${tornarLinksClicaveis(c.text || '')}</div>
+                        
+                        <!-- Reações -->
+                        <div class="comentario-reacoes">
+                            ${['👍', '❤️', '😂', '😮', '😢', '😡'].map(emoji => {
+                                const count = reacoes[emoji] || 0;
+                                const userReagiu = c.reagidoPor?.[emoji]?.includes(currentUser?.id);
+                                return `
+                                    <button class="comentario-reacao-btn ${userReagiu ? 'active' : ''}" 
+                                            onclick="reagirComentario(${postId}, '${c.id || c.createdAt}', '${emoji}')">
+                                        ${emoji} <span class="comentario-reacao-count">${count}</span>
+                                    </button>
+                                `;
+                            }).join('')}
+                        </div>
                     </div>
-                    <!-- APLICAR LINKS CLICÁVEIS NOS COMENTÁRIOS DO MODAL -->
-<div class="message-text">${tornarLinksClicaveis(c.text || '')}</div>
-            </div>
-        `).join('');
+                </div>
+            `;
+        }).join('');
     }
     
     Swal.fire({
         title: '💬 Comentários',
         html: `
-            <div style="max-height: 400px; overflow-y: auto; padding: 8px;">
+            <div style="max-height: 350px; overflow-y: auto; padding: 4px;">
                 ${htmlComentarios}
             </div>
-            <div style="display: flex; gap: 8px; margin-top: 16px; padding: 12px; background: rgba(18,22,45,0.6); border-radius: 16px; border: 1px solid var(--border);">
-                <div class="message-avatar" style="width: 36px; height: 36px; flex-shrink: 0;">
-                    <img src="${currentUser.avatar}" 
-                         style="width:100%;height:100%;border-radius:50%;object-fit:cover;" 
-                         alt="Avatar">
-                </div>
+            <div style="display: flex; gap: 8px; margin-top: 12px; padding: 10px; background: rgba(0,0,0,0.03); border-radius: 16px; border: 1px solid var(--border);">
+                <img src="${currentUser.avatar}" 
+                     style="width: 34px; height: 34px; border-radius: 50%; object-fit: cover; flex-shrink: 0;"
+                     onerror="this.src='https://ui-avatars.com/api/?name=User&background=7c4dff&color=fff'">
                 <input type="text" 
                        id="newCommentText" 
                        placeholder="Escreva um comentário..." 
-                       style="flex: 1; padding: 8px 12px; border-radius: 20px; border: 1px solid var(--border); background: rgba(255,255,255,0.05); color: white; font-family: inherit; font-size: 13px; outline: none;"
+                       style="flex: 1; padding: 8px 12px; border-radius: 20px; border: 1px solid var(--border); background: transparent; color: inherit; font-family: inherit; font-size: 13px; outline: none;"
                        onkeypress="if(event.key === 'Enter') adicionarComentario(${postId})">
                 <button onclick="adicionarComentario(${postId})" 
-                        style="background: var(--primary); border: none; width: 36px; height: 36px; border-radius: 50%; color: white; cursor: pointer; flex-shrink: 0; display: flex; align-items: center; justify-content: center;">
-                    <i class="fas fa-paper-plane" style="font-size: 14px;"></i>
+                        style="background: var(--primary); border: none; width: 34px; height: 34px; border-radius: 50%; color: white; cursor: pointer; flex-shrink: 0; display: flex; align-items: center; justify-content: center;"
+                        title="Enviar">
+                    <i class="fas fa-paper-plane" style="font-size: 13px;"></i>
                 </button>
             </div>`,
         showConfirmButton: false,
         showCancelButton: true,
         cancelButtonText: 'Fechar',
         cancelButtonColor: '#4b5563',
-        customClass: {
-            popup: 'swal-wide',
-            htmlContainer: 'swal-html-container'
-        },
         width: '500px',
-        padding: '0',
+        padding: '16px',
+        customClass: { popup: 'comentarios-modal-popup' },
         didOpen: () => {
             setTimeout(() => {
                 const input = document.getElementById('newCommentText');
@@ -2140,6 +3191,29 @@ async function abrirComentarios(postId) {
     });
 }
 
+async function reagirComentario(postId, commentId, emoji) {
+    if (!currentUser) { mostrarLoginPrompt(); return; }
+    
+    try {
+        const response = await fetch(`${API_URL}/cliente06/posts/${postId}/comments/${commentId}/reagir`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                userId: currentUser.id,
+                emoji: emoji
+            })
+        });
+        
+        if (response.ok) {
+            // Atualizar posts e reabrir comentários
+            await carregarPosts();
+            Swal.close();
+            setTimeout(() => abrirComentarios(postId), 200);
+        }
+    } catch (error) {
+        console.error('Erro ao reagir:', error);
+    }
+}
 async function adicionarComentario(postId) {
     const input = document.getElementById('newCommentText');
     const text = input?.value?.trim();
@@ -3256,53 +4330,39 @@ function mostrarListaSeguindo() {
 
     // ==================== NAVEGAÇÃO ====================
     
-    function mudarSecao(section) {
-    // Se for "criar", abre o modal e NÃO muda a seção atual
+function mudarSecao(section) {
     if (section === 'criar') {
         abrirModalCriarPost();
-        // Mantém o botão da seção atual ativo
         return;
     }
     
     currentSection = section;
     
-    // Atualiza menu superior
     document.querySelectorAll('.menu a').forEach(a => a.classList.remove('active'));
     const menuLink = document.querySelector(`.menu a[data-section="${section}"]`);
     if (menuLink) menuLink.classList.add('active');
     
-    // Atualiza menu inferior
     document.querySelectorAll('.bottom-nav-item').forEach(i => i.classList.remove('active'));
     const bottomLink = document.querySelector(`.bottom-nav-item[data-section="${section}"]`);
     if (bottomLink) bottomLink.classList.add('active');
     
-    // Esconde todas as seções
+    // Esconde todas
     document.getElementById('feedCentral').style.display = 'none';
     document.getElementById('vagasContainer').style.display = 'none';
     document.getElementById('noticiasContainer').style.display = 'none';
     document.getElementById('perfilContainer').style.display = 'none';
     document.getElementById('chatLayout').style.display = 'none';
+    document.getElementById('radioPageContainer').style.display = 'none'; // ← NOVO
     
-    // Mostra a seção correta
     switch(section) {
-        case 'feed':
-            document.getElementById('feedCentral').style.display = 'block';
-            break;
-        case 'empregos':
-            document.getElementById('vagasContainer').style.display = 'block';
-            break;
-        case 'noticias':
-            document.getElementById('noticiasContainer').style.display = 'block';
-            break;
-        case 'perfil':
-            document.getElementById('perfilContainer').style.display = 'block';
-            break;
-        case 'chat':
-            document.getElementById('chatLayout').style.display = 'flex';
-            break;
+        case 'feed': document.getElementById('feedCentral').style.display = 'block'; break;
+        case 'empregos': document.getElementById('vagasContainer').style.display = 'block'; break;
+        case 'noticias': document.getElementById('noticiasContainer').style.display = 'block'; break;
+        case 'perfil': document.getElementById('perfilContainer').style.display = 'block'; break;
+        case 'chat': document.getElementById('chatLayout').style.display = 'flex'; break;
+        case 'radio': document.getElementById('radioPageContainer').style.display = 'block'; carregarRadioPage(); break; // ← NOVO
     }
     
-    // Oculta sidebar em mobile
     if (window.innerWidth <= 1024) {
         const sidebar = document.querySelector('.sidebar-right');
         if (sidebar) sidebar.style.display = 'none';
@@ -3310,12 +4370,10 @@ function mostrarListaSeguindo() {
     
     carregarFeedCompleto();
     
-    // Fecha menu mobile
     if (window.innerWidth <= 768) {
         document.getElementById('mainMenu')?.classList.remove('show');
     }
     
-    // Scroll para o topo
     window.scrollTo({ top: 0, behavior: 'smooth' });
 }
     // ==================== UTILITÁRIOS ====================
@@ -3424,22 +4482,17 @@ function tornarLinksClicaveis(texto) {
     // Se não tiver tema salvo, usa o modo claro como padrão
     if (saved === null || saved === 'light') {
         document.body.classList.add('light-mode');
-        document.getElementById('floatingThemeBtn').innerHTML = '<i class="fas fa-sun"></i>';
+
+
         if (saved === null) {
             localStorage.setItem('theme', 'light');
         }
     } else {
         document.body.classList.remove('light-mode');
-        document.getElementById('floatingThemeBtn').innerHTML = '<i class="fas fa-moon"></i>';
     }
 }
     
-    document.getElementById('floatingThemeBtn')?.addEventListener('click', () => {
-        document.body.classList.toggle('light-mode');
-        const isLight = document.body.classList.contains('light-mode');
-        localStorage.setItem('theme', isLight ? 'light' : 'dark');
-        document.getElementById('floatingThemeBtn').innerHTML = isLight ? '<i class="fas fa-sun"></i>' : '<i class="fas fa-moon"></i>';
-    });
+    
 
     // ==================== EVENTOS ====================
     
@@ -3505,7 +4558,7 @@ function tornarLinksClicaveis(texto) {
     
     // 1. Configura o tema
     initTheme();
-    
+    initRadio()
     // 2. Tenta restaurar a sessão
     const sessaoRestaurada = restaurarSessao();
     
@@ -3529,5 +4582,6 @@ function tornarLinksClicaveis(texto) {
 
     document.addEventListener('DOMContentLoaded', inicializar);
 </script>
+<audio id="radioAudioPlayer" preload="none"></audio>
 </body>
 </html>

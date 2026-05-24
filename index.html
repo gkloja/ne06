@@ -2445,6 +2445,26 @@ body.light-mode .watch-chat-input {
         max-height: 200px;
     }
 }
+/* Botão de compartilhar sala */
+.watch-share-btn {
+    background: #2563eb;
+    border: none;
+    padding: 10px 18px;
+    border-radius: 30px;
+    color: white;
+    font-weight: 600;
+    font-size: 13px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    transition: all 0.2s;
+}
+
+.watch-share-btn:hover {
+    background: #1d4ed8;
+    transform: scale(1.05);
+}
 </style>
 </head>
 <body>
@@ -2708,15 +2728,25 @@ body.light-mode .watch-chat-input {
 </div>
         
         <div class="watch-room-header">
-            <div class="watch-room-header-info">
-                <h3 id="watchRoomTitle"></h3>
-                <div class="watch-room-header-meta">
-                    <span class="watch-room-viewers" style="margin-right: 10px;">
-                        <i class="fas fa-eye"></i> <span id="watchViewers">0</span>
-                    </span>
-                    Criado por <span id="watchCreator"></span>
-                </div>
-            </div>
+<div class="watch-room-header">
+    <div class="watch-room-header-info">
+        <h3 id="watchRoomTitle"></h3>
+        <div class="watch-room-header-meta">
+            <span class="watch-room-viewers" style="margin-right: 10px;">
+                <i class="fas fa-eye"></i> <span id="watchViewers">0</span>
+            </span>
+            Criado por <span id="watchCreator"></span>
+        </div>
+    </div>
+    <div style="display: flex; gap: 8px;">
+        <button class="watch-share-btn" onclick="compartilharSalaWatch()" title="Compartilhar sala">
+            <i class="fas fa-share-alt"></i> Compartilhar
+        </button>
+        <button class="watch-leave-btn" onclick="sairSalaWatch()">
+            <i class="fas fa-sign-out-alt"></i> Sair
+        </button>
+    </div>
+</div>
             <button class="watch-leave-btn" onclick="sairSalaWatch()">
                 <i class="fas fa-sign-out-alt"></i> Sair
             </button>
@@ -2919,6 +2949,118 @@ let watchPlayer = null;
 let watchPlayerReady = false;
 let watchReportInterval = null;
 
+// ==================== COMPARTILHAR SALA WATCH ====================
+
+async function compartilharSalaWatch() {
+    if (!watchRoomAtual) return;
+    
+    try {
+        // Buscar dados da sala
+        const response = await fetch(`${API_URL}/cliente06/watch-rooms/${watchRoomAtual}`);
+        const room = await response.json();
+        
+        // Criar link único da sala
+        const url = `${window.location.origin}${window.location.pathname}?watch=${watchRoomAtual}`;
+        
+        // Texto para compartilhar
+        const shareText = `🎬 ${currentUser.nome} está assistindo "${room.title}" no NE Conecta! Venha assistir junto!`;
+        
+        // Mostrar modal de compartilhamento
+        Swal.fire({
+            title: '🔗 Compartilhar Sala',
+            html: `
+                <div style="text-align: center;">
+                    <p style="font-size: 14px; margin-bottom: 12px;">Compartilhe esta sala com seus amigos!</p>
+                    
+                    <div style="display: flex; gap: 8px; margin-bottom: 16px;">
+                        <input type="text" id="shareLinkInput" value="${url}" readonly 
+                               style="flex: 1; padding: 10px; border-radius: 8px; border: 1px solid var(--border); 
+                                      background: transparent; color: inherit; font-size: 12px; text-align: center;"
+                               onclick="this.select()">
+                        <button onclick="copiarLinkWatch('${url}')" 
+                                style="background: #2563eb; border: none; padding: 10px 16px; border-radius: 8px; 
+                                       color: white; cursor: pointer; font-weight: 600; font-size: 12px; white-space: nowrap;">
+                            <i class="fas fa-copy"></i> Copiar
+                        </button>
+                    </div>
+                    
+                    <p style="font-size: 13px; margin-bottom: 12px; font-weight: 600;">Ou compartilhe direto:</p>
+                    
+                    <div style="display: flex; flex-wrap: wrap; gap: 8px; justify-content: center;">
+                        <button onclick="compartilharWhatsAppWatch('${url}', '${escapeHtml(room.title).replace(/'/g, "\\'")}')" 
+                                style="background: #25D366; border: none; padding: 10px 16px; border-radius: 30px; 
+                                       color: white; cursor: pointer; font-weight: 600; font-size: 12px; display: flex; align-items: center; gap: 6px;">
+                            <i class="fab fa-whatsapp"></i> WhatsApp
+                        </button>
+                        
+                        <button onclick="compartilharTelegramWatch('${url}', '${escapeHtml(room.title).replace(/'/g, "\\'")}')" 
+                                style="background: #0088cc; border: none; padding: 10px 16px; border-radius: 30px; 
+                                       color: white; cursor: pointer; font-weight: 600; font-size: 12px; display: flex; align-items: center; gap: 6px;">
+                            <i class="fab fa-telegram-plane"></i> Telegram
+                        </button>
+                        
+                        <button onclick="compartilharTwitterWatch('${url}', '${escapeHtml(room.title).replace(/'/g, "\\'")}')" 
+                                style="background: #1DA1F2; border: none; padding: 10px 16px; border-radius: 30px; 
+                                       color: white; cursor: pointer; font-weight: 600; font-size: 12px; display: flex; align-items: center; gap: 6px;">
+                            <i class="fab fa-twitter"></i> Twitter
+                        </button>
+                        
+                        <button onclick="compartilharFacebookWatch('${url}')" 
+                                style="background: #1877F2; border: none; padding: 10px 16px; border-radius: 30px; 
+                                       color: white; cursor: pointer; font-weight: 600; font-size: 12px; display: flex; align-items: center; gap: 6px;">
+                            <i class="fab fa-facebook-f"></i> Facebook
+                        </button>
+                    </div>
+                    
+                    <p style="font-size: 10px; color: var(--text2); margin-top: 12px;">
+                        Quem acessar este link entrará direto na sala!
+                    </p>
+                </div>
+            `,
+            showConfirmButton: false,
+            showCancelButton: true,
+            cancelButtonText: 'Fechar',
+            width: '480px',
+            customClass: { popup: 'share-modal-popup' }
+        });
+        
+    } catch (error) {
+        console.error('Erro:', error);
+    }
+}
+
+// Funções auxiliares de compartilhamento
+function copiarLinkWatch(url) {
+    navigator.clipboard.writeText(url).then(() => {
+        Swal.fire({
+            icon: 'success',
+            title: '✅ Link copiado!',
+            timer: 1500,
+            showConfirmButton: false,
+            toast: true,
+            position: 'top-end'
+        });
+    });
+}
+
+function compartilharWhatsAppWatch(url, title) {
+    const text = encodeURIComponent(`🎬 *Assistir Juntos no NE Conecta*\n\n${title}\n\nEntre na sala: ${url}`);
+    window.open(`https://wa.me/?text=${text}`, '_blank');
+}
+
+function compartilharTelegramWatch(url, title) {
+    const text = encodeURIComponent(`🎬 Assistir Juntos no NE Conecta\n\n${title}\n\n${url}`);
+    window.open(`https://t.me/share/url?url=${encodeURIComponent(url)}&text=${text}`, '_blank');
+}
+
+function compartilharTwitterWatch(url, title) {
+    const text = encodeURIComponent(`🎬 Assistindo "${title}" no NE Conecta! Venha assistir junto! ${url}`);
+    window.open(`https://twitter.com/intent/tweet?text=${text}`, '_blank');
+}
+
+function compartilharFacebookWatch(url) {
+    window.open(`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(url)}`, '_blank');
+}
 // Carregar API do YouTube
 function loadYouTubeAPI() {
     if (window.YT && window.YT.Player) {
@@ -6746,6 +6888,22 @@ setInterval(verificarNotificacoes, 30000);
 
     // ==================== INICIALIZAÇÃO ====================
     
+    // Verificar se há sala na URL
+function verificarSalaWatchNaUrl() {
+    const urlParams = new URLSearchParams(window.location.search);
+    const watchId = urlParams.get('watch');
+    
+    if (watchId) {
+        // Mudar para a seção watch
+        setTimeout(() => {
+            mudarSecao('watch');
+            setTimeout(() => {
+                entrarSalaWatch(watchId);
+            }, 1000);
+        }, 500);
+    }
+}
+
     function inicializar() {
     console.log('🚀 Inicializando NE Conecta...');
     
@@ -6756,12 +6914,14 @@ setInterval(verificarNotificacoes, 30000);
     // 2. Tenta restaurar a sessão
     const sessaoRestaurada = restaurarSessao();
     
+    
     if (sessaoRestaurada) {
         console.log('✅ Sessão restaurada!');
     }
     
     // 3. Configura o Firebase
     initAuth();
+    verificarSalaWatchNaUrl();
     setTimeout(verificarNotificacoes, 2000);
     // 4. Carrega o feed inicial
     if (!sessaoRestaurada) {

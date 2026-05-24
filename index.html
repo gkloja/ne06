@@ -619,6 +619,28 @@
         padding: 16px;
     }
 }
+/* Estilo para links nos posts e chat */
+.message-text a,
+.post-text a,
+.reply-text a {
+    color: #7c4dff !important;
+    text-decoration: underline !important;
+    word-break: break-all;
+    transition: all 0.2s ease;
+}
+
+.message-text a:hover,
+.post-text a:hover,
+.reply-text a:hover {
+    color: #9d6bff !important;
+    text-decoration: underline !important;
+    opacity: 0.9;
+}
+
+/* Ícone de link externo */
+.fa-external-link-alt {
+    opacity: 0.7;
+}
 </style>
 </head>
 <body>
@@ -1084,14 +1106,15 @@
                     <div class="post-time">${formatarData(post.createdAt)}</div>
                 </div>
             </div>
-            <div class="post-text">${escapeHtml(post.text || '')}</div>
+            <!-- APLICAR LINKS CLICÁVEIS NO TEXTO DO POST -->
+            <div class="post-text">${tornarLinksClicaveis(escapeHtml(post.text || ''))}</div>
             ${post.media ? `<div class="post-media">${post.mediaType === 'video' ? `<video controls src="${post.media}"></video>` : `<img src="${post.media}" alt="Post">`}</div>` : ''}
             <div class="post-stats">
                 <span><i class="fas fa-heart"></i> ${post.likes?.length || 0} curtidas</span>
                 <span><i class="fas fa-comment"></i> ${comentariosCount} ${comentariosCount === 1 ? 'comentário' : 'comentários'}</span>
             </div>
             
-            <!-- Mostrar últimos 2 comentários diretamente no post -->
+            <!-- Mostrar últimos 2 comentários -->
             ${comentariosCount > 0 ? `
                 <div style="margin: 8px 0; padding: 8px 0; border-top: 1px solid var(--border);">
                     ${(post.comments || []).slice(-2).map(c => `
@@ -1101,7 +1124,8 @@
                             <div style="flex: 1; background: rgba(255,255,255,0.03); padding: 6px 10px; border-radius: 12px;">
                                 <span style="font-weight: 600; font-size: 11px;">${escapeHtml(c.author?.nome || 'Anônimo')}</span>
                                 <span style="font-size: 10px; color: var(--text2); margin-left: 6px;">${formatarData(c.createdAt)}</span>
-                                <p style="font-size: 12px; margin-top: 2px;">${escapeHtml(c.text || '')}</p>
+                                <!-- APLICAR LINKS CLICÁVEIS NOS COMENTÁRIOS -->
+                                <p style="font-size: 12px; margin-top: 2px;">${tornarLinksClicaveis(escapeHtml(c.text || ''))}</p>
                             </div>
                         </div>
                     `).join('')}
@@ -1174,7 +1198,8 @@ async function abrirComentarios(postId) {
                         <span class="message-author">${escapeHtml(c.author?.nome || 'Anônimo')}</span>
                         <span class="message-time">${formatarData(c.createdAt)}</span>
                     </div>
-                    <div class="message-text">${escapeHtml(c.text || '')}</div>
+                    <!-- APLICAR LINKS CLICÁVEIS NOS COMENTÁRIOS DO MODAL -->
+                    <div class="message-text">${tornarLinksClicaveis(escapeHtml(c.text || ''))}</div>
                 </div>
             </div>
         `).join('');
@@ -1213,7 +1238,6 @@ async function abrirComentarios(postId) {
         width: '500px',
         padding: '0',
         didOpen: () => {
-            // Foca no input de comentário
             setTimeout(() => {
                 const input = document.getElementById('newCommentText');
                 if (input) input.focus();
@@ -1387,51 +1411,63 @@ async function adicionarComentario(postId) {
         atualizarOnlineUsers();
     }
 
-    function renderMensagem(msg) {
-        const isLiked = currentUser ? (msg.likes?.includes(currentUser.id) || false) : false;
-        const temRespostas = msg.respostas && msg.respostas.length > 0;
-        const podeInteragir = currentUser !== null;
-        
-        return `
-            <div class="chat-message" data-msg-id="${msg.id}">
-                <div class="message-avatar"><img src="${msg.usuario?.avatar || 'https://ui-avatars.com/api/?background=7c4dff&color=fff'}" style="width:100%;height:100%;border-radius:50%;object-fit:cover;" alt="Avatar"></div>
-                <div class="message-content">
-                    <div class="message-header">
-                        <span class="message-author">${msg.anonimo ? 'Anônimo' : escapeHtml(msg.usuario?.nome || 'Usuário')}</span>
-                        <span class="message-time">${formatarData(msg.createdAt)}</span>
-                    </div>
-                    <div class="message-text">${escapeHtml(msg.texto)}</div>
-                    <div class="message-actions">
-                        <button class="message-action ${isLiked ? 'liked' : ''}" onclick="${podeInteragir ? `likeMensagem(${msg.id})` : `mostrarLoginPrompt()`}">
-                            <i class="fas fa-heart"></i> ${msg.likes?.length || 0}
-                        </button>
-                        <button class="message-action" onclick="${podeInteragir ? `responderMensagem(${msg.id}, '${escapeHtml(msg.usuario?.nome || 'Usuário')}')` : `mostrarLoginPrompt()`}">
-                            <i class="fas fa-reply"></i> Responder
-                        </button>
-                    </div>
-                    ${temRespostas ? `
-                        <button class="message-action" onclick="toggleRespostas(${msg.id})">
-                            <i class="fas fa-comment-dots"></i> ${msg.respostas.length} respostas
-                        </button>
-                        <div class="replies-section" id="replies-${msg.id}" style="display: none;">
-                            ${msg.respostas.map(r => `
-                                <div class="reply-message">
-                                    <div class="reply-avatar"><img src="${r.usuario?.avatar || 'https://ui-avatars.com/api/?background=7c4dff&color=fff'}" style="width:100%;height:100%;border-radius:50%;object-fit:cover;" alt="Avatar"></div>
-                                    <div class="reply-content">
-                                        <div class="reply-header">
-                                            <span class="reply-author">${escapeHtml(r.usuario?.nome || 'Anônimo')}</span>
-                                            <span class="reply-time">${formatarData(r.createdAt)}</span>
-                                        </div>
-                                        <div class="reply-text">${escapeHtml(r.texto)}</div>
-                                    </div>
-                                </div>
-                            `).join('')}
-                        </div>
-                    ` : ''}
-                </div>
+function renderMensagem(msg) {
+    const isLiked = currentUser ? (msg.likes?.includes(currentUser.id) || false) : false;
+    const temRespostas = msg.respostas && msg.respostas.length > 0;
+    const podeInteragir = currentUser !== null;
+    
+    return `
+        <div class="chat-message" data-msg-id="${msg.id}" id="msg-${msg.id}">
+            <div class="message-avatar">
+                <img src="${msg.usuario?.avatar || 'https://ui-avatars.com/api/?background=7c4dff&color=fff'}" 
+                     style="width:100%;height:100%;border-radius:50%;object-fit:cover;" 
+                     alt="Avatar">
             </div>
-        `;
-    }
+            <div class="message-content">
+                <div class="message-header">
+                    <span class="message-author">${msg.anonimo ? 'Anônimo' : escapeHtml(msg.usuario?.nome || 'Usuário')}</span>
+                    <span class="message-time">${formatarData(msg.createdAt)}</span>
+                </div>
+                <!-- APLICAR LINKS CLICÁVEIS AQUI -->
+                <div class="message-text">${tornarLinksClicaveis(escapeHtml(msg.texto))}</div>
+                <div class="message-actions">
+                    <button class="message-action ${isLiked ? 'liked' : ''}" 
+                            onclick="${podeInteragir ? `likeMensagem(${msg.id})` : `mostrarLoginPrompt()`}">
+                        <i class="fas fa-heart"></i> ${msg.likes?.length || 0}
+                    </button>
+                    <button class="message-action" 
+                            onclick="${podeInteragir ? `responderMensagem(${msg.id}, '${escapeHtml(msg.usuario?.nome || 'Usuário')}')` : `mostrarLoginPrompt()`}">
+                        <i class="fas fa-reply"></i> Responder
+                    </button>
+                </div>
+                ${temRespostas ? `
+                    <button class="message-action" onclick="toggleRespostas(${msg.id})">
+                        <i class="fas fa-comment-dots"></i> ${msg.respostas.length} ${msg.respostas.length === 1 ? 'resposta' : 'respostas'}
+                    </button>
+                    <div class="replies-section" id="replies-${msg.id}" style="display: none;">
+                        ${msg.respostas.map(r => `
+                            <div class="reply-message">
+                                <div class="reply-avatar">
+                                    <img src="${r.usuario?.avatar || 'https://ui-avatars.com/api/?background=7c4dff&color=fff'}" 
+                                         style="width:100%;height:100%;border-radius:50%;object-fit:cover;" 
+                                         alt="Avatar">
+                                </div>
+                                <div class="reply-content">
+                                    <div class="reply-header">
+                                        <span class="reply-author">${escapeHtml(r.usuario?.nome || 'Anônimo')}</span>
+                                        <span class="reply-time">${formatarData(r.createdAt)}</span>
+                                    </div>
+                                    <!-- APLICAR LINKS CLICÁVEIS NAS RESPOSTAS -->
+                                    <div class="reply-text">${tornarLinksClicaveis(escapeHtml(r.texto))}</div>
+                                </div>
+                            </div>
+                        `).join('')}
+                    </div>
+                ` : ''}
+            </div>
+        </div>
+    `;
+}
 
     async function likeMensagem(id) {
         if (!currentUser) { mostrarLoginPrompt(); return; }

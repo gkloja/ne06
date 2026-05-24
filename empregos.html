@@ -1067,38 +1067,67 @@
     }
 
     function renderPost(post) {
-        const isLiked = currentUser ? (post.likes?.includes(currentUser.id) || false) : false;
-        const podeInteragir = currentUser !== null;
-        
-        return `
-            <div class="post-card">
-                <div class="post-header">
-                    <div class="post-avatar"><img src="${post.author?.avatar || 'https://ui-avatars.com/api/?background=7c4dff&color=fff'}" style="width:100%;height:100%;border-radius:50%;object-fit:cover;" alt="Avatar"></div>
-                    <div>
-                        <div class="post-author">${post.anonymous ? 'Anônimo' : escapeHtml(post.author?.nome || 'Usuário')}</div>
-                        <div class="post-time">${formatarData(post.createdAt)}</div>
-                    </div>
+    const isLiked = currentUser ? (post.likes?.includes(currentUser.id) || false) : false;
+    const podeInteragir = currentUser !== null;
+    const comentariosCount = post.comments?.length || 0;
+    
+    return `
+        <div class="post-card">
+            <div class="post-header">
+                <div class="post-avatar">
+                    <img src="${post.author?.avatar || 'https://ui-avatars.com/api/?name=' + encodeURIComponent(post.author?.nome || 'Usuário') + '&background=7c4dff&color=fff'}" 
+                         style="width:100%;height:100%;border-radius:50%;object-fit:cover;" 
+                         alt="Avatar">
                 </div>
-                <div class="post-text">${escapeHtml(post.text || '')}</div>
-                ${post.media ? `<div class="post-media">${post.mediaType === 'video' ? `<video controls src="${post.media}"></video>` : `<img src="${post.media}" alt="Post">`}</div>` : ''}
-                <div class="post-stats">
-                    <span><i class="fas fa-heart"></i> ${post.likes?.length || 0}</span>
-                    <span><i class="fas fa-comment"></i> ${post.comments?.length || 0}</span>
-                </div>
-                <div class="post-actions">
-                    <button class="post-action-btn ${isLiked ? 'liked' : ''}" onclick="${podeInteragir ? `likePost(${post.id})` : `mostrarLoginPrompt()`}">
-                        <i class="fas fa-heart"></i> Curtir
-                    </button>
-                    <button class="post-action-btn" onclick="${podeInteragir ? `abrirComentarios(${post.id})` : `mostrarLoginPrompt()`}">
-                        <i class="fas fa-comment"></i> Comentar
-                    </button>
-                    <button class="post-action-btn" onclick="compartilharPost()">
-                        <i class="fas fa-share"></i> Compartilhar
-                    </button>
+                <div>
+                    <div class="post-author">${post.anonymous ? 'Anônimo' : escapeHtml(post.author?.nome || 'Usuário')}</div>
+                    <div class="post-time">${formatarData(post.createdAt)}</div>
                 </div>
             </div>
-        `;
-    }
+            <div class="post-text">${escapeHtml(post.text || '')}</div>
+            ${post.media ? `<div class="post-media">${post.mediaType === 'video' ? `<video controls src="${post.media}"></video>` : `<img src="${post.media}" alt="Post">`}</div>` : ''}
+            <div class="post-stats">
+                <span><i class="fas fa-heart"></i> ${post.likes?.length || 0} curtidas</span>
+                <span><i class="fas fa-comment"></i> ${comentariosCount} ${comentariosCount === 1 ? 'comentário' : 'comentários'}</span>
+            </div>
+            
+            <!-- Mostrar últimos 2 comentários diretamente no post -->
+            ${comentariosCount > 0 ? `
+                <div style="margin: 8px 0; padding: 8px 0; border-top: 1px solid var(--border);">
+                    ${(post.comments || []).slice(-2).map(c => `
+                        <div style="display: flex; gap: 8px; padding: 6px 0; align-items: flex-start;">
+                            <img src="${c.author?.avatar || 'https://ui-avatars.com/api/?name=' + encodeURIComponent(c.author?.nome || 'U') + '&background=7c4dff&color=fff'}" 
+                                 style="width: 28px; height: 28px; border-radius: 50%; object-fit: cover; flex-shrink: 0;">
+                            <div style="flex: 1; background: rgba(255,255,255,0.03); padding: 6px 10px; border-radius: 12px;">
+                                <span style="font-weight: 600; font-size: 11px;">${escapeHtml(c.author?.nome || 'Anônimo')}</span>
+                                <span style="font-size: 10px; color: var(--text2); margin-left: 6px;">${formatarData(c.createdAt)}</span>
+                                <p style="font-size: 12px; margin-top: 2px;">${escapeHtml(c.text || '')}</p>
+                            </div>
+                        </div>
+                    `).join('')}
+                    ${comentariosCount > 2 ? `
+                        <button class="post-action-btn" onclick="${podeInteragir ? `abrirComentarios(${post.id})` : `mostrarLoginPrompt()`}" 
+                                style="font-size: 11px; padding: 4px 8px; width: auto; margin-top: 4px; color: var(--text2);">
+                            <i class="fas fa-comments"></i> Ver todos os ${comentariosCount} comentários
+                        </button>
+                    ` : ''}
+                </div>
+            ` : ''}
+            
+            <div class="post-actions">
+                <button class="post-action-btn ${isLiked ? 'liked' : ''}" onclick="${podeInteragir ? `likePost(${post.id})` : `mostrarLoginPrompt()`}">
+                    <i class="fas fa-heart"></i> Curtir
+                </button>
+                <button class="post-action-btn" onclick="${podeInteragir ? `abrirComentarios(${post.id})` : `mostrarLoginPrompt()`}">
+                    <i class="fas fa-comment"></i> Comentar
+                </button>
+                <button class="post-action-btn" onclick="compartilharPost()">
+                    <i class="fas fa-share"></i> Compartilhar
+                </button>
+            </div>
+        </div>
+    `;
+}
 
     // ==================== INTERAÇÕES COM POSTS ====================
     
@@ -1116,48 +1145,130 @@
         }
     }
 
-    async function abrirComentarios(postId) {
-        if (!currentUser) { mostrarLoginPrompt(); return; }
-        const post = posts.find(p => p.id === postId);
-        if (!post) return;
-        
-        Swal.fire({
-            title: '💬 Comentários',
-            html: `
-                <div style="max-height: 400px; overflow-y: auto;">
-                    ${(post.comments || []).map(c => `
-                        <div style="padding: 10px; border-bottom: 1px solid var(--border); text-align: left;">
-                            <strong>${escapeHtml(c.author?.nome || 'Anônimo')}</strong>
-                            <p>${escapeHtml(c.text)}</p>
-                            <small>${formatarData(c.createdAt)}</small>
-                        </div>
-                    `).join('') || '<p style="text-align:center;padding:20px;">Nenhum comentário ainda.</p>'}
+async function abrirComentarios(postId) {
+    if (!currentUser) { mostrarLoginPrompt(); return; }
+    const post = posts.find(p => p.id === postId);
+    if (!post) return;
+    
+    const comentarios = post.comments || [];
+    
+    let htmlComentarios = '';
+    
+    if (comentarios.length === 0) {
+        htmlComentarios = `
+            <div style="text-align: center; padding: 30px 20px; color: var(--text2);">
+                <i class="fas fa-comments" style="font-size: 48px; color: var(--primary); margin-bottom: 12px; display: block;"></i>
+                <p style="font-size: 14px;">Nenhum comentário ainda.</p>
+                <p style="font-size: 12px; margin-top: 4px;">Seja o primeiro a comentar!</p>
+            </div>`;
+    } else {
+        htmlComentarios = comentarios.map(c => `
+            <div class="chat-message" style="margin-bottom: 12px; background: rgba(255,255,255,0.03);">
+                <div class="message-avatar">
+                    <img src="${c.author?.avatar || 'https://ui-avatars.com/api/?name=' + encodeURIComponent(c.author?.nome || 'Usuário') + '&background=7c4dff&color=fff'}" 
+                         style="width:100%;height:100%;border-radius:50%;object-fit:cover;" 
+                         alt="Avatar">
                 </div>
-                <div style="display:flex; gap:8px; margin-top:16px;">
-                    <input type="text" id="newCommentText" placeholder="Escreva um comentário..." style="flex:1; padding:8px; border-radius:20px; border:1px solid var(--border); background: transparent; color: white;">
-                    <button onclick="adicionarComentario(${postId})" style="background: var(--primary); border: none; padding: 8px 16px; border-radius: 20px; color: white;">Enviar</button>
-                </div>`,
-            confirmButtonText: 'Fechar',
-            showCancelButton: false
-        });
+                <div class="message-content">
+                    <div class="message-header">
+                        <span class="message-author">${escapeHtml(c.author?.nome || 'Anônimo')}</span>
+                        <span class="message-time">${formatarData(c.createdAt)}</span>
+                    </div>
+                    <div class="message-text">${escapeHtml(c.text || '')}</div>
+                </div>
+            </div>
+        `).join('');
     }
+    
+    Swal.fire({
+        title: '💬 Comentários',
+        html: `
+            <div style="max-height: 400px; overflow-y: auto; padding: 8px;">
+                ${htmlComentarios}
+            </div>
+            <div style="display: flex; gap: 8px; margin-top: 16px; padding: 12px; background: rgba(18,22,45,0.6); border-radius: 16px; border: 1px solid var(--border);">
+                <div class="message-avatar" style="width: 36px; height: 36px; flex-shrink: 0;">
+                    <img src="${currentUser.avatar}" 
+                         style="width:100%;height:100%;border-radius:50%;object-fit:cover;" 
+                         alt="Avatar">
+                </div>
+                <input type="text" 
+                       id="newCommentText" 
+                       placeholder="Escreva um comentário..." 
+                       style="flex: 1; padding: 8px 12px; border-radius: 20px; border: 1px solid var(--border); background: rgba(255,255,255,0.05); color: white; font-family: inherit; font-size: 13px; outline: none;"
+                       onkeypress="if(event.key === 'Enter') adicionarComentario(${postId})">
+                <button onclick="adicionarComentario(${postId})" 
+                        style="background: var(--primary); border: none; width: 36px; height: 36px; border-radius: 50%; color: white; cursor: pointer; flex-shrink: 0; display: flex; align-items: center; justify-content: center;">
+                    <i class="fas fa-paper-plane" style="font-size: 14px;"></i>
+                </button>
+            </div>`,
+        showConfirmButton: false,
+        showCancelButton: true,
+        cancelButtonText: 'Fechar',
+        cancelButtonColor: '#4b5563',
+        customClass: {
+            popup: 'swal-wide',
+            htmlContainer: 'swal-html-container'
+        },
+        width: '500px',
+        padding: '0',
+        didOpen: () => {
+            // Foca no input de comentário
+            setTimeout(() => {
+                const input = document.getElementById('newCommentText');
+                if (input) input.focus();
+            }, 300);
+        }
+    });
+}
 
-    async function adicionarComentario(postId) {
-        const text = document.getElementById('newCommentText')?.value;
-        if (!text || !currentUser) return;
-        
-        await fetch(`${API_URL}/cliente06/posts/${postId}/comments`, {
+async function adicionarComentario(postId) {
+    const input = document.getElementById('newCommentText');
+    const text = input?.value?.trim();
+    
+    if (!text || !currentUser) return;
+    
+    // Mostra loading no botão
+    const btn = document.querySelector('.swal2-html-container button');
+    if (btn) {
+        btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
+        btn.disabled = true;
+    }
+    
+    try {
+        const response = await fetch(`${API_URL}/cliente06/posts/${postId}/comments`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
-                author: { id: currentUser.id, nome: currentUser.nome, avatar: currentUser.avatar },
-                text
+                author: { 
+                    id: currentUser.id, 
+                    nome: currentUser.nome, 
+                    avatar: currentUser.avatar 
+                },
+                text: text
             })
         });
         
-        carregarPosts();
-        Swal.close();
+        if (response.ok) {
+            // Recarrega os posts e reabre os comentários
+            await carregarPosts();
+            
+            // Fecha o modal atual
+            Swal.close();
+            
+            // Pequeno delay para garantir que os posts foram atualizados
+            setTimeout(() => {
+                abrirComentarios(postId);
+            }, 300);
+        } else {
+            Swal.fire('Erro', 'Não foi possível adicionar o comentário', 'error');
+        }
+    } catch (error) {
+        console.error('Erro ao comentar:', error);
+        Swal.fire('Erro', 'Erro ao adicionar comentário', 'error');
     }
+}
+
 
     function compartilharPost() {
         navigator.clipboard.writeText(window.location.href);

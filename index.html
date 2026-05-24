@@ -1820,6 +1820,75 @@ body.light-mode .ranking-table tbody tr:hover {
     color: #2563eb;
     opacity: 0.8;
 }
+/* Notificações */
+.notification-badge {
+    position: absolute;
+    top: -2px;
+    right: -2px;
+    background: #ef4444;
+    color: white;
+    border-radius: 50%;
+    width: 18px;
+    height: 18px;
+    font-size: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+    border: 2px solid var(--bg);
+}
+
+.notification-list {
+    max-height: 400px;
+    overflow-y: auto;
+}
+
+.notification-item {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    padding: 12px 10px;
+    border-bottom: 1px solid var(--border);
+    cursor: pointer;
+    transition: 0.2s;
+}
+
+.notification-item:hover {
+    background: rgba(0,0,0,0.03);
+}
+
+.notification-item.unread {
+    background: rgba(37,99,235,0.05);
+}
+
+.notification-avatar {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    object-fit: cover;
+    flex-shrink: 0;
+}
+
+.notification-content {
+    flex: 1;
+    font-size: 13px;
+    line-height: 1.4;
+}
+
+.notification-time {
+    font-size: 10px;
+    color: var(--text2);
+    margin-top: 4px;
+}
+
+.notification-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: #2563eb;
+    flex-shrink: 0;
+    margin-top: 6px;
+}
 </style>
 </head>
 <body>
@@ -2546,6 +2615,93 @@ async function atualizarOnlineCount() {
 }
 
 
+// ==================== NOTIFICAÇÕES ====================
+
+// Verificar notificações não lidas
+async function verificarNotificacoes() {
+    if (!currentUser) return;
+    
+    try {
+        const response = await fetch(`${API_URL}/cliente06/notificacoes/naoLidas/${currentUser.id}`);
+        const data = await response.json();
+        
+        const notifBtn = document.getElementById('notificationBtn');
+        if (!notifBtn) return;
+        
+        if (data.total > 0) {
+            notifBtn.style.position = 'relative';
+            notifBtn.innerHTML = `
+                <i class="fa-regular fa-bell"></i>
+                <span class="notification-badge">${data.total > 99 ? '99+' : data.total}</span>
+            `;
+        } else {
+            notifBtn.style.position = '';
+            notifBtn.innerHTML = '<i class="fa-regular fa-bell"></i>';
+        }
+    } catch (error) {
+        // Silencioso
+    }
+}
+
+// Mostrar notificações ao clicar no sino
+async function mostrarNotificacoes() {
+    if (!currentUser) { mostrarLoginPrompt(); return; }
+    
+    Swal.fire({
+        title: '🔔 Notificações',
+        html: '<p style="text-align:center;padding:30px;">Carregando...</p>',
+        showConfirmButton: false,
+        showCancelButton: true,
+        cancelButtonText: 'Fechar',
+        width: '450px',
+        didOpen: async () => {
+            try {
+                // Marcar como lidas
+                await fetch(`${API_URL}/cliente06/notificacoes/marcarLidas/${currentUser.id}`, { method: 'PUT' });
+                
+                const response = await fetch(`${API_URL}/cliente06/notificacoes/${currentUser.id}`);
+                const notificacoes = await response.json();
+                
+                let html = '<div class="notification-list">';
+                
+                if (notificacoes.length === 0) {
+                    html += '<p style="text-align:center;padding:30px;color:var(--text2);">Nenhuma notificação</p>';
+                } else {
+                    notificacoes.forEach(n => {
+                        let icone = '';
+                        switch(n.tipo) {
+                            case 'seguir': icone = '👤'; break;
+                            case 'curtir': icone = '❤️'; break;
+                            case 'mensagem': icone = '💬'; break;
+                            case 'comentario': icone = '💭'; break;
+                            default: icone = '🔔';
+                        }
+                        
+                        html += `
+                            <div class="notification-item ${n.lida ? '' : 'unread'}" onclick="Swal.close(); ${n.link ? `window.location.href='${n.link}'` : ''}">
+                                ${!n.lida ? '<span class="notification-dot"></span>' : ''}
+                                <span style="font-size:20px;flex-shrink:0;">${icone}</span>
+                                <div class="notification-content">
+                                    ${n.mensagem}
+                                    <div class="notification-time">${formatarData(n.createdAt)}</div>
+                                </div>
+                            </div>
+                        `;
+                    });
+                }
+                
+                html += '</div>';
+                Swal.getHtmlContainer().innerHTML = html;
+                
+                // Atualizar badge
+                verificarNotificacoes();
+                
+            } catch (error) {
+                Swal.getHtmlContainer().innerHTML = '<p style="text-align:center;padding:30px;">Erro ao carregar</p>';
+            }
+        }
+    });
+}
 // Verificar se a URL contém um post específico e scrollar até ele
 function verificarPostNaUrl() {
     const urlParams = new URLSearchParams(window.location.search);
@@ -2877,6 +3033,20 @@ async function enviarMensagemPrivada() {
         });
         
         if (response.ok) {
+            // Enviar notificação
+            try {
+                await fetch(`${API_URL}/cliente06/notificacoes/criar`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        de: currentUser.id,
+                        para: chatPrivadoAtivo,
+                        tipo: 'mensagem',
+                        mensagem: `<strong>${currentUser.nome}</strong> enviou uma mensagem privada`
+                    })
+                });
+            } catch (e) { /* silencioso */ }
+            
             input.value = '';
             carregarMensagensPrivadas(chatPrivadoAtivo);
         }
@@ -3626,6 +3796,23 @@ const response = await fetch(`${API_URL}/cliente06/posts/${postId}/excluir`, {
             body: JSON.stringify({ userId: currentUser.id })
         });
         if (response.ok) {
+            // Enviar notificação se não for o próprio autor
+            const post = posts.find(p => p.id === postId);
+            if (post && post.author?.id && post.author.id !== currentUser.id) {
+                try {
+                    await fetch(`${API_URL}/cliente06/notificacoes/criar`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            de: currentUser.id,
+                            para: post.author.id,
+                            tipo: 'curtir',
+                            mensagem: `<strong>${currentUser.nome}</strong> curtiu sua publicação`,
+                            link: `?post=${postId}`
+                        })
+                    });
+                } catch (e) { /* silencioso */ }
+            }
             carregarPosts();
         } else {
             removerCurtida(postId);
@@ -3775,6 +3962,24 @@ async function adicionarComentario(postId) {
         });
         
         if (response.ok) {
+            // Enviar notificação se não for o próprio autor
+            const post = posts.find(p => p.id === postId);
+            if (post && post.author?.id && post.author.id !== currentUser.id) {
+                try {
+                    await fetch(`${API_URL}/cliente06/notificacoes/criar`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            de: currentUser.id,
+                            para: post.author.id,
+                            tipo: 'comentario',
+                            mensagem: `<strong>${currentUser.nome}</strong> comentou na sua publicação`,
+                            link: `?post=${postId}`
+                        })
+                    });
+                } catch (e) { /* silencioso */ }
+            }
+            
             // Recarrega os posts e reabre os comentários
             await carregarPosts();
             
@@ -4982,26 +5187,33 @@ async function seguirUsuario(userId) {
         const response = await fetch(`${API_URL}/cliente06/seguir`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-                seguidorId: currentUser.id,
-                seguindoId: userId
-            })
+            body: JSON.stringify({ seguidorId: currentUser.id, seguindoId: userId })
         });
         
         if (response.ok) {
-            const data = await response.json();
-            // Atualiza dados locais
             if (!currentUser.seguindo) currentUser.seguindo = [];
             currentUser.seguindo.push(userId);
             salvarSessao();
             renderizarPerfil();
+            
+            // Enviar notificação
+            try {
+                await fetch(`${API_URL}/cliente06/notificacoes/criar`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        de: currentUser.id,
+                        para: userId,
+                        tipo: 'seguir',
+                        mensagem: `<strong>${currentUser.nome}</strong> começou a seguir você`
+                    })
+                });
+            } catch (e) { /* silencioso */ }
+            
             Swal.fire({ icon: 'success', title: 'Seguindo!', timer: 1500, showConfirmButton: false });
         }
-    } catch (error) {
-        console.error('Erro ao seguir:', error);
-    }
+    } catch (error) { console.error('Erro:', error); }
 }
-
 async function deixarDeSeguir(userId) {
     if (!currentUser) return;
     
@@ -5274,6 +5486,13 @@ function tornarLinksClicaveis(texto) {
 
     // ==================== EVENTOS ====================
     
+    // Evento do sino
+document.getElementById('notificationBtn')?.addEventListener('click', mostrarNotificacoes);
+
+// Verificar notificações a cada 30 segundos
+setInterval(verificarNotificacoes, 30000);
+
+    
     document.getElementById('notificationBtn')?.addEventListener('click', () => {
         Swal.fire('Notificações', '📢 Sistema funcionando normalmente!', 'info');
     });
@@ -5337,6 +5556,7 @@ function tornarLinksClicaveis(texto) {
     // 1. Configura o tema
     initTheme();
     initRadio()
+    
     // 2. Tenta restaurar a sessão
     const sessaoRestaurada = restaurarSessao();
     
@@ -5346,7 +5566,7 @@ function tornarLinksClicaveis(texto) {
     
     // 3. Configura o Firebase
     initAuth();
-    
+    setTimeout(verificarNotificacoes, 2000);
     // 4. Carrega o feed inicial
     if (!sessaoRestaurada) {
         carregarPosts();

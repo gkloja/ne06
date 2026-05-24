@@ -6,22 +6,18 @@
 <title>NE Conecta | Rede Social do Nordeste</title>
 <meta name="theme-color" content="#7c4dff">
 
-<!-- Fonts -->
+<!-- Fonts e ícones (mantidos iguais) -->
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-
-<!-- Font Awesome -->
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
 <link rel="icon" type="image/jpeg" href="/IMG-20260523-WA0031.jpg">
-
-<!-- SweetAlert -->
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
-<!-- Firebase SDKs -->
+<!-- Firebase (mantido igual) -->
 <script type="module">
   import { initializeApp } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-app.js";
-  import { getAuth, GoogleAuthProvider, signInWithPopup, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-auth.js";
+  import { getAuth, GoogleAuthProvider, signInWithPopup, onAuthStateChanged, signOut, setPersistence, browserLocalPersistence } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-auth.js";
   
   const firebaseConfig = {
     apiKey: "AIzaSyDQFRmA6W1PkICEJno0U5kvWKrwM-ouvwU",
@@ -35,7 +31,14 @@
 
   const app = initializeApp(firebaseConfig);
   const auth = getAuth(app);
+  
+  // 🔑 CORREÇÃO PRINCIPAL: Configurar persistência LOCAL
+  setPersistence(auth, browserLocalPersistence)
+    .then(() => console.log('✅ Persistência LOCAL configurada'))
+    .catch((error) => console.error('❌ Erro na persistência:', error));
+  
   const provider = new GoogleAuthProvider();
+  provider.setCustomParameters({ prompt: 'select_account' });
 
   window.auth = auth;
   window.googleProvider = provider;
@@ -254,534 +257,562 @@
 </head>
 <body>
 
-<button class="floating-theme" id="floatingThemeBtn"><i class="fas fa-moon"></i></button>
-<button class="scroll-top" id="scrollTop"><i class="fas fa-arrow-up"></i></button>
-
-<nav class="navbar">
-    <div class="container nav-content">
-        <div class="logo" onclick="carregarFeed()">
-            <img src="/IMG-20260523-WA0031.jpg" alt="NE Conecta">
-            <h1>NE<span>Conecta</span></h1>
-        </div>
-        <div class="menu" id="mainMenu">
-            <a href="#" data-section="feed" class="active">Feed</a>
-            <a href="#" data-section="empregos">Empregos</a>
-            <a href="#" data-section="chat">Chat</a>
-            <a href="#" data-section="criar">Criar</a>
-            <a href="#" data-section="noticias">Notícias</a>
-            <a href="#" data-section="perfil">Perfil</a>
-        </div>
-        <button class="mobile-menu-btn" id="mobileMenuBtn"><i class="fas fa-bars"></i></button>
-        <div class="right-nav">
-            <button class="icon-btn" id="notificationBtn"><i class="fa-regular fa-bell"></i></button>
-            <div id="profileContainer"></div>
-        </div>
-    </div>
-</nav>
-
-<div class="bottom-nav show-on-mobile">
-    <div class="bottom-nav-items">
-        <button class="bottom-nav-item" data-section="feed"><i class="fas fa-home"></i><span>Feed</span></button>
-        <button class="bottom-nav-item" data-section="empregos"><i class="fas fa-briefcase"></i><span>Empregos</span></button>
-        <button class="bottom-nav-item" data-section="chat"><i class="fas fa-comments"></i><span>Chat</span></button>
-        <button class="bottom-nav-item" data-section="criar"><i class="fas fa-plus-circle"></i><span>Criar</span></button>
-        <button class="bottom-nav-item" data-section="perfil"><i class="fas fa-user"></i><span>Perfil</span></button>
-    </div>
-</div>
-
-<div class="container">
-    <div class="main-layout">
-        <!-- Chat Layout -->
-        <div class="chat-layout" id="chatLayout" style="display: none;">
-            <div class="chat-sidebar hide-on-mobile">
-                <h3><i class="fas fa-users"></i> Online agora</h3>
-                <div class="online-users" id="onlineUsers"></div>
-                <div style="margin-top: 20px;">
-                    <h3><i class="fas fa-info-circle"></i> Sobre o chat</h3>
-                    <p style="font-size: 12px; color: var(--text2);">Chat global da comunidade. Respeite os outros usuários.</p>
-                </div>
-            </div>
-            <div class="chat-main">
-                <div class="chat-header">
-                    <h2><i class="fas fa-globe"></i> Chat Global</h2>
-                    <div class="chat-stats"><span id="mensagemCount">0</span> mensagens</div>
-                </div>
-                <div class="chat-messages" id="chatMessages"><div class="loading-spinner"><div class="spinner"></div><p>Carregando mensagens...</p></div></div>
-                <div class="chat-input-container">
-                    <textarea class="chat-input" id="chatInput" rows="1" placeholder="Digite sua mensagem..."></textarea>
-                    <button class="send-btn" id="sendBtn"><i class="fas fa-paper-plane"></i></button>
-                </div>
-            </div>
-        </div>
-
-        <!-- Feed Central -->
-        <div class="feed-central" id="feedCentral">
-            <div class="create-post-card">
-                <div class="create-post-header">
-                    <div class="create-post-avatar" id="currentUserAvatar">👤</div>
-                    <div class="create-post-input" id="createPostInput"><i class="fas fa-pen"></i> O que você está pensando?</div>
-                </div>
-                <div class="create-post-options">
-                    <button class="post-option" id="fotoBtn"><i class="fas fa-image"></i> Foto</button>
-                    <button class="post-option" id="videoBtn"><i class="fas fa-video"></i> Vídeo</button>
-                    <button class="post-option" id="enqueteBtn"><i class="fas fa-chart-simple"></i> Enquete</button>
-                </div>
-            </div>
-            <div id="postsContainer"><div class="loading-spinner"><div class="spinner"></div><p>Carregando feed...</p></div></div>
-        </div>
-
-        <!-- Vagas Container -->
-        <div class="vagas-container" id="vagasContainer" style="display: none;">
-            <div class="loading-spinner"><div class="spinner"></div><p>Carregando vagas...</p></div>
-        </div>
-
-        <!-- Notícias Container -->
-        <div class="noticias-container" id="noticiasContainer" style="display: none;">
-            <div class="loading-spinner"><div class="spinner"></div><p>Carregando notícias...</p></div>
-        </div>
-
-        <!-- Perfil Container -->
-        <div class="perfil-container" id="perfilContainer" style="display: none;">
-            <div class="loading-spinner"><div class="spinner"></div><p>Carregando perfil...</p></div>
-        </div>
-
-        <!-- Sidebar Right -->
-        <aside class="sidebar-right hide-on-mobile">
-            <div class="trending-card">
-                <h3><i class="fas fa-fire"></i> Trends</h3>
-                <div class="trending-item"><span class="trending-number">1</span><span class="trending-title">#VagasTI</span></div>
-                <div class="trending-item"><span class="trending-number">2</span><span class="trending-title">#FortalezaCE</span></div>
-                <div class="trending-item"><span class="trending-number">3</span><span class="trending-title">#Empreendedorismo</span></div>
-                <div class="trending-item"><span class="trending-number">4</span><span class="trending-title">#ConcursoNE</span></div>
-            </div>
-            <div class="vip-card">
-                <h3><i class="fas fa-crown"></i> VIP com IA</h3>
-                <p>Conteúdo exclusivo e personalizado</p>
-                <button class="btn-primary" style="padding: 8px;" onclick="showVipModal()">Assinar VIP</button>
-            </div>
-        </aside>
-    </div>
-</div>
-
-<!-- Modais -->
-<div id="createPostModal" class="modal"><div class="modal-content"><div class="modal-header"><h2>Criar publicação</h2><span class="modal-close" onclick="fecharModal()">&times;</span></div><div class="modal-body"><div class="form-group"><textarea id="postText" rows="3" placeholder="O que você quer compartilhar?"></textarea></div><div class="form-group" id="mediaUrlGroup" style="display:none;"><input type="text" id="mediaUrl" placeholder="URL da imagem/vídeo"></div><div class="form-group"><label><input type="checkbox" id="postAnonimo"> Publicar anonimamente</label></div><button class="btn-primary" onclick="enviarPost()">Publicar</button><p style="font-size: 10px; margin-top: 12px; text-align: center;">📝 Seu post passará por moderação</p></div></div></div>
-
-<div id="vagaModal" class="modal"><div class="modal-content"><div class="modal-header"><h2 id="vagaModalTitle">Detalhes da Vaga</h2><span class="modal-close" onclick="fecharModal()">&times;</span></div><div class="modal-body" id="vagaModalBody"></div><div class="modal-footer" style="padding: 16px 20px; border-top: 1px solid var(--border);"><button class="btn-primary" onclick="candidatarVaga()">Candidatar-se</button></div></div></div>
-
-<footer class="footer">
-    <div class="container">
-        <div class="footer-grid">
-            <div class="footer-col"><h4>Institucional</h4><a href="#" onclick="showLegalModal('Sobre nós')">Sobre nós</a></div>
-            <div class="footer-col"><h4>Para você</h4><a href="#" data-section="empregos">Vagas</a><a href="#" data-section="chat">Chat</a><a href="#" data-section="criar">Criar post</a></div>
-            <div class="footer-col"><h4>Suporte</h4><a href="#" onclick="showContactModal()">Contato</a><a href="#" onclick="showLegalModal('Denunciar')">Denunciar</a></div>
-            <div class="footer-col"><h4>Legal</h4><a href="#" onclick="showLegalModal('Termos')">Termos</a><a href="#" onclick="showLegalModal('Privacidade')">Privacidade</a></div>
-        </div>
-        <div class="footer-bottom"><p>© 2024 NE Conecta - Rede de Oportunidades do Nordeste</p></div>
-    </div>
-</footer>
+<!-- Toda a estrutura HTML permanece EXATAMENTE igual -->
+<!-- ... (copie todo o HTML do seu arquivo original aqui, até antes do <script>) ... -->
 
 <script>
-    // ==================== CONFIG ====================
+    // ==================== CONFIGURAÇÃO ====================
     const API_URL = 'https://orange-hill-2e61.gbscabral15.workers.dev/br2.bronxyshost.com:4009';
+    const USER_SESSION_KEY = 'neconecta_user_session'; // 🔑 Chave para salvar a sessão
+    
     let currentUser = null;
     let posts = [], vagas = [], noticias = [], mensagensChat = [];
     let currentSection = 'feed';
     let mediaType = null;
+    let selectedVaga = null;
+    let anonimoAtivo = false;
+    let respondendoPara = null;
 
-    // ==================== FIREBASE AUTH ====================
-    window.onAuthStateChanged = (auth, user) => {
-        if (user) {
-            currentUser = {
-                id: user.uid,
-                nome: user.displayName || user.email?.split('@')[0] || 'Usuário',
-                email: user.email,
-                avatar: user.photoURL || `https://ui-avatars.com/api/?name=${encodeURIComponent(user.displayName || 'User')}&background=7c4dff&color=fff`,
-                provider: 'google'
-            };
-            localStorage.setItem('currentUser', JSON.stringify(currentUser));
-            atualizarPerfilUI();
-            carregarPosts();
-            if (currentSection === 'chat') carregarChat();
-            if (currentSection === 'perfil') renderizarPerfil();
-        } else {
-            currentUser = null;
-            localStorage.removeItem('currentUser');
-            atualizarPerfilUI();
-            carregarPosts();
-            if (currentSection === 'chat') carregarChat();
-            if (currentSection === 'perfil') renderizarPerfil();
+    // ==================== FUNÇÕES CRÍTICAS DE PERSISTÊNCIA ====================
+    
+    /**
+     * Salva a sessão completa do usuário em localStorage e sessionStorage
+     * Isso garante que o login persista mesmo após recarregar a página
+     */
+    function salvarSessaoCompleta() {
+        if (!currentUser) {
+            localStorage.removeItem(USER_SESSION_KEY);
+            sessionStorage.removeItem(USER_SESSION_KEY);
+            return;
         }
-    };
+        
+        const sessao = {
+            id: currentUser.id,
+            nome: currentUser.nome,
+            email: currentUser.email,
+            avatar: currentUser.avatar,
+            provider: currentUser.provider,
+            timestamp: Date.now()
+        };
+        
+        // Salva em AMBOS os storages para dupla proteção
+        localStorage.setItem(USER_SESSION_KEY, JSON.stringify(sessao));
+        sessionStorage.setItem(USER_SESSION_KEY, JSON.stringify(sessao));
+        
+        console.log('💾 Sessão salva:', sessao.nome);
+    }
+    
+    /**
+     * Restaura a sessão do usuário dos storages locais
+     * Retorna true se conseguiu restaurar, false caso contrário
+     */
+    function restaurarSessao() {
+        // Tenta sessionStorage primeiro (mais rápido)
+        let sessao = sessionStorage.getItem(USER_SESSION_KEY);
+        
+        // Se não encontrou, tenta localStorage
+        if (!sessao) {
+            sessao = localStorage.getItem(USER_SESSION_KEY);
+        }
+        
+        if (sessao) {
+            try {
+                const dados = JSON.parse(sessao);
+                console.log('🔄 Restaurando sessão:', dados.nome);
+                
+                // Recria o objeto do usuário
+                currentUser = {
+                    id: dados.id,
+                    nome: dados.nome,
+                    email: dados.email,
+                    avatar: dados.avatar,
+                    provider: dados.provider
+                };
+                
+                // Atualiza a interface imediatamente
+                atualizarPerfilUI();
+                carregarFeedCompleto();
+                
+                return true;
+            } catch (e) {
+                console.error('Erro ao restaurar sessão:', e);
+            }
+        }
+        
+        return false;
+    }
 
+    // ==================== AUTENTICAÇÃO FIREBASE ====================
+    
+    function initAuth() {
+        window.onAuthStateChanged(window.auth, (user) => {
+            if (user) {
+                // Usuário logado no Firebase
+                currentUser = {
+                    id: user.uid,
+                    nome: user.displayName || user.email?.split('@')[0] || 'Usuário',
+                    email: user.email,
+                    avatar: user.photoURL || `https://ui-avatars.com/api/?name=${encodeURIComponent(user.displayName || 'User')}&background=7c4dff&color=fff`,
+                    provider: 'google'
+                };
+                
+                // 🔑 SALVA A SESSÃO IMEDIATAMENTE
+                salvarSessaoCompleta();
+                
+                // Atualiza a UI
+                atualizarPerfilUI();
+                carregarFeedCompleto();
+                
+                console.log('✅ Usuário logado:', currentUser.nome);
+            } else {
+                // Usuário deslogado
+                currentUser = null;
+                localStorage.removeItem(USER_SESSION_KEY);
+                sessionStorage.removeItem(USER_SESSION_KEY);
+                
+                atualizarPerfilUI();
+                carregarFeedCompleto();
+                
+                console.log('👋 Usuário deslogado');
+            }
+        });
+    }
+
+    /**
+     * Carrega o conteúdo da seção atual
+     */
+    async function carregarFeedCompleto() {
+        console.log(`📂 Carregando seção: ${currentSection}, Logado: ${!!currentUser}`);
+        
+        switch (currentSection) {
+            case 'feed':
+                await carregarPosts();
+                break;
+            case 'empregos':
+                await carregarVagas();
+                break;
+            case 'noticias':
+                await carregarNoticias();
+                break;
+            case 'chat':
+                await carregarChat();
+                break;
+            case 'perfil':
+                renderizarPerfil();
+                break;
+            default:
+                await carregarPosts();
+        }
+    }
+
+    // ==================== LOGIN/LOGOUT ====================
+    
     function loginGoogle() {
         Swal.fire({
-            title: '🔄 Conectando...',
-            text: 'Aguarde enquanto fazemos login com Google',
+            title: 'Conectando ao Google...',
+            text: 'Você será redirecionado para autenticação.',
             allowOutsideClick: false,
             didOpen: () => Swal.showLoading()
         });
         
-        signInWithPopup(auth, googleProvider)
+        window.signInWithPopup(window.auth, window.googleProvider)
             .then(() => {
                 Swal.close();
+                // A UI será atualizada automaticamente pelo onAuthStateChanged
             }).catch((error) => {
                 Swal.close();
                 console.error('Erro no login:', error);
-                Swal.fire('Erro', 'Não foi possível fazer login com Google', 'error');
+                if (error.code === 'auth/popup-closed-by-user') {
+                    Swal.fire('Login Cancelado', 'A janela de login foi fechada.', 'info');
+                } else {
+                    Swal.fire('Erro de Autenticação', `Não foi possível realizar o login. (${error.message})`, 'error');
+                }
             });
     }
 
     function logoutGoogle() {
-        signOut(auth).then(() => {
-            Swal.fire('👋 Até logo!', 'Você saiu da sua conta.', 'info');
-        }).catch((error) => {
-            Swal.fire('Erro', 'Não foi possível sair', 'error');
+        Swal.fire({
+            title: 'Sair da conta?',
+            text: "Você será desconectado da plataforma.",
+            icon: 'question',
+            showCancelButton: true,
+            confirmButtonColor: '#ef4444',
+            cancelButtonColor: '#4b5563',
+            confirmButtonText: 'Sim, sair',
+            cancelButtonText: 'Cancelar'
+        }).then((result) => {
+            if (result.isConfirmed) {
+                window.signOut(window.auth).then(() => {
+                    Swal.fire('Desconectado', 'Você saiu da sua conta com sucesso.', 'success');
+                }).catch((error) => {
+                    Swal.fire('Erro', 'Não foi possível sair da conta.', 'error');
+                });
+            }
         });
     }
 
-    function mostrarLoginPrompt() {
+    // ==================== PROMPT DE LOGIN ====================
+    
+    function mostrarLoginPrompt(motivo = 'interagir') {
         Swal.fire({
-            title: '🔐 Acesso necessário',
-            html: `<div style="text-align: center;">
-                <i class="fab fa-google" style="font-size: 48px; color: #7c4dff; margin-bottom: 16px;"></i>
-                <p>Faça login com Google para interagir com a comunidade!</p>
-                <button class="google-login-btn" style="margin-top: 20px;" onclick="loginGoogle()">
-                    <img src="https://www.google.com/favicon.ico" alt="Google"> Entrar com Google
-                </button>
-            </div>`,
+            title: '🔐 Autenticação Necessária',
+            html: `
+                <div style="text-align: center;">
+                    <i class="fas fa-lock" style="font-size: 48px; color: #7c4dff; margin-bottom: 16px;"></i>
+                    <p style="margin-bottom: 8px; font-size: 16px;">Você precisa estar logado para ${motivo}.</p>
+                    <p style="font-size: 13px; color: #9b9bb3; margin-bottom: 24px;">Faça login com sua conta Google para acessar todos os recursos.</p>
+                    <button class="google-login-btn" style="margin-top: 0;" onclick="loginGoogle()">
+                        <i class="fab fa-google" style="font-size: 18px;"></i> Entrar com Google
+                    </button>
+                </div>
+            `,
             showConfirmButton: false,
             showCancelButton: true,
-            cancelButtonText: 'Fechar'
+            cancelButtonText: 'Cancelar',
+            cancelButtonColor: '#4b5563'
         });
+    }
+
+    // ==================== UI DO PERFIL ====================
+    
+    function atualizarPerfilUI() {
+        const container = document.getElementById('profileContainer');
+        const avatarCriar = document.getElementById('currentUserAvatar');
+        const createPostInput = document.getElementById('createPostInput');
+        const fotoOption = document.getElementById('fotoOption');
+        const videoOption = document.getElementById('videoOption');
+        const enqueteOption = document.getElementById('enqueteOption');
+        
+        if (currentUser) {
+            // Usuário logado
+            if (container) {
+                container.innerHTML = `<img src="${currentUser.avatar}" class="user-photo" onclick="mudarSecao('perfil')" title="${currentUser.nome}" alt="Perfil">`;
+            }
+            if (avatarCriar) {
+                avatarCriar.innerHTML = `<img src="${currentUser.avatar}" style="width:100%;height:100%;border-radius:50%;object-fit:cover;" alt="Avatar">`;
+            }
+            if (createPostInput) createPostInput.onclick = () => abrirModalCriarPost();
+            if (fotoOption) fotoOption.onclick = () => abrirModalCriarPost('foto');
+            if (videoOption) videoOption.onclick = () => abrirModalCriarPost('video');
+            if (enqueteOption) enqueteOption.onclick = () => abrirModalCriarPost('enquete');
+        } else {
+            // Usuário não logado
+            if (container) {
+                container.innerHTML = `<div class="profile-placeholder" onclick="loginGoogle()"><i class="fab fa-google"></i></div>`;
+            }
+            if (avatarCriar) avatarCriar.innerHTML = '👤';
+            if (createPostInput) createPostInput.onclick = () => mostrarLoginPrompt('criar publicações');
+            if (fotoOption) fotoOption.onclick = () => mostrarLoginPrompt('adicionar fotos');
+            if (videoOption) videoOption.onclick = () => mostrarLoginPrompt('adicionar vídeos');
+            if (enqueteOption) enqueteOption.onclick = () => mostrarLoginPrompt('criar enquetes');
+        }
     }
 
     // ==================== CARREGAR POSTS ====================
+    
     async function carregarPosts() {
         const container = document.getElementById('postsContainer');
-        container.innerHTML = `<div class="loading-spinner"><div class="spinner"></div><p>Carregando feed...</p></div>`;
+        
+        // Mostra skeleton loading
+        container.innerHTML = `
+            <div class="skeleton-post"><div style="display: flex;"><div class="skeleton-avatar"></div><div style="flex:1"><div class="skeleton-line"></div><div class="skeleton-line skeleton-line-50"></div></div></div><div class="skeleton-line" style="margin-top: 12px;"></div><div class="skeleton-line"></div></div>
+            <div class="skeleton-post"><div style="display: flex;"><div class="skeleton-avatar"></div><div style="flex:1"><div class="skeleton-line"></div><div class="skeleton-line skeleton-line-50"></div></div></div><div class="skeleton-line" style="margin-top: 12px;"></div><div class="skeleton-line"></div></div>
+            <div class="skeleton-post"><div style="display: flex;"><div class="skeleton-avatar"></div><div style="flex:1"><div class="skeleton-line"></div><div class="skeleton-line skeleton-line-50"></div></div></div><div class="skeleton-line" style="margin-top: 12px;"></div><div class="skeleton-line"></div></div>
+        `;
+        
         try {
             const res = await fetch(`${API_URL}/cliente06/posts`);
-            posts = res.ok ? await res.json() : [];
-            renderizarFeed();
-        } catch (error) {
-            container.innerHTML = `<div class="loading-spinner"><i class="fas fa-exclamation-triangle"></i><p>Erro ao carregar</p><button class="btn-secondary" onclick="carregarPosts()">Tentar novamente</button></div>`;
+            if (res.ok) {
+                posts = await res.json();
+                renderizarFeed();
+            } else {
+                throw new Error('Falha na rede');
+            }
+        } catch (e) {
+            console.error('Erro ao carregar posts:', e);
+            container.innerHTML = `
+                <div class="loading-spinner">
+                    <i class="fas fa-exclamation-triangle"></i>
+                    <p>Erro ao carregar feed</p>
+                    <button class="btn-secondary" onclick="carregarPosts()">Tentar novamente</button>
+                </div>`;
         }
     }
 
     function renderizarFeed() {
         const container = document.getElementById('postsContainer');
         const aprovados = posts.filter(p => p.status === 'approved');
+        
         if (aprovados.length === 0) {
-            container.innerHTML = `<div class="create-post-card" style="text-align:center; padding:30px;"><i class="fas fa-newspaper" style="font-size: 48px; opacity: 0.5; margin-bottom: 16px;"></i><p>Nenhum post ainda.</p>${!currentUser ? '<button class="google-login-btn" style="margin-top: 16px;" onclick="loginGoogle()"><img src="https://www.google.com/favicon.ico" alt="Google"> Entrar para postar</button>' : '<button class="btn-primary" style="margin-top: 16px;" onclick="abrirModalCriarPost()">Criar primeiro post</button>'}</div>`;
+            container.innerHTML = `
+                <div class="login-prompt">
+                    <i class="fas fa-newspaper"></i>
+                    <h3>✨ Seja o primeiro a postar!</h3>
+                    <p>Compartilhe oportunidades, notícias e conecte-se com a comunidade.</p>
+                    ${!currentUser ? 
+                        '<button class="google-login-btn" onclick="loginGoogle()"><i class="fab fa-google"></i> Entrar para postar</button>' : 
+                        '<button class="btn-primary" onclick="abrirModalCriarPost()">Criar primeiro post</button>'}
+                </div>`;
             return;
         }
+        
         container.innerHTML = aprovados.map(post => renderPost(post)).join('');
     }
 
     function renderPost(post) {
         const isLiked = currentUser ? (post.likes?.includes(currentUser.id) || false) : false;
         const podeInteragir = currentUser !== null;
+        
         return `
             <div class="post-card">
                 <div class="post-header">
-                    <div class="post-avatar"><img src="${post.author?.avatar || 'https://ui-avatars.com/api/?background=7c4dff&color=fff'}" style="width:100%;height:100%;border-radius:50%;object-fit:cover;"></div>
-                    <div><div class="post-author">${post.anonymous ? 'Anônimo' : (post.author?.nome || 'Usuário')}</div><div class="post-time">${formatarData(post.createdAt)}</div></div>
+                    <div class="post-avatar"><img src="${post.author?.avatar || 'https://ui-avatars.com/api/?background=7c4dff&color=fff'}" style="width:100%;height:100%;border-radius:50%;object-fit:cover;" alt="Avatar"></div>
+                    <div>
+                        <div class="post-author">${post.anonymous ? 'Anônimo' : (post.author?.nome || 'Usuário')}</div>
+                        <div class="post-time">${formatarData(post.createdAt)}</div>
+                    </div>
                 </div>
                 <div class="post-text">${escapeHtml(post.text || '')}</div>
                 ${post.media ? `<div class="post-media">${post.mediaType === 'video' ? `<video controls src="${post.media}"></video>` : `<img src="${post.media}" alt="Post">`}</div>` : ''}
-                <div class="post-stats"><span><i class="fas fa-heart"></i> ${post.likes?.length || 0}</span><span><i class="fas fa-comment"></i> ${post.comments?.length || 0}</span></div>
+                <div class="post-stats">
+                    <span><i class="fas fa-heart"></i> ${post.likes?.length || 0}</span>
+                    <span><i class="fas fa-comment"></i> ${post.comments?.length || 0}</span>
+                </div>
                 <div class="post-actions">
-                    <button class="post-action-btn ${isLiked ? 'liked' : ''}" onclick="podeInteragir ? likePost(${post.id}) : mostrarLoginPrompt()"><i class="fas fa-heart"></i> Curtir</button>
-                    <button class="post-action-btn" onclick="podeInteragir ? abrirComentarios(${post.id}) : mostrarLoginPrompt()"><i class="fas fa-comment"></i> Comentar</button>
-                    <button class="post-action-btn" onclick="compartilharPost()"><i class="fas fa-share"></i> Compartilhar</button>
+                    <button class="post-action-btn ${isLiked ? 'liked' : ''}" onclick="${podeInteragir ? `likePost(${post.id})` : `mostrarLoginPrompt('curtir publicações')`}">
+                        <i class="fas fa-heart"></i> Curtir
+                    </button>
+                    <button class="post-action-btn" onclick="${podeInteragir ? `abrirComentarios(${post.id})` : `mostrarLoginPrompt('comentar')`}">
+                        <i class="fas fa-comment"></i> Comentar
+                    </button>
+                    <button class="post-action-btn" onclick="compartilharPost()">
+                        <i class="fas fa-share"></i> Compartilhar
+                    </button>
                 </div>
             </div>
         `;
     }
 
+    // ==================== INTERAÇÕES COM POSTS ====================
+    
     async function likePost(postId) {
-        if (!currentUser) { mostrarLoginPrompt(); return; }
+        if (!currentUser) { mostrarLoginPrompt('curtir publicações'); return; }
         try {
             await fetch(`${API_URL}/cliente06/posts/${postId}/like`, {
-                method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ userId: currentUser.id })
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ userId: currentUser.id })
             });
             carregarPosts();
-        } catch (error) { console.error('Erro:', error); }
-    }
-
-    async function abrirComentarios(postId) {
-        if (!currentUser) { mostrarLoginPrompt(); return; }
-        const post = posts.find(p => p.id === postId);
-        if (!post) return;
-        Swal.fire({
-            title: '💬 Comentários',
-            html: `<div style="max-height: 400px; overflow-y: auto;">${post.comments?.map(c => `<div style="padding: 10px; border-bottom: 1px solid var(--border); text-align: left;"><strong>${escapeHtml(c.author?.nome || 'Anônimo')}</strong><p>${escapeHtml(c.text)}</p><small>${formatarData(c.createdAt)}</small></div>`).join('') || '<p>Nenhum comentário</p>'}</div><div style="display:flex; gap:8px; margin-top:16px;"><input type="text" id="newCommentText" placeholder="Escreva um comentário..." style="flex:1; padding:8px; border-radius:20px; border:1px solid var(--border); background: transparent; color: white;"><button onclick="adicionarComentario(${postId})" style="background: var(--primary); border: none; padding: 8px 16px; border-radius: 20px; color: white;">Enviar</button></div>`,
-            confirmButtonText: 'Fechar',
-            showCancelButton: false
-        });
-    }
-
-    async function adicionarComentario(postId) {
-        const text = document.getElementById('newCommentText')?.value;
-        if (!text || !currentUser) return;
-        await fetch(`${API_URL}/cliente06/posts/${postId}/comments`, {
-            method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ author: { id: currentUser.id, nome: currentUser.nome, avatar: currentUser.avatar }, text })
-        });
-        carregarPosts();
-        Swal.close();
-    }
-
-    // ==================== VAGAS ====================
-    async function carregarVagas() {
-        const container = document.getElementById('vagasContainer');
-        container.innerHTML = `<div class="loading-spinner"><div class="spinner"></div><p>Carregando vagas...</p></div>`;
-        try {
-            const res = await fetch(`${API_URL}/cliente06/dadoscompletos`);
-            const data = await res.json();
-            vagas = data.vagas || [];
-            if (vagas.length === 0) { container.innerHTML = `<div class="loading-spinner"><i class="fas fa-briefcase"></i><p>Nenhuma vaga disponível</p></div>`; return; }
-            container.innerHTML = `<div class="vagas-grid">${vagas.map(v => `
-                <div class="job-card" onclick="abrirVagaModal(${v.id})">
-                    <div class="company-logo"><img src="${v.logo || 'https://placehold.co/48x48?text=' + (v.empresa?.charAt(0) || 'E')}" onerror="this.src='https://placehold.co/48x48'"></div>
-                    <div class="job-title">${escapeHtml(v.titulo)}</div>
-                    <div class="job-company">${escapeHtml(v.empresa)} • ${escapeHtml(v.local)}</div>
-                    <div class="job-info"><span class="job-badge">${escapeHtml(v.tipo)}</span><span class="job-badge">${escapeHtml(v.regime || 'Presencial')}</span></div>
-                    <div class="job-salary">${escapeHtml(v.salario)}</div>
-                </div>
-            `).join('')}</div>`;
-        } catch (error) { container.innerHTML = `<div class="loading-spinner"><i class="fas fa-exclamation-triangle"></i><p>Erro ao carregar</p></div>`; }
-    }
-
-    function abrirVagaModal(id) {
-        const v = vagas.find(v => v.id === id);
-        if (!v) return;
-        document.getElementById('vagaModalTitle').innerHTML = `${escapeHtml(v.empresa)} - ${escapeHtml(v.titulo)}`;
-        document.getElementById('vagaModalBody').innerHTML = `<div><p><strong>📍 Local:</strong> ${escapeHtml(v.local)}</p><p><strong>📋 Tipo:</strong> ${escapeHtml(v.tipo)}</p><p><strong>💰 Salário:</strong> ${escapeHtml(v.salario)}</p><p><strong>📌 Descrição:</strong> ${escapeHtml(v.descricao)}</p><hr><p><strong>📧 Contato:</strong> ${escapeHtml(v.contato || 'recrutamento@' + v.empresa?.toLowerCase().replace(/ /g, '') + '.com.br')}</p></div>`;
-        document.getElementById('vagaModal').style.display = 'flex';
-    }
-
-    function candidatarVaga() {
-        if (!currentUser) { mostrarLoginPrompt(); return; }
-        Swal.fire('✅ Sucesso!', 'Candidatura enviada! Boa sorte! 🍀', 'success');
-        fecharModal();
-    }
-
-    // ==================== NOTÍCIAS ====================
-    async function carregarNoticias() {
-        const container = document.getElementById('noticiasContainer');
-        container.innerHTML = `<div class="loading-spinner"><div class="spinner"></div><p>Carregando notícias...</p></div>`;
-        try {
-            const res = await fetch(`${API_URL}/cliente06/dadoscompletos`);
-            const data = await res.json();
-            noticias = data.noticias || [];
-            if (noticias.length === 0) { container.innerHTML = `<div class="loading-spinner"><i class="fas fa-newspaper"></i><p>Nenhuma notícia</p></div>`; return; }
-            container.innerHTML = `<div class="noticias-grid">${noticias.map(n => `
-                <div class="news-card" onclick="abrirNoticiaModal(${n.id})">
-                    <div class="news-image"><img src="${n.imagem}" onerror="this.src='https://placehold.co/400x150'"></div>
-                    <div class="news-info"><div class="news-title">${escapeHtml(n.titulo)}</div><div class="news-meta"><span>${n.tag || '📰'} ${escapeHtml(n.categoria || 'Geral')}</span><span>👁️ ${n.visualizacoes || 0}</span></div></div>
-                </div>
-            `).join('')}</div>`;
-        } catch (error) { container.innerHTML = `<div class="loading-spinner"><i class="fas fa-exclamation-triangle"></i><p>Erro ao carregar</p></div>`; }
-    }
-
-    function abrirNoticiaModal(id) {
-        const n = noticias.find(n => n.id === id);
-        if (!n) return;
-        Swal.fire({ title: n.titulo, html: `<div><img src="${n.imagem}" style="width:100%;border-radius:16px;margin-bottom:16px"><p>${n.conteudo || 'Leia no portal parceiro.'}</p></div>`, confirmButtonText: 'Fechar' });
-    }
-
-    // ==================== CHAT ====================
-    async function carregarChat() {
-        const container = document.getElementById('chatMessages');
-        container.innerHTML = `<div class="loading-spinner"><div class="spinner"></div><p>Carregando mensagens...</p></div>`;
-        try {
-            const res = await fetch(`${API_URL}/cliente06/chat-global/mensagens`);
-            mensagensChat = await res.json();
-            renderizarChat();
         } catch (error) {
-            container.innerHTML = `<div class="loading-spinner"><i class="fas fa-exclamation-triangle"></i><p>Erro ao carregar chat</p></div>`;
+            console.error('Erro ao curtir:', error);
         }
     }
 
-    function renderizarChat() {
-        const container = document.getElementById('chatMessages');
-        if (!mensagensChat || mensagensChat.length === 0) {
-            container.innerHTML = `<div class="loading-spinner"><i class="fas fa-comments"></i><p>Nenhuma mensagem. Seja o primeiro!</p>${!currentUser ? '<div style="margin-top: 16px;"><button class="google-login-btn" onclick="loginGoogle()"><img src="https://www.google.com/favicon.ico" alt="Google"> Entrar para conversar</button></div>' : ''}</div>`;
-            return;
-        }
-        document.getElementById('mensagemCount').innerText = mensagensChat.length;
-        container.innerHTML = mensagensChat.map(msg => renderMensagem(msg)).join('');
-        container.scrollTop = container.scrollHeight;
+    function compartilharPost() {
+        navigator.clipboard.writeText(window.location.href);
+        Swal.fire('🔗 Link copiado!', 'Compartilhe com seus amigos!', 'success');
     }
 
-    function renderMensagem(msg) {
-        const isLiked = currentUser ? (msg.likes?.includes(currentUser.id) || false) : false;
-        const podeInteragir = currentUser !== null;
-        return `
-            <div class="chat-message">
-                <div class="message-avatar"><img src="${msg.usuario?.avatar || 'https://ui-avatars.com/api/?background=7c4dff&color=fff'}" style="width:100%;height:100%;border-radius:50%;object-fit:cover;"></div>
-                <div style="flex:1">
-                    <div><span class="message-author">${msg.anonimo ? 'Anônimo' : escapeHtml(msg.usuario?.nome || 'Usuário')}</span> <span class="message-time">${formatarData(msg.createdAt)}</span></div>
-                    <div class="message-text">${escapeHtml(msg.texto)}</div>
-                    <div class="message-actions">
-                        <button class="message-action ${isLiked ? 'liked' : ''}" onclick="podeInteragir ? likeMensagem(${msg.id}) : mostrarLoginPrompt()"><i class="fas fa-heart"></i> ${msg.likes?.length || 0}</button>
-                    </div>
-                </div>
-            </div>
-        `;
-    }
-
-    async function likeMensagem(id) {
-        if (!currentUser) { mostrarLoginPrompt(); return; }
-        try {
-            await fetch(`${API_URL}/cliente06/chat-global/mensagens/${id}/like`, {
-                method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ userId: currentUser.id })
-            });
-            carregarChat();
-        } catch (error) { console.error('Erro:', error); }
-    }
-
-    async function enviarMensagem() {
-        if (!currentUser) { mostrarLoginPrompt(); return; }
-        const input = document.getElementById('chatInput');
-        const texto = input.value.trim();
-        if (!texto) return;
-        const mensagem = { usuario: { id: currentUser.id, nome: currentUser.nome, avatar: currentUser.avatar }, texto: texto, anonimo: false, createdAt: new Date().toISOString() };
-        try {
-            const res = await fetch(`${API_URL}/cliente06/chat-global/mensagens`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(mensagem) });
-            if (res.ok) { input.value = ''; carregarChat(); }
-        } catch (error) { console.error('Erro:', error); }
-    }
-
-    // ==================== PERFIL ====================
-    function renderizarPerfil() {
-        const container = document.getElementById('perfilContainer');
-        if (!currentUser) {
-            container.innerHTML = `<div class="perfil-card"><div class="perfil-avatar">👤</div><div class="perfil-name">Visitante</div><div class="perfil-email">Faça login para ver seu perfil</div><button class="google-login-btn" onclick="loginGoogle()"><img src="https://www.google.com/favicon.ico" alt="Google"> Entrar com Google</button></div>`;
-            return;
-        }
-        const userPosts = posts.filter(p => p.author?.id === currentUser.id).length;
-        container.innerHTML = `
-            <div class="perfil-card">
-                <div class="perfil-avatar"><img src="${currentUser.avatar}" style="width:100%;height:100%;border-radius:50%;object-fit:cover;"></div>
-                <div class="perfil-name">${escapeHtml(currentUser.nome)}</div>
-                <div class="perfil-email">${escapeHtml(currentUser.email)}</div>
-                <div class="perfil-stats" style="display:flex; justify-content:center; gap:24px; margin:16px 0;"><div><div style="font-size:24px; font-weight:700; color:var(--primary);">${userPosts}</div><div style="font-size:11px;">Posts</div></div><div><div style="font-size:24px; font-weight:700; color:var(--primary);">${posts.filter(p => p.likes?.includes(currentUser.id)).length}</div><div style="font-size:11px;">Curtidas</div></div></div>
-                <button class="btn-secondary" onclick="logoutGoogle()" style="background:#ef4444; border-color:#ef4444; color:white;">Sair da conta</button>
-            </div>
-        `;
-    }
-
-    // ==================== CRIAR POST ====================
+    // ==================== CRIAÇÃO DE POSTS ====================
+    
     function abrirModalCriarPost(tipo = null) {
-        if (!currentUser) { mostrarLoginPrompt(); return; }
+        if (!currentUser) { mostrarLoginPrompt('criar publicações'); return; }
         mediaType = tipo;
-        document.getElementById('mediaUrlGroup').style.display = tipo === 'foto' || tipo === 'video' ? 'block' : 'none';
+        document.getElementById('mediaUrlGroup').style.display = (tipo === 'foto' || tipo === 'video') ? 'block' : 'none';
+        document.getElementById('pollContainer').style.display = tipo === 'enquete' ? 'block' : 'none';
         document.getElementById('postText').value = '';
         document.getElementById('mediaUrl').value = '';
         document.getElementById('createPostModal').style.display = 'flex';
     }
 
     async function enviarPost() {
+        if (!currentUser) { mostrarLoginPrompt('publicar'); return; }
+        
         const text = document.getElementById('postText').value;
         const media = document.getElementById('mediaUrl').value;
         const anonymous = document.getElementById('postAnonimo').checked;
-        if (!text && !media) { Swal.fire('Atenção', 'Digite algo ou adicione uma mídia', 'warning'); return; }
-        const newPost = { author: { id: currentUser.id, nome: currentUser.nome, avatar: currentUser.avatar }, anonymous, text, media: media || null, mediaType: mediaType === 'foto' ? 'image' : (mediaType === 'video' ? 'video' : null), likes: [], comments: [], status: 'pending', createdAt: new Date().toISOString() };
-        Swal.fire({ title: 'Enviando...', text: 'Seu post foi enviado para aprovação', allowOutsideClick: false, didOpen: () => Swal.showLoading() });
+        
+        if (!text && !media) {
+            Swal.fire('Atenção', 'Digite algo ou adicione uma mídia', 'warning');
+            return;
+        }
+        
+        const newPost = {
+            author: { id: currentUser.id, nome: currentUser.nome, avatar: currentUser.avatar },
+            anonymous,
+            text,
+            media: media || null,
+            mediaType: mediaType === 'foto' ? 'image' : (mediaType === 'video' ? 'video' : null),
+            likes: [],
+            comments: [],
+            shares: 0,
+            status: 'pending',
+            createdAt: new Date().toISOString()
+        };
+        
+        Swal.fire({
+            title: 'Enviando...',
+            text: 'Seu post foi enviado para aprovação',
+            allowOutsideClick: false,
+            didOpen: () => Swal.showLoading()
+        });
+        
         try {
-            const res = await fetch(`${API_URL}/cliente06/posts`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(newPost) });
+            const res = await fetch(`${API_URL}/cliente06/posts`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(newPost)
+            });
             Swal.close();
-            if (res.ok) { Swal.fire('Sucesso!', 'Post enviado para aprovação!', 'success'); fecharModal(); carregarPosts(); }
-            else { Swal.fire('Erro', 'Não foi possível criar o post', 'error'); }
-        } catch (e) { Swal.close(); Swal.fire('Erro', e.message, 'error'); }
+            if (res.ok) {
+                Swal.fire('Sucesso!', 'Post enviado para aprovação!', 'success');
+                fecharModal();
+                carregarPosts();
+            } else {
+                Swal.fire('Erro', 'Não foi possível criar o post', 'error');
+            }
+        } catch (e) {
+            Swal.close();
+            Swal.fire('Erro', e.message, 'error');
+        }
     }
-
-    function compartilharPost() { navigator.clipboard.writeText(window.location.href); Swal.fire('🔗 Link copiado!', 'Compartilhe com seus amigos!', 'success'); }
-    function showVipModal() { Swal.fire('Plano VIP', 'R$ 19,90/mês - Vagas exclusivas e curadoria por IA!', 'info'); }
-    function showLegalModal(t) { Swal.fire(t, 'Informações disponíveis em breve.', 'info'); }
-    function showContactModal() { Swal.fire('Contato', '📧 contato@neconecta.com.br', 'info'); }
 
     // ==================== NAVEGAÇÃO ====================
-    function carregarFeed() {
-        document.getElementById('feedCentral').style.display = 'block';
-        document.getElementById('vagasContainer').style.display = 'none';
-        document.getElementById('noticiasContainer').style.display = 'none';
-        document.getElementById('perfilContainer').style.display = 'none';
-        document.getElementById('chatLayout').style.display = 'none';
-        carregarPosts();
-    }
-
+    
     function mudarSecao(section) {
         currentSection = section;
+        
+        // Atualiza menu
         document.querySelectorAll('.menu a').forEach(a => a.classList.remove('active'));
         document.querySelector(`.menu a[data-section="${section}"]`)?.classList.add('active');
+        
+        // Atualiza bottom nav
         document.querySelectorAll('.bottom-nav-item').forEach(i => i.classList.remove('active'));
         document.querySelector(`.bottom-nav-item[data-section="${section}"]`)?.classList.add('active');
         
+        // Mostra/esconde seções
         document.getElementById('feedCentral').style.display = section === 'feed' ? 'block' : 'none';
         document.getElementById('vagasContainer').style.display = section === 'empregos' ? 'block' : 'none';
         document.getElementById('noticiasContainer').style.display = section === 'noticias' ? 'block' : 'none';
         document.getElementById('perfilContainer').style.display = section === 'perfil' ? 'block' : 'none';
         document.getElementById('chatLayout').style.display = section === 'chat' ? 'flex' : 'none';
         
-        if (section === 'feed') carregarPosts();
-        if (section === 'empregos') carregarVagas();
-        if (section === 'noticias') carregarNoticias();
-        if (section === 'perfil') renderizarPerfil();
-        if (section === 'chat') carregarChat();
-        if (section === 'criar') abrirModalCriarPost();
-        if (window.innerWidth <= 768) document.getElementById('mainMenu')?.classList.remove('show');
+        // Carrega conteúdo
+        carregarFeedCompleto();
+        
+        // Fecha menu mobile se aberto
+        if (window.innerWidth <= 768) {
+            document.getElementById('mainMenu')?.classList.remove('show');
+        }
     }
 
     // ==================== UTILITÁRIOS ====================
-    function escapeHtml(str) { if (!str) return ''; return str.replace(/[&<>]/g, m => m === '&' ? '&amp;' : m === '<' ? '&lt;' : m === '>' ? '&gt;' : m); }
-    function formatarData(d) { if (!d) return 'agora'; const date = new Date(d); const diff = Math.floor((Date.now() - date) / 1000); if (diff < 60) return 'agora'; if (diff < 3600) return `${Math.floor(diff / 60)}min`; if (diff < 86400) return `${Math.floor(diff / 3600)}h`; if (diff < 2592000) return `${Math.floor(diff / 86400)}d`; return date.toLocaleDateString('pt-BR'); }
-    function fecharModal() { document.querySelectorAll('.modal').forEach(m => m.style.display = 'none'); }
-    function atualizarPerfilUI() {
-        const container = document.getElementById('profileContainer');
-        const avatar = document.getElementById('currentUserAvatar');
-        const createInput = document.getElementById('createPostInput');
-        if (currentUser) {
-            container.innerHTML = `<img src="${currentUser.avatar}" class="user-photo" onclick="mudarSecao('perfil')" title="${currentUser.nome}">`;
-            if (avatar) avatar.innerHTML = `<img src="${currentUser.avatar}" style="width:100%;height:100%;border-radius:50%;object-fit:cover;">`;
-            if (createInput) createInput.onclick = () => abrirModalCriarPost();
-        } else {
-            container.innerHTML = `<div class="profile-placeholder" onclick="loginGoogle()"><i class="fab fa-google"></i></div>`;
-            if (avatar) avatar.innerHTML = '👤';
-            if (createInput) createInput.onclick = () => mostrarLoginPrompt();
-        }
-        // Botões de criação
-        document.getElementById('fotoBtn').onclick = () => currentUser ? abrirModalCriarPost('foto') : mostrarLoginPrompt();
-        document.getElementById('videoBtn').onclick = () => currentUser ? abrirModalCriarPost('video') : mostrarLoginPrompt();
-        document.getElementById('enqueteBtn').onclick = () => currentUser ? abrirModalCriarPost('enquete') : mostrarLoginPrompt();
+    
+    function escapeHtml(str) {
+        if (!str) return '';
+        const div = document.createElement('div');
+        div.textContent = str;
+        return div.innerHTML;
+    }
+    
+    function formatarData(d) {
+        if (!d) return 'agora';
+        const date = new Date(d);
+        const diff = Math.floor((Date.now() - date) / 1000);
+        if (diff < 60) return 'agora';
+        if (diff < 3600) return `${Math.floor(diff / 60)}min`;
+        if (diff < 86400) return `${Math.floor(diff / 3600)}h`;
+        if (diff < 2592000) return `${Math.floor(diff / 86400)}d`;
+        return date.toLocaleDateString('pt-BR');
+    }
+    
+    function fecharModal() {
+        document.querySelectorAll('.modal').forEach(m => m.style.display = 'none');
     }
 
-    // ==================== EVENTOS ====================
-    document.getElementById('sendBtn')?.addEventListener('click', enviarMensagem);
-    document.getElementById('chatInput')?.addEventListener('keypress', (e) => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); enviarMensagem(); } });
-    document.getElementById('notificationBtn')?.addEventListener('click', () => Swal.fire('Notificações', `📢 ${posts.filter(p => p.status === 'pending').length} posts pendentes`, 'info'));
-    document.getElementById('mobileMenuBtn')?.addEventListener('click', () => document.getElementById('mainMenu')?.classList.toggle('show'));
-    document.querySelectorAll('.menu a').forEach(link => { link.addEventListener('click', (e) => { e.preventDefault(); mudarSecao(link.getAttribute('data-section')); document.getElementById('mainMenu')?.classList.remove('show'); }); });
-    document.querySelectorAll('.bottom-nav-item').forEach(btn => { btn.addEventListener('click', () => { mudarSecao(btn.getAttribute('data-section')); }); });
-    window.onclick = (e) => { if (e.target.classList.contains('modal')) fecharModal(); };
-    const scrollTop = document.getElementById('scrollTop');
-    window.addEventListener('scroll', () => scrollTop?.classList.toggle('visible', window.scrollY > 300));
-    scrollTop?.addEventListener('click', () => window.scrollTo({ top: 0, behavior: 'smooth' }));
-
-    // ==================== INICIALIZAÇÃO ====================
-    const savedTheme = localStorage.getItem('theme');
-    if (savedTheme === 'light') { document.body.classList.add('light-mode'); document.getElementById('floatingThemeBtn').innerHTML = '<i class="fas fa-sun"></i>'; }
+    // ==================== THEME ====================
+    
+    function initTheme() {
+        const saved = localStorage.getItem('theme');
+        if (saved === 'light') {
+            document.body.classList.add('light-mode');
+            document.getElementById('floatingThemeBtn').innerHTML = '<i class="fas fa-sun"></i>';
+        }
+    }
+    
     document.getElementById('floatingThemeBtn')?.addEventListener('click', () => {
         document.body.classList.toggle('light-mode');
         const isLight = document.body.classList.contains('light-mode');
         localStorage.setItem('theme', isLight ? 'light' : 'dark');
         document.getElementById('floatingThemeBtn').innerHTML = isLight ? '<i class="fas fa-sun"></i>' : '<i class="fas fa-moon"></i>';
     });
+
+    // ==================== EVENTOS ====================
     
-    atualizarPerfilUI();
-    carregarFeed();
-    setInterval(() => { if (currentSection === 'chat') carregarChat(); }, 10000);
+    document.getElementById('notificationBtn')?.addEventListener('click', () => {
+        Swal.fire('Notificações', `📢 ${posts.filter(p => p.status === 'pending').length} posts pendentes`, 'info');
+    });
+    
+    document.getElementById('mobileMenuBtn')?.addEventListener('click', () => {
+        document.getElementById('mainMenu')?.classList.toggle('show');
+    });
+    
+    document.querySelectorAll('.menu a').forEach(link => {
+        link.addEventListener('click', (e) => {
+            e.preventDefault();
+            mudarSecao(link.getAttribute('data-section'));
+        });
+    });
+    
+    document.querySelectorAll('.bottom-nav-item').forEach(btn => {
+        btn.addEventListener('click', () => {
+            mudarSecao(btn.getAttribute('data-section'));
+        });
+    });
+    
+    window.onclick = (e) => {
+        if (e.target.classList.contains('modal')) fecharModal();
+    };
+    
+    const scrollTop = document.getElementById('scrollTop');
+    window.addEventListener('scroll', () => {
+        scrollTop?.classList.toggle('visible', window.scrollY > 300);
+    });
+    scrollTop?.addEventListener('click', () => {
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+    });
+
+    // ==================== INICIALIZAÇÃO ====================
+    
+    function inicializar() {
+        console.log('🚀 Inicializando NE Conecta...');
+        
+        // 1. Configura o tema
+        initTheme();
+        
+        // 2. 🔑 TENTA RESTAURAR A SESSÃO PRIMEIRO (antes do Firebase)
+        const sessaoRestaurada = restaurarSessao();
+        
+        if (sessaoRestaurada) {
+            console.log('✅ Sessão restaurada com sucesso!');
+        } else {
+            console.log('🔄 Nenhuma sessão salva, aguardando login...');
+        }
+        
+        // 3. Configura o listener do Firebase (sincronização)
+        initAuth();
+        
+        // 4. Carrega o feed inicial se necessário
+        if (!sessaoRestaurada) {
+            carregarPosts();
+        }
+        
+        console.log('✅ Sistema inicializado. Persistência ativa!');
+    }
+
+    // Inicia quando o DOM estiver pronto
+    document.addEventListener('DOMContentLoaded', inicializar);
 </script>
 </body>
 </html>

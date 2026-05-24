@@ -667,6 +667,153 @@ body.light-mode .perfil-menu-btn:hover {
     margin-bottom: 8px;
     border: 1px solid var(--border);
 }
+/* Melhorar exibição de mídia nos posts */
+.post-media {
+    position: relative;
+    border-radius: 12px;
+    overflow: hidden;
+    margin: 12px 0;
+    background: #000;
+}
+
+.post-media img {
+    transition: opacity 0.3s ease;
+}
+
+.post-media img:hover {
+    opacity: 0.95;
+}
+
+.post-media video {
+    background: #000;
+    border-radius: 12px;
+}
+
+/* Proporção 16:9 para iframes */
+.post-media .ratio-16x9 {
+    position: relative;
+    padding-bottom: 56.25%;
+    height: 0;
+    overflow: hidden;
+}
+
+.post-media .ratio-16x9 iframe {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+}
+
+/* Estilo para links dentro de posts */
+.post-text a {
+    display: inline-block;
+    padding: 2px 6px;
+    background: rgba(37, 99, 235, 0.1);
+    border-radius: 4px;
+    transition: all 0.2s;
+}
+
+.post-text a:hover {
+    background: rgba(37, 99, 235, 0.2);
+    transform: translateY(-1px);
+}
+/* Barra de Status Online */
+.online-status-bar {
+    background: linear-gradient(135deg, rgba(16, 185, 129, 0.1), rgba(16, 185, 129, 0.05));
+    border-bottom: 1px solid rgba(16, 185, 129, 0.2);
+    padding: 0;
+    backdrop-filter: blur(10px);
+}
+
+body.light-mode .online-status-bar {
+    background: linear-gradient(135deg, rgba(16, 185, 129, 0.05), rgba(16, 185, 129, 0.02));
+    border-bottom: 1px solid rgba(16, 185, 129, 0.2);
+}
+
+.online-status-dot {
+    width: 10px;
+    height: 10px;
+    background: #10b981;
+    border-radius: 50%;
+    display: inline-block;
+    animation: onlinePulse 2s infinite;
+    box-shadow: 0 0 8px rgba(16, 185, 129, 0.5);
+}
+
+@keyframes onlinePulse {
+    0%, 100% { opacity: 1; transform: scale(1); }
+    50% { opacity: 0.6; transform: scale(1.2); }
+}
+
+#verOnlineLink:hover {
+    color: #10b981 !important;
+    text-decoration: underline;
+}
+
+/* Modal de usuários online */
+.online-users-modal {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: 10px;
+    max-height: 400px;
+    overflow-y: auto;
+    padding: 10px;
+}
+
+.online-user-card {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px;
+    border-radius: 12px;
+    background: rgba(0,0,0,0.03);
+    border: 1px solid var(--border);
+    transition: 0.2s;
+    cursor: pointer;
+}
+
+.online-user-card:hover {
+    background: rgba(16, 185, 129, 0.1);
+    border-color: #10b981;
+    transform: translateY(-2px);
+}
+
+body.light-mode .online-user-card {
+    background: #F9FAFB;
+    border-color: #E5E5E5;
+}
+
+.online-user-card-avatar {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 2px solid #10b981;
+    position: relative;
+}
+
+.online-user-card-avatar::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    right: 0;
+    width: 12px;
+    height: 12px;
+    background: #10b981;
+    border-radius: 50%;
+    border: 2px solid white;
+}
+
+.online-user-card-name {
+    font-weight: 600;
+    font-size: 13px;
+}
+
+.online-user-card-time {
+    font-size: 10px;
+    color: var(--text2);
+}
 </style>
 </head>
 <body>
@@ -695,7 +842,19 @@ body.light-mode .perfil-menu-btn:hover {
         </div>
     </div>
 </nav>
-
+<!-- Barra de Status Online -->
+<div class="online-status-bar" id="onlineStatusBar">
+    <div class="container" style="display: flex; align-items: center; justify-content: center; gap: 10px; padding: 8px 16px;">
+        <span style="display: flex; align-items: center; gap: 6px;">
+            <span class="online-status-dot"></span>
+            <span id="onlineCount" style="font-weight: 700; font-size: 13px;">0</span>
+            <span style="font-size: 12px; color: var(--text2);">online agora</span>
+        </span>
+        <span style="font-size: 12px; color: var(--text2); cursor: pointer;" onclick="mostrarUsuariosOnline()" id="verOnlineLink">
+            <i class="fas fa-users"></i> Ver quem está online
+        </span>
+    </div>
+</div>
 <div class="bottom-nav show-on-mobile">
     <div class="bottom-nav-items">
         <button class="bottom-nav-item active" data-section="feed"><i class="fas fa-home"></i><span>Feed</span></button>
@@ -906,47 +1065,208 @@ function salvarSessao() {
         return false;
     }
 
-    // ==================== AUTENTICAÇÃO ====================
+
+// ==================== SISTEMA DE ONLINE ====================
+
+let onlinePingInterval = null;
+
+// Iniciar ping de online
+function iniciarOnlinePing() {
+    if (!currentUser) return;
     
-    function initAuth() {
-        window.onAuthStateChanged(window.auth, async (user) => {
-            if (user) {
-                currentUser = {
-                    id: user.uid,
-                    nome: user.displayName || user.email?.split('@')[0] || 'Usuário',
-                    email: user.email,
-                    avatar: user.photoURL || `https://ui-avatars.com/api/?name=${encodeURIComponent(user.displayName || 'User')}&background=7c4dff&color=fff`,
-                    provider: 'google'
-                };
-                // Carregar dados de seguidores
-if (currentUser) {
-    try {
-        const response = await fetch(`${API_URL}/cliente06/seguidores/${currentUser.id}`);
-        const data = await response.json();
-        currentUser.seguidores = data.seguidores || [];
-        currentUser.seguindo = data.seguindo || [];
-        salvarSessao();
-    } catch (error) {
-        console.error('Erro ao carregar seguidores:', error);
+    // Parar intervalo anterior se existir
+    if (onlinePingInterval) clearInterval(onlinePingInterval);
+    
+    // Fazer primeiro ping imediatamente
+    enviarOnlinePing();
+    
+    // Configurar ping a cada 30 segundos
+    onlinePingInterval = setInterval(enviarOnlinePing, 30000);
+    
+    // Também atualizar contagem de online a cada 30 segundos
+    setInterval(atualizarOnlineCount, 30000);
+}
+
+// Parar ping de online
+function pararOnlinePing() {
+    if (onlinePingInterval) {
+        clearInterval(onlinePingInterval);
+        onlinePingInterval = null;
+    }
+    
+    // Notificar servidor que saiu
+    if (currentUser) {
+        fetch(`${API_URL}/cliente06/online/offline`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ userId: currentUser.id })
+        }).catch(() => {});
     }
 }
-                salvarSessao();
-                atualizarPerfilUI();
-                await carregarFeedCompleto();
-                // Após carregar seguidores, adicione:
-verificarMensagensNaoLidas();
-                console.log('✅ Usuário logado:', currentUser.nome);
-            } else {
-                currentUser = null;
-                localStorage.removeItem(USER_SESSION_KEY);
-                
-                atualizarPerfilUI();
-                await carregarFeedCompleto();
-                
-                console.log('👋 Usuário deslogado');
-            }
+
+// Enviar ping para o servidor
+async function enviarOnlinePing() {
+    if (!currentUser) return;
+    
+    try {
+        const response = await fetch(`${API_URL}/cliente06/online/ping`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                userId: currentUser.id,
+                nome: currentUser.nome,
+                avatar: currentUser.avatar
+            })
         });
+        
+        const data = await response.json();
+        if (data.totalOnline !== undefined) {
+            document.getElementById('onlineCount').textContent = data.totalOnline;
+        }
+    } catch (error) {
+        // Silencioso - não atrapalhar a experiência
     }
+}
+
+// Atualizar contagem de online
+async function atualizarOnlineCount() {
+    try {
+        const response = await fetch(`${API_URL}/cliente06/online`);
+        const data = await response.json();
+        
+        document.getElementById('onlineCount').textContent = data.totalOnline || 0;
+        
+        // Atualizar sidebar do chat se estiver visível
+        if (data.usuarios && document.getElementById('onlineUsers')) {
+            const onlineDiv = document.getElementById('onlineUsers');
+            if (data.usuarios.length === 0) {
+                onlineDiv.innerHTML = '<p style="text-align:center;color:var(--text2);font-size:12px;">Ninguém online no momento</p>';
+            } else {
+                onlineDiv.innerHTML = data.usuarios.slice(0, 10).map(u => `
+                    <div class="online-user" onclick="abrirPerfilUsuario('${u.userId}', '${escapeHtml(u.nome)}', '${u.avatar || ''}')" title="Ver perfil">
+                        <div class="online-avatar">
+                            <img src="${u.avatar || 'https://ui-avatars.com/api/?name=' + encodeURIComponent(u.nome) + '&background=10b981&color=fff'}" 
+                                 style="width:100%;height:100%;border-radius:50%;object-fit:cover;" alt="${escapeHtml(u.nome)}">
+                        </div>
+                        <div class="online-info">
+                            <div class="online-name">${escapeHtml(u.nome)}</div>
+                            <div class="online-status"><span class="online-dot"></span> Online</div>
+                        </div>
+                    </div>
+                `).join('');
+            }
+        }
+    } catch (error) {
+        // Silencioso
+    }
+}
+
+// Mostrar modal com todos usuários online
+async function mostrarUsuariosOnline() {
+    Swal.fire({
+        title: '<i class="fas fa-users" style="color: #10b981;"></i> Usuários Online',
+        html: '<p style="text-align:center;padding:40px;">Carregando...</p>',
+        showConfirmButton: false,
+        showCancelButton: true,
+        cancelButtonText: 'Fechar',
+        width: '600px',
+        didOpen: async () => {
+            try {
+                const response = await fetch(`${API_URL}/cliente06/online`);
+                const data = await response.json();
+                
+                let html = '';
+                
+                if (data.usuarios && data.usuarios.length > 0) {
+                    html += `<p style="text-align:center;margin-bottom:16px;color:var(--text2);">
+                                <span style="color:#10b981;font-weight:700;">${data.totalOnline}</span> pessoa${data.totalOnline !== 1 ? 's' : ''} online agora
+                             </p>`;
+                    html += '<div class="online-users-modal">';
+                    
+                    data.usuarios.forEach(u => {
+                        const tempoOnline = Math.floor((Date.now() - u.ultimoPing) / 1000);
+                        const tempoTexto = tempoOnline < 60 ? 'agora mesmo' : 
+                                          tempoOnline < 3600 ? `há ${Math.floor(tempoOnline / 60)} min` : 
+                                          `há ${Math.floor(tempoOnline / 3600)}h`;
+                        
+                        html += `
+                            <div class="online-user-card" onclick="Swal.close(); abrirPerfilUsuario('${u.userId}', '${escapeHtml(u.nome)}', '${u.avatar || ''}')">
+                                <div class="online-user-card-avatar">
+                                    <img src="${u.avatar || 'https://ui-avatars.com/api/?name=' + encodeURIComponent(u.nome) + '&background=10b981&color=fff'}" 
+                                         style="width:100%;height:100%;border-radius:50%;object-fit:cover;" alt="${escapeHtml(u.nome)}">
+                                </div>
+                                <div>
+                                    <div class="online-user-card-name">${escapeHtml(u.nome)}</div>
+                                    <div class="online-user-card-time">Online ${tempoTexto}</div>
+                                </div>
+                            </div>
+                        `;
+                    });
+                    
+                    html += '</div>';
+                } else {
+                    html = '<p style="text-align:center;padding:40px;color:var(--text2);"><i class="fas fa-ghost" style="font-size:48px;display:block;margin-bottom:12px;"></i>Nenhum usuário online no momento</p>';
+                }
+                
+                Swal.getHtmlContainer().innerHTML = html;
+            } catch (error) {
+                Swal.getHtmlContainer().innerHTML = '<p style="text-align:center;padding:40px;">Erro ao carregar</p>';
+            }
+        }
+    });
+}
+
+
+    // ==================== AUTENTICAÇÃO ====================
+  
+    
+    function initAuth() {
+    window.onAuthStateChanged(window.auth, async (user) => {
+        if (user) {
+            currentUser = {
+                id: user.uid,
+                nome: user.displayName || user.email?.split('@')[0] || 'Usuário',
+                email: user.email,
+                avatar: user.photoURL || `https://ui-avatars.com/api/?name=${encodeURIComponent(user.displayName || 'User')}&background=7c4dff&color=fff`,
+                provider: 'google'
+            };
+            
+            // INICIAR PING DE ONLINE
+            iniciarOnlinePing();
+            
+            // Carregar dados de seguidores
+            try {
+                const response = await fetch(`${API_URL}/cliente06/seguidores/${currentUser.id}`);
+                const data = await response.json();
+                currentUser.seguidores = data.seguidores || [];
+                currentUser.seguindo = data.seguindo || [];
+                salvarSessao();
+            } catch (error) {
+                console.error('Erro ao carregar seguidores:', error);
+            }
+            
+            salvarSessao();
+            atualizarPerfilUI();
+            await carregarFeedCompleto();
+            
+            // Atualizar contagem de online
+            atualizarOnlineCount();
+            
+            console.log('✅ Usuário logado:', currentUser.nome);
+        } else {
+            // PARAR PING DE ONLINE
+            pararOnlinePing();
+            
+            currentUser = null;
+            localStorage.removeItem(USER_SESSION_KEY);
+            
+            atualizarPerfilUI();
+            await carregarFeedCompleto();
+            
+            console.log('👋 Usuário deslogado');
+        }
+    });
+}
 
     async function carregarFeedCompleto() {
         console.log(`📂 Carregando seção: ${currentSection}, Logado: ${!!currentUser}`);
@@ -1334,25 +1654,28 @@ function mostrarSeguindoDeOutroUsuario(usuarioId, usuarioNome) {
     }
 
     function logoutGoogle() {
-        Swal.fire({
-            title: 'Sair da conta?',
-            text: "Você será desconectado da plataforma.",
-            icon: 'question',
-            showCancelButton: true,
-            confirmButtonColor: '#ef4444',
-            cancelButtonColor: '#4b5563',
-            confirmButtonText: 'Sim, sair',
-            cancelButtonText: 'Cancelar'
-        }).then((result) => {
-            if (result.isConfirmed) {
-                window.signOut(window.auth).then(() => {
-                    Swal.fire('Desconectado', 'Você saiu da sua conta com sucesso.', 'success');
-                }).catch((error) => {
-                    Swal.fire('Erro', 'Não foi possível sair da conta.', 'error');
-                });
-            }
-        });
-    }
+    Swal.fire({
+        title: 'Sair da conta?',
+        text: "Você será desconectado da plataforma.",
+        icon: 'question',
+        showCancelButton: true,
+        confirmButtonColor: '#ef4444',
+        cancelButtonColor: '#4b5563',
+        confirmButtonText: 'Sim, sair',
+        cancelButtonText: 'Cancelar'
+    }).then((result) => {
+        if (result.isConfirmed) {
+            // PARAR PING ANTES DE SAIR
+            pararOnlinePing();
+            
+            window.signOut(window.auth).then(() => {
+                Swal.fire('Desconectado', 'Você saiu da sua conta com sucesso.', 'success');
+            }).catch((error) => {
+                Swal.fire('Erro', 'Não foi possível sair da conta.', 'error');
+            });
+        }
+    });
+}
 
     // ==================== PROMPT DE LOGIN ====================
     
@@ -1543,42 +1866,54 @@ ${post.media ? renderMedia(post.media, post.mediaType) : ''}
     if (!mediaUrl) return '';
     
     // Verifica se é link do YouTube
-    const youtubeMatch = mediaUrl.match(/(?:https?:\/\/)?(?:www\.)?(?:youtube\.com\/watch\?v=|youtu\.be\/)([\w-]+)/);
+    const youtubeMatch = mediaUrl.match(/(?:https?:\/\/)?(?:www\.)?(?:youtube\.com\/watch\?v=|youtu\.be\/|youtube\.com\/embed\/)([\w-]+)/);
     if (youtubeMatch) {
-        return `<div class="post-media">
-                    <iframe width="100%" height="315" 
-                            src="https://www.youtube.com/embed/${youtubeMatch[1]}" 
-                            frameborder="0" 
-                            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
-                            allowfullscreen
-                            style="border-radius: 16px; max-width: 100%;">
+        return `
+            <div class="post-media" style="margin: 15px 0; border-radius: 12px; overflow: hidden;">
+                <div style="position: relative; padding-bottom: 56.25%; height: 0; overflow: hidden;">
+                    <iframe 
+                        src="https://www.youtube.com/embed/${youtubeMatch[1]}" 
+                        style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; border: none; border-radius: 12px;"
+                        frameborder="0" 
+                        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
+                        allowfullscreen>
                     </iframe>
-                </div>`;
+                </div>
+            </div>`;
     }
     
     // Verifica se é imagem
-    if (mediaUrl.match(/\.(jpg|jpeg|png|gif|webp)(\?.*)?$/i) || mediaType === 'image') {
-        return `<div class="post-media">
-                    <img src="${mediaUrl}" alt="Post" style="width:100%; max-height: 400px; object-fit: cover;" loading="lazy" onerror="this.parentElement.style.display='none'">
-                </div>`;
+    if (mediaUrl.match(/\.(jpg|jpeg|png|gif|webp|bmp)(\?.*)?$/i) || mediaType === 'image') {
+        return `
+            <div class="post-media" style="margin: 10px 0;">
+                <img src="${mediaUrl}" 
+                     alt="Post" 
+                     style="width: 100%; max-height: 400px; object-fit: contain; border-radius: 12px; display: block; background: rgba(0,0,0,0.05);" 
+                     loading="lazy" 
+                     onerror="this.style.display='none'; this.parentElement.innerHTML='<a href=\'${mediaUrl}\' target=\'_blank\' style=\'color: #2563eb; text-decoration: underline;\'><i class=\'fas fa-image\'></i> Ver imagem</a>';">
+            </div>`;
     }
     
     // Verifica se é vídeo
-    if (mediaUrl.match(/\.(mp4|webm|ogg)(\?.*)?$/i) || mediaType === 'video') {
-        return `<div class="post-media">
-                    <video controls style="width:100%; max-height: 400px; border-radius: 16px;">
-                        <source src="${mediaUrl}" type="video/mp4">
-                        Seu navegador não suporta vídeos.
-                    </video>
-                </div>`;
+    if (mediaUrl.match(/\.(mp4|webm|ogg|mov)(\?.*)?$/i) || mediaType === 'video') {
+        return `
+            <div class="post-media" style="margin: 10px 0;">
+                <video controls 
+                       style="width: 100%; max-height: 400px; border-radius: 12px; background: #000; display: block;"
+                       onerror="this.style.display='none'; this.parentElement.innerHTML='<a href=\'${mediaUrl}\' target=\'_blank\' style=\'color: #2563eb; text-decoration: underline;\'><i class=\'fas fa-video\'></i> Ver vídeo</a>';">
+                    <source src="${mediaUrl}" type="video/mp4">
+                    Seu navegador não suporta vídeos.
+                </video>
+            </div>`;
     }
     
     // Se for outro tipo de link
-    return `<div class="post-media">
-                <a href="${mediaUrl}" target="_blank" style="color: #7c4dff; text-decoration: underline;">
-                    <i class="fas fa-external-link-alt"></i> ${mediaUrl}
-                </a>
-            </div>`;
+    return `
+        <div class="post-media" style="padding: 12px; background: rgba(0,0,0,0.05); border-radius: 12px; text-align: center;">
+            <a href="${mediaUrl}" target="_blank" style="color: #2563eb; text-decoration: underline; font-weight: 600;">
+                <i class="fas fa-external-link-alt"></i> ${mediaUrl}
+            </a>
+        </div>`;
 }
     async function likePost(postId) {
     if (!currentUser) { mostrarLoginPrompt(); return; }
@@ -1813,15 +2148,14 @@ function abrirModalCriarPost(tipo = null) {
     document.getElementById('mediaUrl').value = '';
     
     // MELHORIA: Placeholder específico para cada tipo
-    const mediaInput = document.getElementById('mediaUrl');
-    if (mediaInput) {
-        if (tipo === 'foto') {
-            mediaInput.placeholder = 'URL da imagem (ex: https://exemplo.com/foto.jpg)';
-        } else if (tipo === 'video') {
-            mediaInput.placeholder = 'URL do vídeo ou link do YouTube (ex: https://youtube.com/watch?v=...)';
-        }
+const mediaInput = document.getElementById('mediaUrl');
+if (mediaInput) {
+    if (tipo === 'foto') {
+        mediaInput.placeholder = 'URL da imagem (ex: https://exemplo.com/foto.jpg)';
+    } else if (tipo === 'video') {
+        mediaInput.placeholder = 'URL do vídeo (YouTube ou MP4)';
     }
-    
+}
     document.getElementById('createPostModal').style.display = 'flex';
 }
 
@@ -2614,47 +2948,59 @@ function tornarLinksClicaveis(texto) {
     // Primeiro escapa o HTML para segurança
     let textoEscapado = escapeHtml(texto);
     
-    // Converte links do YouTube em players embed
-    const youtubeRegex = /(?:https?:\/\/)?(?:www\.)?(?:youtube\.com\/watch\?v=|youtu\.be\/)([\w-]+)/gi;
+    // Converte links do YouTube em players embed com proporção 16:9
+    const youtubeRegex = /(?:https?:\/\/)?(?:www\.)?(?:youtube\.com\/watch\?v=|youtu\.be\/|youtube\.com\/embed\/)([\w-]+)(?:[^\s<]*)?/gi;
     textoEscapado = textoEscapado.replace(youtubeRegex, (match, videoId) => {
-        return `<div class="post-media" style="margin: 10px 0;">
-                    <iframe width="100%" height="315" 
-                            src="https://www.youtube.com/embed/${videoId}" 
-                            frameborder="0" 
-                            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
-                            allowfullscreen
-                            style="border-radius: 12px; max-width: 100%;">
+        return `
+            <div class="post-media" style="margin: 15px 0; border-radius: 12px; overflow: hidden;">
+                <div style="position: relative; padding-bottom: 56.25%; height: 0; overflow: hidden;">
+                    <iframe 
+                        src="https://www.youtube.com/embed/${videoId}" 
+                        style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; border: none; border-radius: 12px;"
+                        frameborder="0" 
+                        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
+                        allowfullscreen>
                     </iframe>
-                </div>`;
+                </div>
+            </div>`;
     });
     
-    // Converte links de imagens em tags <img>
+    // Converte links de imagens em tags <img> com fallback
     textoEscapado = textoEscapado.replace(/(https?:\/\/[^\s]+\.(?:jpg|jpeg|png|gif|webp|bmp)(?:\?[^\s]*)?)/gi, (match) => {
-        return `<div class="post-media" style="margin: 10px 0;">
-                    <img src="${match}" alt="Imagem" style="max-width: 100%; border-radius: 12px; max-height: 400px; object-fit: cover;" 
-                         onerror="this.style.display='none'" loading="lazy">
-                </div>`;
+        return `
+            <div class="post-media" style="margin: 10px 0;">
+                <img src="${match}" 
+                     alt="Imagem" 
+                     style="width: 100%; max-height: 400px; object-fit: contain; border-radius: 12px; display: block; background: rgba(0,0,0,0.05);" 
+                     loading="lazy"
+                     onerror="this.style.display='none'; this.parentElement.innerHTML='<a href=\'${match}\' target=\'_blank\' style=\'color: #2563eb; text-decoration: underline;\'><i class=\'fas fa-image\'></i> Ver imagem</a>';">
+            </div>`;
     });
     
-    // Converte links de vídeos (mp4, webm, etc.) em players
-    textoEscapado = textoEscapado.replace(/(https?:\/\/[^\s]+\.(?:mp4|webm|ogg)(?:\?[^\s]*)?)/gi, (match) => {
-        return `<div class="post-media" style="margin: 10px 0;">
-                    <video controls style="width: 100%; max-height: 400px; border-radius: 12px;">
-                        <source src="${match}" type="video/mp4">
-                        Seu navegador não suporta vídeos.
-                    </video>
-                </div>`;
+    // Converte links de vídeos (mp4, webm, etc.) em players nativos
+    textoEscapado = textoEscapado.replace(/(https?:\/\/[^\s]+\.(?:mp4|webm|ogg|mov)(?:\?[^\s]*)?)/gi, (match) => {
+        return `
+            <div class="post-media" style="margin: 10px 0;">
+                <video controls style="width: 100%; max-height: 400px; border-radius: 12px; background: #000; display: block;"
+                       onerror="this.style.display='none'; this.parentElement.innerHTML='<a href=\'${match}\' target=\'_blank\' style=\'color: #2563eb; text-decoration: underline;\'><i class=\'fas fa-video\'></i> Ver vídeo</a>';">
+                    <source src="${match}" type="video/mp4">
+                    Seu navegador não suporta vídeos.
+                </video>
+            </div>`;
     });
     
     // Converte outras URLs em links clicáveis
     const urlRegex = /(https?:\/\/[^\s<]+)/g;
     textoEscapado = textoEscapado.replace(urlRegex, (url) => {
-        let cleanUrl = url.replace(/[.,;:!?]$/, '');
-        return `<a href="${cleanUrl}" target="_blank" rel="noopener noreferrer" 
-                   style="color: #7c4dff; text-decoration: underline; word-break: break-all;" 
-                   onclick="event.stopPropagation();">
-                   <i class="fas fa-external-link-alt" style="font-size: 10px; margin-right: 4px;"></i>${cleanUrl}
-                </a>`;
+        let cleanUrl = url.replace(/[.,;:!?)]$/, '');
+        return `
+            <a href="${cleanUrl}" 
+               target="_blank" 
+               rel="noopener noreferrer" 
+               style="color: #2563eb; text-decoration: underline; word-break: break-all; font-weight: 600;" 
+               onclick="event.stopPropagation();">
+                <i class="fas fa-external-link-alt" style="font-size: 10px; margin-right: 4px;"></i>${cleanUrl}
+            </a>`;
     });
     
     return textoEscapado;

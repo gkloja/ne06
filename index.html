@@ -1889,6 +1889,66 @@ body.light-mode .ranking-table tbody tr:hover {
     flex-shrink: 0;
     margin-top: 6px;
 }
+/* Avatares dos votantes na enquete */
+.poll-voters-preview {
+    display: flex;
+    align-items: center;
+    gap: -6px;
+    padding-left: 2px;
+}
+
+.poll-voter-avatar {
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 2px solid var(--bg);
+    margin-left: -6px;
+}
+
+.poll-voter-avatar:first-child {
+    margin-left: 0;
+}
+
+.poll-more-voters {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    background: rgba(0,0,0,0.1);
+    font-size: 9px;
+    font-weight: 700;
+    color: var(--text2);
+    margin-left: -6px;
+    border: 2px solid var(--bg);
+}
+
+.poll-voter-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 8px 0;
+    border-bottom: 1px solid var(--border);
+}
+
+.poll-voter-item-avatar {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    object-fit: cover;
+}
+
+.poll-voter-item-name {
+    font-weight: 600;
+    font-size: 13px;
+}
+
+.poll-voter-item-time {
+    font-size: 10px;
+    color: var(--text2);
+}
 </style>
 </head>
 <body>
@@ -4008,34 +4068,132 @@ function usuarioJaVotou(pollId, userId) {
 function salvarVoto(pollId) {
     localStorage.setItem(`poll_voted_${pollId}_${currentUser.id}`, 'true');
 }
+// Mostrar quem votou em uma opção específica
+function mostrarVotantes(postId, optionText) {
+    const post = posts.find(p => p.id === postId);
+    if (!post?.poll) return;
+    
+    const option = post.poll.options.find(o => o.text === optionText);
+    if (!option) return;
+    
+    const voters = option.voters || [];
+    
+    if (voters.length === 0) {
+        Swal.fire({
+            title: 'Nenhum voto',
+            text: `Ninguém votou em "${optionText}" ainda.`,
+            icon: 'info'
+        });
+        return;
+    }
+    
+    let html = '<div style="max-height: 350px; overflow-y: auto;">';
+    
+    voters.forEach(v => {
+        html += `
+            <div class="poll-voter-item" onclick="Swal.close(); abrirPerfilUsuario('${v.id || ''}', '${escapeHtml(v.nome || 'Usuário')}', '${v.avatar || ''}')" style="cursor: pointer;">
+                <img src="${v.avatar || 'https://ui-avatars.com/api/?name=' + encodeURIComponent(v.nome || 'U') + '&background=7c4dff&color=fff'}" 
+                     class="poll-voter-item-avatar" 
+                     onerror="this.src='https://ui-avatars.com/api/?name=U&background=7c4dff&color=fff'">
+                <div>
+                    <div class="poll-voter-item-name">${escapeHtml(v.nome || 'Usuário')}</div>
+                    <div class="poll-voter-item-time">${v.votedAt ? formatarData(v.votedAt) : ''}</div>
+                </div>
+            </div>
+        `;
+    });
+    
+    html += '</div>';
+    
+    Swal.fire({
+        title: `Votaram em "${escapeHtml(optionText)}"`,
+        html: html,
+        showConfirmButton: false,
+        showCancelButton: true,
+        cancelButtonText: 'Fechar',
+        width: '400px'
+    });
+}
 
+// Mostrar todos os votantes da enquete
+function mostrarTodosVotantes(postId) {
+    const post = posts.find(p => p.id === postId);
+    if (!post?.poll) return;
+    
+    let html = '<div style="max-height: 400px; overflow-y: auto;">';
+    
+    post.poll.options.forEach(opt => {
+        const voters = opt.voters || [];
+        if (voters.length > 0) {
+            html += `<div style="font-weight:700;font-size:13px;padding:8px 0;color:var(--primary);">${escapeHtml(opt.text)} (${voters.length})</div>`;
+            
+            voters.forEach(v => {
+                html += `
+                    <div class="poll-voter-item" onclick="Swal.close(); abrirPerfilUsuario('${v.id || ''}', '${escapeHtml(v.nome || 'Usuário')}', '${v.avatar || ''}')" style="cursor: pointer;">
+                        <img src="${v.avatar || 'https://ui-avatars.com/api/?name=' + encodeURIComponent(v.nome || 'U') + '&background=7c4dff&color=fff'}" 
+                             class="poll-voter-item-avatar" 
+                             onerror="this.src='https://ui-avatars.com/api/?name=U&background=7c4dff&color=fff'">
+                        <div>
+                            <div class="poll-voter-item-name">${escapeHtml(v.nome || 'Usuário')}</div>
+                        </div>
+                    </div>
+                `;
+            });
+        }
+    });
+    
+    html += '</div>';
+    
+    Swal.fire({
+        title: '🗳️ Todos os votantes',
+        html: html || '<p style="text-align:center;padding:20px;">Nenhum voto ainda</p>',
+        showConfirmButton: false,
+        showCancelButton: true,
+        cancelButtonText: 'Fechar',
+        width: '400px'
+    });
+}
 function renderPoll(poll, postId) {
     const totalVotes = poll.options.reduce((s, o) => s + (o.votes || 0), 0);
-    const jaVotou = currentUser ? usuarioJaVotou(poll.id, currentUser.id) : false;
+    const jaVotou = currentUser ? (poll.voters || poll.votedBy || []).includes(currentUser.id) : false;
     
     return `
         <div class="poll-container" data-poll-id="${poll.id}">
             <div class="poll-question">
-                <i class="fas fa-chart-simple"></i> ${escapeHtml(poll.question || 'Enquete')}
+                <i class="fas fa-chart-bar"></i> ${escapeHtml(poll.question || 'Enquete')}
                 ${jaVotou ? '<span class="poll-voted-badge"><i class="fas fa-check"></i> Você já votou</span>' : ''}
             </div>
             ${poll.options.map(opt => {
                 const percent = totalVotes ? ((opt.votes || 0) / totalVotes * 100).toFixed(1) : 0;
+                const optionVoters = opt.voters || [];
                 return `
                     <div class="poll-option ${jaVotou ? 'voted' : ''}" 
                          onclick="${!jaVotou && currentUser ? `votarEnquete(${postId}, '${opt.text.replace(/'/g, "\\'")}')` : (!currentUser ? `mostrarLoginPrompt()` : '')}">
                         <div class="poll-option-header">
                             <span class="poll-option-text">${escapeHtml(opt.text)}</span>
-                            <span class="poll-option-percent">${percent}%</span>
+                            <span class="poll-option-percent">${percent}% (${opt.votes || 0})</span>
                         </div>
                         <div class="poll-bar-container">
                             <div class="poll-bar-fill" style="width: ${percent}%"></div>
                         </div>
+                        ${optionVoters.length > 0 && (jaVotou || totalVotes > 0) ? `
+                            <div class="poll-voters-preview" onclick="event.stopPropagation(); mostrarVotantes(${postId}, '${opt.text.replace(/'/g, "\\'")}')" 
+                                 title="Ver quem votou" style="margin-top: 6px; cursor: pointer;">
+                                ${optionVoters.slice(0, 3).map(v => `
+                                    <img src="${v.avatar || 'https://ui-avatars.com/api/?name=' + encodeURIComponent(v.nome || 'U') + '&background=7c4dff&color=fff'}" 
+                                         class="poll-voter-avatar" 
+                                         onerror="this.src='https://ui-avatars.com/api/?name=U&background=7c4dff&color=fff'"
+                                         title="${escapeHtml(v.nome || 'Usuário')}">
+                                `).join('')}
+                                ${optionVoters.length > 3 ? `<span class="poll-more-voters">+${optionVoters.length - 3}</span>` : ''}
+                            </div>
+                        ` : ''}
                     </div>
                 `;
             }).join('')}
             <div class="poll-total">
                 <i class="fas fa-users"></i> Total de votos: ${totalVotes}
+                ${jaVotou && totalVotes > 0 ? ` · <span style="cursor:pointer;text-decoration:underline;" onclick="mostrarTodosVotantes(${postId})">Ver todos</span>` : ''}
             </div>
         </div>
     `;
@@ -4045,16 +4203,30 @@ async function votarEnquete(postId, optionText) {
     if (!currentUser) { mostrarLoginPrompt(); return; }
     const post = posts.find(p => p.id === postId);
     if (!post?.poll) return;
-    if (usuarioJaVotou(post.poll.id, currentUser.id)) {
+    
+    const allVoters = post.poll.options.reduce((arr, o) => arr.concat(o.voters || []), []);
+    const jaVotou = allVoters.some(v => v.id === currentUser.id) || 
+                    (post.poll.voters || post.poll.votedBy || []).includes(currentUser.id);
+    
+    if (jaVotou) {
         Swal.fire('Aviso', 'Você já votou nesta enquete!', 'info');
         return;
     }
+    
     try {
         salvarVoto(post.poll.id);
         const response = await fetch(`${API_URL}/cliente06/posts/${postId}/poll`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ userId: currentUser.id, option: optionText })
+            body: JSON.stringify({ 
+                userId: currentUser.id, 
+                option: optionText,
+                voterInfo: {
+                    id: currentUser.id,
+                    nome: currentUser.nome,
+                    avatar: currentUser.avatar
+                }
+            })
         });
         if (response.ok) {
             carregarPosts();

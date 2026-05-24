@@ -1797,6 +1797,29 @@ body.light-mode .perfil-menu-btn:hover {
     font-weight: 700;
     color: #FFD700;
 }
+/* Hover nas linhas do ranking */
+.ranking-table tbody tr:hover {
+    background: rgba(37,99,235,0.05) !important;
+}
+
+body.light-mode .ranking-table tbody tr:hover {
+    background: rgba(37,99,235,0.05) !important;
+}
+
+.ranking-table tbody tr {
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+/* Tooltip indicando que é clicável */
+.ranking-table tbody tr:hover::after {
+    content: '👁️ Ver perfil';
+    position: absolute;
+    right: 10px;
+    font-size: 10px;
+    color: #2563eb;
+    opacity: 0.8;
+}
 </style>
 </head>
 <body>
@@ -2226,6 +2249,14 @@ function mostrarRanking() {
         });
     });
     
+    // Também adicionar seguidores/seguindo
+    if (currentUser.seguidores) {
+        currentUser.seguidores.forEach(id => userIds.add(id));
+    }
+    if (currentUser.seguindo) {
+        currentUser.seguindo.forEach(id => userIds.add(id));
+    }
+    
     userIds.forEach(uid => {
         const userPosts = posts.filter(p => p.author?.id === uid).length;
         const curtidas = posts
@@ -2240,9 +2271,9 @@ function mostrarRanking() {
         
         const nivel = getNivel(xp);
         
-        // Buscar nome do autor
+        // Buscar informações do autor
         const autorPost = posts.find(p => p.author?.id === uid);
-        const nome = autorPost?.author?.nome || 'Usuário';
+        const nome = autorPost?.author?.nome || 'Usuário ' + uid.substring(0, 6);
         const avatar = autorPost?.author?.avatar || '';
         
         usuarios.push({
@@ -2280,9 +2311,13 @@ function mostrarRanking() {
         <div style="text-align: center; margin-bottom: 16px;">
             ${minhaPosicao > 0 ? `
                 <p style="font-size: 13px; color: var(--text2);">
-                    🏆 Sua posição: <strong style="color: #FFD700;">#${minhaPosicao}</strong>
+                    🏆 Sua posição: <strong style="color: #FFD700;">#${minhaPosicao}</strong> de ${uniqueUsers.length} usuários
                 </p>
-            ` : ''}
+            ` : `
+                <p style="font-size: 13px; color: var(--text2);">
+                    📊 Total de <strong>${uniqueUsers.length}</strong> usuários no ranking
+                </p>
+            `}
         </div>
         <table class="ranking-table">
             <thead>
@@ -2306,7 +2341,11 @@ function mostrarRanking() {
         const isMe = u.id === currentUser.id;
         
         html += `
-            <tr class="${isMe ? 'ranking-user-me' : ''}">
+            <tr class="${isMe ? 'ranking-user-me' : ''}" 
+                style="cursor: pointer; transition: all 0.2s;" 
+                onclick="Swal.close(); abrirPerfilUsuario('${u.id}', '${escapeHtml(u.nome).replace(/'/g, "\\'")}', '${u.avatar || ''}')"
+                onmouseover="this.style.background='rgba(37,99,235,0.05)';" 
+                onmouseout="this.style.background='${isMe ? 'rgba(37,99,235,0.08)' : 'transparent'}';">
                 <td style="font-size: ${pos <= 3 ? '18px' : '13px'}; font-weight: 700;">
                     ${posicaoIcon}
                 </td>
@@ -2314,8 +2353,9 @@ function mostrarRanking() {
                     <div style="display: flex; align-items: center; gap: 8px;">
                         <img src="${u.avatar || 'https://ui-avatars.com/api/?name=' + encodeURIComponent(u.nome) + '&background=7c4dff&color=fff'}" 
                              class="ranking-avatar" 
-                             onerror="this.src='https://ui-avatars.com/api/?name=User&background=7c4dff&color=fff'">
-                        <span>${escapeHtml(u.nome)}${isMe ? ' <small style="color:#2563eb;">(você)</small>' : ''}</span>
+                             onerror="this.src='https://ui-avatars.com/api/?name=' + encodeURIComponent(u.nome.substring(0,2)) + '&background=7c4dff&color=fff'"
+                             style="width: 32px; height: 32px; border-radius: 50%; object-fit: cover;">
+                        <span>${escapeHtml(u.nome)}${isMe ? ' <small style="color:#2563eb;font-weight:700;">(você)</small>' : ''}</span>
                     </div>
                 </td>
                 <td>
@@ -2330,13 +2370,25 @@ function mostrarRanking() {
     
     html += '</tbody></table>';
     
+    // Se tem mais de 20 usuários
+    if (uniqueUsers.length > 20) {
+        html += `
+            <p style="text-align: center; margin-top: 12px; font-size: 11px; color: var(--text2);">
+                Mostrando top 20 de ${uniqueUsers.length} usuários
+            </p>
+        `;
+    }
+    
     Swal.fire({
         title: '🏆 Ranking NE Conecta',
         html: html,
         showConfirmButton: false,
         showCancelButton: true,
         cancelButtonText: 'Fechar',
-        width: '550px'
+        width: '550px',
+        customClass: {
+            popup: 'ranking-modal-popup'
+        }
     });
 }
 

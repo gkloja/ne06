@@ -996,11 +996,6 @@ body.light-mode .online-user-card {
                     </div>
                 </div>
                 
-                <!-- Ou cole um link -->
-                <div style="margin-top: 8px;">
-                    <p style="font-size: 11px; color: var(--text2); text-align: center; margin-bottom: 6px;">ou cole um link</p>
-                    <input type="text" id="mediaUrl" placeholder="https://exemplo.com/foto.jpg" style="width: 100%;">
-                </div>
             </div>
             
             <div id="pollContainer" style="display:none;">
@@ -2185,26 +2180,27 @@ async function votarEnquete(postId, optionText) {
 
     // ==================== CRIAÇÃO DE POSTS ====================
     
-function abrirModalCriarPost(tipo = null) {
+// Resetar upload quando abrir modal
+const abrirModalCriarPostOriginal = abrirModalCriarPost;
+abrirModalCriarPost = function(tipo = null) {
     if (!currentUser) { mostrarLoginPrompt(); return; }
     mediaType = tipo;
-    document.getElementById('mediaUrlGroup').style.display = (tipo === 'foto' || tipo === 'video') ? 'block' : 'none';
-    document.getElementById('pollContainer').style.display = tipo === 'enquete' ? 'block' : 'none';
-    document.getElementById('postText').value = '';
-    document.getElementById('mediaUrl').value = '';
     
-    // MELHORIA: Placeholder específico para cada tipo
-const mediaInput = document.getElementById('mediaUrl');
-if (mediaInput) {
-    if (tipo === 'foto') {
-        mediaInput.placeholder = 'URL da imagem (ex: https://exemplo.com/foto.jpg)';
-    } else if (tipo === 'video') {
-        mediaInput.placeholder = 'URL do vídeo (YouTube ou MP4)';
-    }
-}
+    // Resetar campos
+    document.getElementById('postText').value = '';
+    document.getElementById('postAnonimo').checked = false;
+    document.getElementById('uploadPreview').style.display = 'none';
+    document.getElementById('previewImage').style.display = 'none';
+    document.getElementById('previewVideo').style.display = 'none';
+    document.getElementById('uploadArea').style.display = 'block';
+    document.getElementById('uploadProgress').style.display = 'none';
+    document.getElementById('pollContainer').style.display = tipo === 'enquete' ? 'block' : 'none';
+    
+    arquivoMidiaSelecionado = null;
+    midiaIdAtual = null;
+    
     document.getElementById('createPostModal').style.display = 'flex';
-}
-
+};
     function adicionarOpcaoEnquete() {
         const container = document.getElementById('pollOptions');
         const div = document.createElement('div');
@@ -2321,7 +2317,7 @@ function removerArquivoMidia() {
     document.getElementById('uploadProgress').style.display = 'none';
 }
 
-// Enviar para o servidor (USA A API BRONXYSHOST)
+// Enviar para o servidor (USA A API BRONXYSHOST) - VERSÃO SIMPLIFICADA
 async function enviarMidiaParaServidor(file) {
     if (!file) {
         console.error('❌ Nenhum arquivo selecionado');
@@ -2332,7 +2328,7 @@ async function enviarMidiaParaServidor(file) {
     console.log('📁 Arquivo:', file.name, file.type, (file.size / 1024 / 1024).toFixed(2) + 'MB');
     
     const formData = new FormData();
-    formData.append('arquivo_midia', file); // Nome do campo que o backend espera
+    formData.append('arquivo_midia', file);
     formData.append('user_id', currentUser?.id || 'anonimo');
     formData.append('user_nome', currentUser?.nome || 'Usuário');
     
@@ -2353,28 +2349,14 @@ async function enviarMidiaParaServidor(file) {
         const data = await response.json();
         console.log('📦 Resposta:', data);
         
-        // VERIFICA 'sucesso' (com 's' minúsculo) que é o que o backend retorna
         if (data.sucesso) {
             document.getElementById('progressBar').style.width = '100%';
-            document.getElementById('progressText').textContent = '✅ Link gerado com sucesso!';
+            document.getElementById('progressText').textContent = '✅ Upload concluído!';
             midiaIdAtual = data.midia.id;
             
             console.log('✅ Upload concluído! URL:', data.midia.url);
             
-            // Mostrar o link gerado para o usuário
-            Swal.fire({
-                icon: 'success',
-                title: 'Upload concluído!',
-                html: `
-                    <p style="font-size:13px;">Link gerado com sucesso:</p>
-                    <input type="text" value="${data.midia.url}" readonly 
-                           style="width:100%;padding:8px;border-radius:8px;border:1px solid #ccc;margin-top:8px;text-align:center;font-size:11px;"
-                           onclick="this.select()">
-                    <p style="font-size:10px;color:#888;margin-top:6px;">${data.midia.tipo === 'image' ? '🖼️ Imagem' : '🎬 Vídeo'} • ${data.midia.tamanho}</p>
-                `,
-                confirmButtonText: 'OK'
-            });
-            
+            // NÃO mostra popup, apenas retorna o link
             return data.midia.url;
         } else {
             throw new Error(data.erro || 'Erro no upload');
@@ -2384,8 +2366,7 @@ async function enviarMidiaParaServidor(file) {
         Swal.fire({
             icon: 'error',
             title: 'Erro no upload',
-            text: error.message || 'Não foi possível enviar o arquivo',
-            footer: 'Verifique se o servidor está online e a rota /cliente06/midia-upload existe'
+            text: error.message || 'Não foi possível enviar o arquivo'
         });
         document.getElementById('uploadProgress').style.display = 'none';
         return null;
@@ -2411,24 +2392,24 @@ async function deletarMidiaAposUso(midiaId) {
     if (!currentUser) { mostrarLoginPrompt(); return; }
     
     const text = document.getElementById('postText').value;
-    const mediaUrlInput = document.getElementById('mediaUrl').value;
     const anonymous = document.getElementById('postAnonimo').checked;
     
-    let mediaUrl = mediaUrlInput;
+    let mediaUrl = null;
     
     // Se tem arquivo selecionado, faz upload primeiro
     if (arquivoMidiaSelecionado) {
-        Swal.fire({
-            title: 'Enviando arquivo...',
+        // Mostrar loading
+        const loadingSwal = Swal.fire({
+            title: '📤 Enviando arquivo...',
             text: 'Gerando link da sua mídia',
             allowOutsideClick: false,
             didOpen: () => Swal.showLoading()
         });
         
         mediaUrl = await enviarMidiaParaServidor(arquivoMidiaSelecionado);
-        Swal.close();
+        loadingSwal.close();
         
-        if (!mediaUrl) return;
+        if (!mediaUrl) return; // Erro no upload
     }
     
     if (!text && !mediaUrl) {
@@ -2441,7 +2422,9 @@ async function deletarMidiaAposUso(midiaId) {
     if (mediaUrl) {
         if (mediaUrl.match(/\.(jpg|jpeg|png|gif|webp)(\?.*)?$/i)) {
             mediaTypeValue = 'image';
-        } else if (mediaUrl.match(/\.(mp4|webm|ogg|mov)(\?.*)?$/i) || mediaUrl.includes('youtube.com') || mediaUrl.includes('youtu.be')) {
+        } else if (mediaUrl.match(/\.(mp4|webm|ogg|mov)(\?.*)?$/i) || 
+                   mediaUrl.includes('youtube.com') || 
+                   mediaUrl.includes('youtu.be')) {
             mediaTypeValue = 'video';
         } else if (arquivoMidiaSelecionado && arquivoMidiaSelecionado.type.startsWith('image/')) {
             mediaTypeValue = 'image';
@@ -2477,9 +2460,10 @@ async function deletarMidiaAposUso(midiaId) {
         createdAt: new Date().toISOString()
     };
     
+    // Mostrar loading de envio
     Swal.fire({
-        title: 'Enviando...',
-        text: 'Seu post foi enviado para aprovação',
+        title: '📝 Enviando publicação...',
+        text: 'Seu post está sendo enviado para aprovação',
         allowOutsideClick: false,
         didOpen: () => Swal.showLoading()
     });
@@ -2491,20 +2475,39 @@ async function deletarMidiaAposUso(midiaId) {
             body: JSON.stringify(newPost)
         });
         Swal.close();
+        
         if (res.ok) {
             // Deletar mídia temporária após publicar
             if (midiaIdAtual) await deletarMidiaAposUso(midiaIdAtual);
             
-            Swal.fire('Sucesso!', 'Post enviado para aprovação!', 'success');
+            // ✅ MOSTRAR AVISO DE SUCESSO
+            Swal.fire({
+                icon: 'success',
+                title: '✅ Publicação enviada!',
+                text: 'Seu post foi enviado e está aguardando aprovação.',
+                confirmButtonText: 'OK',
+                confirmButtonColor: '#2563eb',
+                timer: 3000,
+                timerProgressBar: true
+            });
+            
             fecharModal();
             carregarPosts();
             removerArquivoMidia();
         } else {
-            Swal.fire('Erro', 'Não foi possível criar o post', 'error');
+            Swal.fire({
+                icon: 'error',
+                title: 'Erro',
+                text: 'Não foi possível criar o post. Tente novamente.'
+            });
         }
     } catch (e) {
         Swal.close();
-        Swal.fire('Erro', e.message, 'error');
+        Swal.fire({
+            icon: 'error',
+            title: 'Erro de conexão',
+            text: e.message || 'Verifique sua internet e tente novamente.'
+        });
     }
 }
 

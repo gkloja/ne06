@@ -1107,7 +1107,7 @@
                 </div>
             </div>
             <!-- APLICAR LINKS CLICÁVEIS NO TEXTO DO POST -->
-            <div class="post-text">${tornarLinksClicaveis(escapeHtml(post.text || ''))}</div>
+<div class="post-text">${tornarLinksClicaveis(post.text || '')}</div>
             ${post.media ? `<div class="post-media">${post.mediaType === 'video' ? `<video controls src="${post.media}"></video>` : `<img src="${post.media}" alt="Post">`}</div>` : ''}
             <div class="post-stats">
                 <span><i class="fas fa-heart"></i> ${post.likes?.length || 0} curtidas</span>
@@ -1125,7 +1125,7 @@
                                 <span style="font-weight: 600; font-size: 11px;">${escapeHtml(c.author?.nome || 'Anônimo')}</span>
                                 <span style="font-size: 10px; color: var(--text2); margin-left: 6px;">${formatarData(c.createdAt)}</span>
                                 <!-- APLICAR LINKS CLICÁVEIS NOS COMENTÁRIOS -->
-                                <p style="font-size: 12px; margin-top: 2px;">${tornarLinksClicaveis(escapeHtml(c.text || ''))}</p>
+<p style="font-size: 12px; margin-top: 2px;">${tornarLinksClicaveis(c.text || '')}</p>
                             </div>
                         </div>
                     `).join('')}
@@ -1199,8 +1199,7 @@ async function abrirComentarios(postId) {
                         <span class="message-time">${formatarData(c.createdAt)}</span>
                     </div>
                     <!-- APLICAR LINKS CLICÁVEIS NOS COMENTÁRIOS DO MODAL -->
-                    <div class="message-text">${tornarLinksClicaveis(escapeHtml(c.text || ''))}</div>
-                </div>
+<div class="message-text">${tornarLinksClicaveis(c.text || '')}</div>
             </div>
         `).join('');
     }
@@ -1458,7 +1457,7 @@ function renderMensagem(msg) {
                                         <span class="reply-time">${formatarData(r.createdAt)}</span>
                                     </div>
                                     <!-- APLICAR LINKS CLICÁVEIS NAS RESPOSTAS -->
-                                    <div class="reply-text">${tornarLinksClicaveis(escapeHtml(r.texto))}</div>
+<div class="reply-text">${tornarLinksClicaveis(r.texto)}</div>
                                 </div>
                             </div>
                         `).join('')}
@@ -1731,13 +1730,33 @@ function renderMensagem(msg) {
     window.scrollTo({ top: 0, behavior: 'smooth' });
 }
     // ==================== UTILITÁRIOS ====================
+    // Função para tornar links clicáveis
+function tornarLinksClicaveis(texto) {
+    if (!texto) return '';
     
+    // Expressão regular para detectar URLs
+    const urlRegex = /(https?:\/\/[^\s<]+)/g;
+    
+    // Primeiro escapa o HTML para segurança
+    let textoEscapado = escapeHtml(texto);
+    
+    // Depois substitui URLs por links clicáveis
+    return textoEscapado.replace(urlRegex, (url) => {
+        // Remove caracteres de pontuação do final da URL
+        let cleanUrl = url.replace(/[.,;:!?]$/, '');
+        return `<a href="${cleanUrl}" target="_blank" rel="noopener noreferrer" 
+                   style="color: #7c4dff; text-decoration: underline; word-break: break-all;" 
+                   onclick="event.stopPropagation();">
+                   <i class="fas fa-external-link-alt" style="font-size: 10px; margin-right: 4px;"></i>${cleanUrl}
+                </a>`;
+    });
+}
     function escapeHtml(str) {
-        if (!str) return '';
-        const div = document.createElement('div');
-        div.textContent = str;
-        return div.innerHTML;
-    }
+    if (!str) return '';
+    const div = document.createElement('div');
+    div.textContent = str;
+    return div.innerHTML;
+}
     
     function formatarData(d) {
         if (!d) return 'agora';

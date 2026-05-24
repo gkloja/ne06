@@ -2232,20 +2232,14 @@ function getNivel(xp) {
 // ==================== RANKING ====================
 
 function mostrarRanking() {
-    if (!currentUser) {
-        mostrarLoginPrompt();
-        return;
-    }
+    if (!currentUser) { mostrarLoginPrompt(); return; }
     
-    // Calcular XP para todos os usuários conhecidos
     const usuarios = [];
     const userIds = new Set();
     
     posts.forEach(p => {
         if (p.author?.id) userIds.add(p.author.id);
-        p.comments?.forEach(c => {
-            if (c.author?.id) userIds.add(c.author.id);
-        });
+        p.comments?.forEach(c => { if (c.author?.id) userIds.add(c.author.id); });
     });
     
     if (currentUser.seguidores) currentUser.seguidores.forEach(id => userIds.add(id));
@@ -2260,87 +2254,59 @@ function mostrarRanking() {
         const autorPost = posts.find(p => p.author?.id === uid);
         
         usuarios.push({
-            id: uid,
-            nome: autorPost?.author?.nome || 'Usuário ' + uid.substring(0, 6),
-            avatar: autorPost?.author?.avatar || '',
-            xp: xp,
-            nivel: nivel,
-            posts: userPosts,
-            curtidas: curtidas,
-            comentarios: comentarios
+            id: uid, nome: autorPost?.author?.nome || 'User', avatar: autorPost?.author?.avatar || '',
+            xp, nivel, posts: userPosts, curtidas, comentarios
         });
     });
     
     usuarios.sort((a, b) => b.xp - a.xp);
+    const unique = [];
+    const seen = new Set();
+    usuarios.forEach(u => { if (!seen.has(u.id)) { seen.add(u.id); unique.push(u); } });
     
-    const uniqueUsers = [];
-    const seenIds = new Set();
-    usuarios.forEach(u => {
-        if (!seenIds.has(u.id)) { seenIds.add(u.id); uniqueUsers.push(u); }
-    });
+    const top20 = unique.slice(0, 20);
+    const minhaPos = top20.findIndex(u => u.id === currentUser.id) + 1;
     
-    const top20 = uniqueUsers.slice(0, 20);
-    const minhaPosicao = top20.findIndex(u => u.id === currentUser.id) + 1;
+    let html = `<div style="text-align:center;margin-bottom:10px;font-size:13px;">`;
+    html += minhaPos > 0 ? `🏆 Sua posição: <b style="color:#FFD700;">#${minhaPos}</b> de ${unique.length}` : `📊 ${unique.length} usuários`;
+    html += `</div><div id="rankList" style="max-height:380px;overflow-y:auto;">`;
     
-    // Construir HTML
-    let html = `<div style="text-align:center;margin-bottom:12px;">`;
-    if (minhaPosicao > 0) {
-        html += `<p style="font-size:13px;">🏆 Sua posição: <strong style="color:#FFD700;">#${minhaPosicao}</strong> de ${uniqueUsers.length}</p>`;
-    } else {
-        html += `<p style="font-size:13px;">📊 ${uniqueUsers.length} usuários no ranking</p>`;
-    }
-    html += `</div><div style="max-height:380px;overflow-y:auto;" id="rankingListContainer">`;
-    
-    top20.forEach((u, index) => {
-        const pos = index + 1;
-        let icon = pos;
-        if (pos === 1) icon = '🥇';
-        else if (pos === 2) icon = '🥈';
-        else if (pos === 3) icon = '🥉';
+    top20.forEach((u, i) => {
+        const p = i + 1;
+        const icon = p === 1 ? '🥇' : p === 2 ? '🥈' : p === 3 ? '🥉' : p;
+        const me = u.id === currentUser.id;
+        const av = u.avatar || 'https://ui-avatars.com/api/?name=' + encodeURIComponent(u.nome) + '&background=7c4dff&color=fff';
         
-        const isMe = u.id === currentUser.id;
-        const avatarUrl = u.avatar || 'https://ui-avatars.com/api/?name=' + encodeURIComponent(u.nome) + '&background=7c4dff&color=fff';
-        
-        html += `
-            <div class="ranking-row" data-userid="${u.id}" data-nome="${escapeHtml(u.nome).replace(/"/g, '&quot;')}" data-avatar="${u.avatar || ''}"
-                 style="display:flex;align-items:center;gap:10px;padding:10px 8px;cursor:pointer;
-                        border-bottom:1px solid var(--border);transition:all 0.2s;
-                        ${isMe ? 'background:rgba(37,99,235,0.08);font-weight:700;' : ''}"
-                 onmouseover="this.style.background='${isMe ? 'rgba(37,99,235,0.12)' : 'rgba(0,0,0,0.04)'}'" 
-                 onmouseout="this.style.background='${isMe ? 'rgba(37,99,235,0.08)' : 'transparent'}'">
-                <span style="font-size:${pos<=3?'20px':'14px'};font-weight:700;width:30px;text-align:center;">${icon}</span>
-                <img src="${avatarUrl}" style="width:32px;height:32px;border-radius:50%;object-fit:cover;" onerror="this.src='https://ui-avatars.com/api/?name=User&background=7c4dff&color=fff'">
-                <div style="flex:1;min-width:0;"><span style="font-weight:600;font-size:13px;">${escapeHtml(u.nome)}${isMe?' <span style="color:#2563eb;font-size:11px;">(você)</span>':''}</span></div>
-                <span style="background:rgba(255,215,0,0.15);border-radius:20px;padding:3px 10px;font-size:11px;font-weight:700;color:#FFD700;">${u.nivel.icon} Nv.${u.nivel.level}</span>
-                <span style="font-weight:700;font-size:12px;width:70px;text-align:right;">${u.xp.toLocaleString()} XP</span>
-            </div>`;
+        html += `<div class="rank-item" data-uid="${u.id}" data-nome="${escapeHtml(u.nome)}" data-av="${u.avatar||''}"
+            style="display:flex;align-items:center;gap:8px;padding:10px 6px;cursor:pointer;border-bottom:1px solid #333;${me?'background:rgba(37,99,235,0.08);':''}"
+            onmouseover="this.style.background='${me?'rgba(37,99,235,0.15)':'rgba(255,255,255,0.03)'}'" 
+            onmouseout="this.style.background='${me?'rgba(37,99,235,0.08)':''}'">
+            <span style="font-size:${p<=3?'18px':'13px'};width:28px;text-align:center;">${icon}</span>
+            <img src="${av}" style="width:30px;height:30px;border-radius:50%;" onerror="this.src='https://ui-avatars.com/api/?name=U&background=7c4dff&color=fff'">
+            <span style="flex:1;font-size:13px;font-weight:600;">${escapeHtml(u.nome)}${me?' <span style="color:#2563eb;">(você)</span>':''}</span>
+            <span style="font-size:10px;color:#FFD700;">${u.nivel.icon} Nv${u.nivel.level}</span>
+            <span style="font-size:11px;font-weight:700;">${u.xp.toLocaleString()} XP</span>
+        </div>`;
     });
     
     html += `</div>`;
     
-    if (uniqueUsers.length > 20) {
-        html += `<p style="text-align:center;margin-top:8px;font-size:11px;opacity:0.7;">Top 20 de ${uniqueUsers.length} usuários</p>`;
-    }
-    
     Swal.fire({
-        title: '🏆 Ranking NE Conecta',
+        title: '🏆 Ranking',
         html: html,
         showConfirmButton: false,
         showCancelButton: true,
         cancelButtonText: 'Fechar',
-        width: '500px',
-        padding: '16px',
-        // 🔑 ADICIONAR EVENT LISTENERS DEPOIS QUE O MODAL ABRIR
+        width: '480px',
         didOpen: () => {
-            document.querySelectorAll('.ranking-row').forEach(row => {
-                row.addEventListener('click', function() {
-                    const userId = this.getAttribute('data-userid');
+            // Adicionar event listeners REAIS após o modal abrir
+            document.querySelectorAll('.rank-item').forEach(el => {
+                el.addEventListener('click', function() {
+                    const uid = this.getAttribute('data-uid');
                     const nome = this.getAttribute('data-nome');
-                    const avatar = this.getAttribute('data-avatar');
+                    const av = this.getAttribute('data-av');
                     Swal.close();
-                    setTimeout(() => {
-                        abrirPerfilUsuario(userId, nome, avatar);
-                    }, 200);
+                    setTimeout(() => abrirPerfilUsuario(uid, nome, av), 300);
                 });
             });
         }

@@ -933,7 +933,8 @@ if (currentUser) {
                 salvarSessao();
                 atualizarPerfilUI();
                 await carregarFeedCompleto();
-                
+                // Após carregar seguidores, adicione:
+verificarMensagensNaoLidas();
                 console.log('✅ Usuário logado:', currentUser.nome);
             } else {
                 currentUser = null;
@@ -1028,6 +1029,16 @@ function abrirChatPrivado(usuarioId, usuarioNome, usuarioAvatar) {
 
 async function carregarMensagensPrivadas(outroUsuarioId) {
     try {
+        // Marcar mensagens como lidas
+        await fetch(`${API_URL}/cliente06/chat-privado/marcar-lidas`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                userId: currentUser.id,
+                outroUserId: outroUsuarioId
+            })
+        });
+        
         const response = await fetch(`${API_URL}/cliente06/chat-privado/${currentUser.id}/${outroUsuarioId}`);
         const mensagens = await response.json();
         
@@ -1048,17 +1059,22 @@ async function carregarMensagensPrivadas(outroUsuarioId) {
             return `
                 <div class="chat-privado-message ${isSent ? 'chat-privado-message-sent' : 'chat-privado-message-received'}">
                     ${escapeHtml(msg.texto)}
-                    <div style="font-size: 9px; margin-top: 4px; opacity: 0.7;">${formatarData(msg.createdAt)}</div>
+                    <div style="font-size: 9px; margin-top: 4px; opacity: 0.7;">
+                        ${formatarData(msg.createdAt)}
+                        ${isSent && msg.lida ? ' ✓✓' : isSent ? ' ✓' : ''}
+                    </div>
                 </div>
             `;
         }).join('');
         
         messagesContainer.scrollTop = messagesContainer.scrollHeight;
+        
+        // Atualizar badge de notificações
+        verificarMensagensNaoLidas();
     } catch (error) {
         console.error('Erro ao carregar mensagens:', error);
     }
 }
-
 async function enviarMensagemPrivada() {
     if (!currentUser || !chatPrivadoAtivo) return;
     
@@ -1469,7 +1485,6 @@ function removerCurtida(postId) {
     return `
         <div class="post-card" data-post-id="${post.id}">
             <div class="post-header">
-// No renderPost, atualize o avatar para ser clicável:
 <div class="post-avatar" onclick="event.stopPropagation(); abrirPerfilUsuario('${post.author?.id || ''}', '${escapeHtml(post.author?.nome || 'Usuário')}', '${post.author?.avatar || ''}')" style="cursor: pointer;">
     <img src="${post.author?.avatar || 'https://ui-avatars.com/api/?name=' + encodeURIComponent(post.author?.nome || 'Usuário') + '&background=7c4dff&color=fff'}" 
          style="width:100%;height:100%;border-radius:50%;object-fit:cover;" 
@@ -1917,17 +1932,22 @@ function renderMensagem(msg) {
     
     return `
         <div class="chat-message" data-msg-id="${msg.id}" id="msg-${msg.id}">
-            <div class="message-avatar">
+            <div class="message-avatar" onclick="event.stopPropagation(); abrirPerfilUsuario('${msg.usuario?.id || ''}', '${escapeHtml(msg.usuario?.nome || 'Usuário')}', '${msg.usuario?.avatar || ''}')" style="cursor: pointer;" title="Ver perfil de ${escapeHtml(msg.usuario?.nome || 'Usuário')}">
                 <img src="${msg.usuario?.avatar || 'https://ui-avatars.com/api/?background=7c4dff&color=fff'}" 
                      style="width:100%;height:100%;border-radius:50%;object-fit:cover;" 
                      alt="Avatar">
             </div>
             <div class="message-content">
                 <div class="message-header">
-                    <span class="message-author">${msg.anonimo ? 'Anônimo' : escapeHtml(msg.usuario?.nome || 'Usuário')}</span>
+                    <span class="message-author" style="cursor: pointer;" onclick="event.stopPropagation(); abrirPerfilUsuario('${msg.usuario?.id || ''}', '${escapeHtml(msg.usuario?.nome || 'Usuário')}', '${msg.usuario?.avatar || ''}')">${msg.anonimo ? 'Anônimo' : escapeHtml(msg.usuario?.nome || 'Usuário')}</span>
                     <span class="message-time">${formatarData(msg.createdAt)}</span>
+                    ${!msg.anonimo && currentUser && msg.usuario?.id !== currentUser.id ? `
+                        <button class="message-action" onclick="event.stopPropagation(); abrirChatPrivado('${msg.usuario?.id}', '${escapeHtml(msg.usuario?.nome || 'Usuário')}', '${msg.usuario?.avatar || ''}')" 
+                                style="font-size: 10px; padding: 2px 8px; background: rgba(37,99,235,0.2); color: #2563eb; border-radius: 20px;">
+                            <i class="fas fa-comment"></i> Mensagem
+                        </button>
+                    ` : ''}
                 </div>
-                <!-- APLICAR LINKS CLICÁVEIS AQUI -->
                 <div class="message-text">${tornarLinksClicaveis(escapeHtml(msg.texto))}</div>
                 <div class="message-actions">
                     <button class="message-action ${isLiked ? 'liked' : ''}" 
@@ -1946,18 +1966,17 @@ function renderMensagem(msg) {
                     <div class="replies-section" id="replies-${msg.id}" style="display: none;">
                         ${msg.respostas.map(r => `
                             <div class="reply-message">
-                                <div class="reply-avatar">
+                                <div class="reply-avatar" onclick="event.stopPropagation(); abrirPerfilUsuario('${r.usuario?.id || ''}', '${escapeHtml(r.usuario?.nome || 'Anônimo')}', '${r.usuario?.avatar || ''}')" style="cursor: pointer;">
                                     <img src="${r.usuario?.avatar || 'https://ui-avatars.com/api/?background=7c4dff&color=fff'}" 
                                          style="width:100%;height:100%;border-radius:50%;object-fit:cover;" 
                                          alt="Avatar">
                                 </div>
                                 <div class="reply-content">
                                     <div class="reply-header">
-                                        <span class="reply-author">${escapeHtml(r.usuario?.nome || 'Anônimo')}</span>
+                                        <span class="reply-author" style="cursor: pointer;" onclick="event.stopPropagation(); abrirPerfilUsuario('${r.usuario?.id || ''}', '${escapeHtml(r.usuario?.nome || 'Anônimo')}', '${r.usuario?.avatar || ''}')">${escapeHtml(r.usuario?.nome || 'Anônimo')}</span>
                                         <span class="reply-time">${formatarData(r.createdAt)}</span>
                                     </div>
-                                    <!-- APLICAR LINKS CLICÁVEIS NAS RESPOSTAS -->
-<div class="reply-text">${tornarLinksClicaveis(r.texto)}</div>
+                                    <div class="reply-text">${tornarLinksClicaveis(r.texto)}</div>
                                 </div>
                             </div>
                         `).join('')}
@@ -2199,6 +2218,11 @@ function renderMensagem(msg) {
                     <i class="fas fa-newspaper"></i> Minhas Publicações
                     <i class="fas fa-chevron-right" style="margin-left: auto;"></i>
                 </button>
+<button class="perfil-menu-btn" onclick="mostrarConversasPrivadas()">
+    <i class="fas fa-envelope"></i> Mensagens Privadas
+    <span id="msgNaoLidas" style="margin-left: auto; background: #ef4444; color: white; border-radius: 20px; padding: 2px 8px; font-size: 10px; display: none;">0</span>
+    <i class="fas fa-chevron-right" style="margin-left: 4px;"></i>
+</button>
                 <button class="perfil-menu-btn" onclick="abrirConfiguracoes()">
                     <i class="fas fa-cog"></i> Configurações
                     <i class="fas fa-chevron-right" style="margin-left: auto;"></i>
@@ -2218,6 +2242,86 @@ function renderMensagem(msg) {
             </div>
         </div>
     `;
+}
+
+// ==================== CONVERSAS PRIVADAS (LISTA) ====================
+
+async function mostrarConversasPrivadas() {
+    if (!currentUser) return;
+    
+    Swal.fire({
+        title: '📬 Mensagens Privadas',
+        html: '<p style="text-align: center; padding: 40px;">Carregando conversas...</p>',
+        showConfirmButton: false,
+        showCancelButton: true,
+        cancelButtonText: 'Fechar',
+        didOpen: async () => {
+            try {
+                // Buscar todas as conversas do usuário
+                const response = await fetch(`${API_URL}/cliente06/chat-privado/conversas/${currentUser.id}`);
+                const conversas = await response.json();
+                
+                let html = '<div style="max-height: 400px; overflow-y: auto;">';
+                
+                if (conversas.length === 0) {
+                    html += '<p style="text-align: center; padding: 40px; color: var(--text2);">Nenhuma conversa ainda</p>';
+                } else {
+                    conversas.forEach(conv => {
+                        const temNaoLidas = conv.naoLidas > 0;
+                        html += `
+                            <div style="display: flex; align-items: center; gap: 10px; padding: 12px; border-bottom: 1px solid var(--border); cursor: pointer; ${temNaoLidas ? 'background: rgba(37,99,235,0.05);' : ''}"
+                                 onclick="Swal.close(); abrirChatPrivado('${conv.outroUsuarioId}', '${escapeHtml(conv.outroUsuarioNome || 'Usuário')}', '${conv.outroUsuarioAvatar || ''}')">
+                                <img src="${conv.outroUsuarioAvatar || 'https://ui-avatars.com/api/?name=' + encodeURIComponent(conv.outroUsuarioNome || 'U') + '&background=7c4dff&color=fff'}" 
+                                     style="width: 44px; height: 44px; border-radius: 50%; object-fit: cover;">
+                                <div style="flex: 1;">
+                                    <div style="display: flex; justify-content: space-between; align-items: center;">
+                                        <span style="font-weight: 700;">${escapeHtml(conv.outroUsuarioNome || 'Usuário')}</span>
+                                        <span style="font-size: 10px; color: var(--text2);">${formatarData(conv.ultimaMensagem)}</span>
+                                    </div>
+                                    <p style="font-size: 12px; color: var(--text2); margin-top: 2px;">${escapeHtml(conv.ultimoTexto?.substring(0, 50) || '')}${conv.ultimoTexto?.length > 50 ? '...' : ''}</p>
+                                    ${temNaoLidas ? `<span style="background: #ef4444; color: white; border-radius: 20px; padding: 2px 8px; font-size: 10px;">${conv.naoLidas} nova${conv.naoLidas > 1 ? 's' : ''}</span>` : ''}
+                                </div>
+                            </div>
+                        `;
+                    });
+                }
+                html += '</div>';
+                
+                Swal.getHtmlContainer().innerHTML = html;
+            } catch (error) {
+                Swal.getHtmlContainer().innerHTML = '<p style="text-align: center; padding: 40px;">Erro ao carregar conversas</p>';
+            }
+        }
+    });
+}
+
+// Verificar mensagens não lidas periodicamente
+setInterval(verificarMensagensNaoLidas, 30000); // A cada 30 segundos
+
+async function verificarMensagensNaoLidas() {
+    if (!currentUser) return;
+    
+    try {
+        const response = await fetch(`${API_URL}/cliente06/chat-privado/nao-lidas/${currentUser.id}`);
+        const data = await response.json();
+        
+        const badge = document.getElementById('msgNaoLidas');
+        if (badge && data.total > 0) {
+            badge.textContent = data.total;
+            badge.style.display = 'inline-block';
+        } else if (badge) {
+            badge.style.display = 'none';
+        }
+        
+        // Atualizar ícone de notificação
+        const notifBtn = document.getElementById('notificationBtn');
+        if (notifBtn && data.total > 0) {
+            notifBtn.style.position = 'relative';
+            notifBtn.innerHTML = '<i class="fa-regular fa-bell"></i><span style="position: absolute; top: -4px; right: -4px; background: #ef4444; color: white; border-radius: 50%; width: 18px; height: 18px; font-size: 10px; display: flex; align-items: center; justify-content: center; font-weight: 700;">' + data.total + '</span>';
+        }
+    } catch (error) {
+        // Silencioso
+    }
 }
 
 // Funções auxiliares do perfil

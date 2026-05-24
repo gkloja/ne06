@@ -2018,16 +2018,14 @@ body.light-mode .watch-title { color: #111; }
     width: 100%;
 }
 
+/* CORREÇÃO COMPLETA PARA O PLAYER NO CELULAR */
 .watch-player-box {
     position: relative;
     width: 100%;
+    max-width: 100%;
     background: #000;
     overflow: hidden;
     border-radius: 0;
-}
-
-/* Player wrapper com aspecto 16:9 apenas em desktop */
-.watch-player-box {
     padding-bottom: 56.25%;
     height: 0;
 }
@@ -2038,6 +2036,46 @@ body.light-mode .watch-title { color: #111; }
     left: 0;
     width: 100%;
     height: 100%;
+}
+
+.watch-player-box iframe {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100% !important;
+    height: 100% !important;
+    max-width: 100vw;
+}
+
+@media (max-width: 768px) {
+    .watch-player-box {
+        width: 100%;
+        max-width: 100vw;
+        margin: 0;
+        padding-bottom: 56.25%;
+        overflow: hidden;
+    }
+    
+    .watch-player-wrapper {
+        padding: 0;
+        margin: 0;
+        width: 100%;
+        max-width: 100vw;
+        overflow-x: hidden;
+    }
+    
+    .watch-player-col {
+        width: 100%;
+        max-width: 100%;
+        padding: 0;
+        overflow: hidden;
+    }
+    
+    /* Garantir que o container do player não ultrapasse */
+    #watchPlayer {
+        width: 100% !important;
+        max-width: 100vw !important;
+    }
 }
 
 /* Barra de info */
@@ -3184,11 +3222,9 @@ window.onYouTubeIframeAPIReady = function() {
     }
 };
 
-// Criar player do YouTube
 function criarYouTubePlayer(videoId) {
     console.log('🎬 Criando player para:', videoId);
     
-    // Destruir player anterior se existir
     if (watchPlayer) {
         try { watchPlayer.destroy(); } catch(e) {}
         watchPlayer = null;
@@ -3196,11 +3232,9 @@ function criarYouTubePlayer(videoId) {
     
     watchPlayerReady = false;
     
-    // Limpar a div
     const playerDiv = document.getElementById('watchPlayer');
     if (playerDiv) playerDiv.innerHTML = '';
     
-    // Pequeno delay para garantir que a div está limpa
     setTimeout(() => {
         try {
             watchPlayer = new YT.Player('watchPlayer', {
@@ -3221,6 +3255,19 @@ function criarYouTubePlayer(videoId) {
                     onStateChange: onPlayerStateChange
                 }
             });
+            
+            // FORÇAR REDIMENSIONAMENTO DO PLAYER APÓS CRIAR
+            setTimeout(() => {
+                if (watchPlayer && watchPlayer.getIframe) {
+                    const iframe = watchPlayer.getIframe();
+                    if (iframe) {
+                        iframe.style.width = '100%';
+                        iframe.style.height = '100%';
+                        iframe.style.maxWidth = '100vw';
+                    }
+                }
+            }, 100);
+            
         } catch(e) {
             console.error('❌ Erro ao criar player:', e);
         }

@@ -823,9 +823,17 @@ body.light-mode .online-user-card {
 
 <nav class="navbar">
     <div class="container nav-content">
-        <div class="logo" onclick="mudarSecao('feed')">
-            <img src="/IMG-20260523-WA0031.jpg" alt="NE Conecta">
-            <h1>NE<span> Conecta</span></h1>
+        <div class="logo" onclick="mudarSecao('feed')" style="flex-direction: column; align-items: flex-start; gap: 2px;">
+            <div style="display: flex; align-items: center; gap: 8px;">
+                <img src="/IMG-20260523-WA0031.jpg" alt="NE Conecta">
+                <h1>NE<span> Conecta</span></h1>
+            </div>
+            <!-- Indicador de online abaixo da logo -->
+            <div style="display: flex; align-items: center; gap: 5px; margin-left: 50px; cursor: pointer;" onclick="mostrarUsuariosOnline()" title="Ver quem está online">
+                <span class="online-status-dot" style="width: 7px; height: 7px;"></span>
+                <span id="onlineCount" style="font-weight: 700; font-size: 11px; color: #10b981;">0</span>
+                <span style="font-size: 10px; color: var(--text2);">online</span>
+            </div>
         </div>
 <div class="menu" id="mainMenu">
     <a href="#" data-section="feed" class="active">Feed</a>
@@ -945,9 +953,8 @@ body.light-mode .online-user-card {
     </div>
 </div>
 
-<!-- Modais -->
 <div id="createPostModal" class="modal">
-    <div class="modal-content">
+    <div class="modal-content" style="max-width: 550px;">
         <div class="modal-header">
             <h2>Criar publicação</h2>
             <span class="modal-close" onclick="fecharModal()">&times;</span>
@@ -956,9 +963,46 @@ body.light-mode .online-user-card {
             <div class="form-group">
                 <textarea id="postText" rows="3" placeholder="O que você quer compartilhar?"></textarea>
             </div>
-            <div class="form-group" id="mediaUrlGroup" style="display:none;">
-                <input type="text" id="mediaUrl" placeholder="URL da imagem/vídeo">
+            
+            <!-- Área de Upload de Arquivo -->
+            <div class="form-group">
+                <label>📎 Anexar mídia do celular</label>
+                <div id="uploadArea" style="border: 2px dashed var(--border); border-radius: 12px; padding: 25px; text-align: center; cursor: pointer; transition: 0.2s; margin-bottom: 8px;"
+                     onclick="document.getElementById('fileInput').click()"
+                     ondrop="handleDrop(event)" 
+                     ondragover="handleDragOver(event)" 
+                     ondragleave="handleDragLeave(event)">
+                    <input type="file" id="fileInput" style="display: none;" accept="image/*,video/*" onchange="handleFileSelect(event)">
+                    <i class="fas fa-cloud-upload-alt" style="font-size: 36px; color: var(--primary); margin-bottom: 8px; display: block;"></i>
+                    <p style="font-weight: 600; margin-bottom: 4px; font-size: 13px;">Toque para selecionar ou arraste o arquivo</p>
+                    <p style="font-size: 11px; color: var(--text2);">Imagens e vídeos do seu celular</p>
+                    <p style="font-size: 10px; color: var(--text2);">Máx: 50MB • O arquivo será removido após 1h</p>
+                </div>
+                
+                <!-- Preview do arquivo -->
+                <div id="uploadPreview" style="display: none; margin-bottom: 8px;">
+                    <div style="position: relative; display: inline-block; width: 100%;">
+                        <img id="previewImage" src="" style="max-width: 100%; max-height: 180px; border-radius: 12px; display: none;">
+                        <video id="previewVideo" controls style="max-width: 100%; max-height: 180px; border-radius: 12px; display: none;"></video>
+                        <button onclick="removerArquivoMidia()" style="position: absolute; top: -8px; right: -8px; background: #ef4444; color: white; border: none; width: 26px; height: 26px; border-radius: 50%; cursor: pointer; font-size: 12px;">
+                            <i class="fas fa-times"></i>
+                        </button>
+                    </div>
+                    <div id="uploadProgress" style="display: none; margin-top: 8px;">
+                        <div style="background: #e5e5e5; border-radius: 10px; height: 4px; overflow: hidden;">
+                            <div id="progressBar" style="background: var(--primary); height: 100%; width: 0%; transition: width 0.3s;"></div>
+                        </div>
+                        <p style="font-size: 10px; color: var(--text2); margin-top: 4px;" id="progressText">Enviando...</p>
+                    </div>
+                </div>
+                
+                <!-- Ou cole um link -->
+                <div style="margin-top: 8px;">
+                    <p style="font-size: 11px; color: var(--text2); text-align: center; margin-bottom: 6px;">ou cole um link</p>
+                    <input type="text" id="mediaUrl" placeholder="https://exemplo.com/foto.jpg" style="width: 100%;">
+                </div>
             </div>
+            
             <div id="pollContainer" style="display:none;">
                 <div class="form-group">
                     <label>Opções da enquete</label>
@@ -969,9 +1013,11 @@ body.light-mode .online-user-card {
                     <button type="button" class="btn-secondary" style="margin-top:8px;" onclick="adicionarOpcaoEnquete()">+ Adicionar opção</button>
                 </div>
             </div>
+            
             <div class="form-group">
                 <label><input type="checkbox" id="postAnonimo"> Publicar anonimamente</label>
             </div>
+            
             <button class="btn-primary" onclick="enviarPost()">Publicar</button>
             <p style="font-size: 10px; margin-top: 12px; text-align: center;">📝 Seu post passará por moderação</p>
         </div>
@@ -2166,72 +2212,264 @@ if (mediaInput) {
         div.innerHTML = '<input type="text" placeholder="Nova opção">';
         container.appendChild(div);
     }
+// ==================== SISTEMA DE UPLOAD DE MÍDIA ====================
 
+let arquivoMidiaSelecionado = null;
+let midiaIdAtual = null;
+
+// Resetar upload quando abrir modal
+const abrirModalCriarPostOriginal = abrirModalCriarPost;
+abrirModalCriarPost = function(tipo = null) {
+    if (!currentUser) { mostrarLoginPrompt(); return; }
+    mediaType = tipo;
+    
+    // Resetar campos
+    document.getElementById('postText').value = '';
+    document.getElementById('mediaUrl').value = '';
+    document.getElementById('postAnonimo').checked = false;
+    document.getElementById('uploadPreview').style.display = 'none';
+    document.getElementById('previewImage').style.display = 'none';
+    document.getElementById('previewVideo').style.display = 'none';
+    document.getElementById('uploadArea').style.display = 'block';
+    document.getElementById('uploadProgress').style.display = 'none';
+    document.getElementById('pollContainer').style.display = tipo === 'enquete' ? 'block' : 'none';
+    
+    arquivoMidiaSelecionado = null;
+    midiaIdAtual = null;
+    
+    const mediaInput = document.getElementById('mediaUrl');
+    if (mediaInput) {
+        if (tipo === 'foto') {
+            mediaInput.placeholder = 'URL da imagem (ex: https://exemplo.com/foto.jpg)';
+        } else if (tipo === 'video') {
+            mediaInput.placeholder = 'URL do vídeo (YouTube ou MP4)';
+        }
+    }
+    
+    document.getElementById('createPostModal').style.display = 'flex';
+};
+
+// Lidar com seleção de arquivo
+function handleFileSelect(event) {
+    const file = event.target.files[0];
+    if (file) processarArquivoMidia(file);
+}
+
+// Lidar com drag and drop
+function handleDrop(event) {
+    event.preventDefault();
+    document.getElementById('uploadArea').style.borderColor = 'var(--border)';
+    document.getElementById('uploadArea').style.background = '';
+    const file = event.dataTransfer.files[0];
+    if (file) processarArquivoMidia(file);
+}
+
+function handleDragOver(event) {
+    event.preventDefault();
+    document.getElementById('uploadArea').style.borderColor = 'var(--primary)';
+    document.getElementById('uploadArea').style.background = 'rgba(37,99,235,0.05)';
+}
+
+function handleDragLeave(event) {
+    document.getElementById('uploadArea').style.borderColor = 'var(--border)';
+    document.getElementById('uploadArea').style.background = '';
+}
+
+// Processar arquivo
+function processarArquivoMidia(file) {
+    const allowedTypes = ['image/png', 'image/jpeg', 'image/jpg', 'image/gif', 'image/webp', 'video/mp4', 'video/webm', 'video/ogg', 'video/quicktime'];
+    
+    if (!allowedTypes.includes(file.type)) {
+        Swal.fire('Formato não permitido', 'Use imagens (PNG, JPG, GIF, WEBP) ou vídeos (MP4, WEBM, MOV).', 'error');
+        return;
+    }
+    
+    if (file.size > 50 * 1024 * 1024) {
+        Swal.fire('Arquivo grande', 'Máximo: 50MB.', 'error');
+        return;
+    }
+    
+    arquivoMidiaSelecionado = file;
+    
+    const reader = new FileReader();
+    reader.onload = function(e) {
+        document.getElementById('uploadArea').style.display = 'none';
+        document.getElementById('uploadPreview').style.display = 'block';
+        
+        if (file.type.startsWith('image/')) {
+            document.getElementById('previewImage').src = e.target.result;
+            document.getElementById('previewImage').style.display = 'block';
+            document.getElementById('previewVideo').style.display = 'none';
+        } else {
+            document.getElementById('previewVideo').src = e.target.result;
+            document.getElementById('previewVideo').style.display = 'block';
+            document.getElementById('previewImage').style.display = 'none';
+        }
+    };
+    reader.readAsDataURL(file);
+}
+
+// Remover arquivo
+function removerArquivoMidia() {
+    arquivoMidiaSelecionado = null;
+    midiaIdAtual = null;
+    document.getElementById('uploadPreview').style.display = 'none';
+    document.getElementById('uploadArea').style.display = 'block';
+    document.getElementById('fileInput').value = '';
+    document.getElementById('previewImage').src = '';
+    document.getElementById('previewVideo').src = '';
+    document.getElementById('uploadProgress').style.display = 'none';
+}
+
+// Enviar para o servidor
+async function enviarMidiaParaServidor(file) {
+    if (!file) return null;
+    
+    const formData = new FormData();
+    formData.append('arquivo_midia', file);
+    formData.append('user_id', currentUser.id);
+    formData.append('user_nome', currentUser.nome);
+    
+    document.getElementById('uploadProgress').style.display = 'block';
+    document.getElementById('progressText').textContent = 'Enviando arquivo...';
+    
+    try {
+        const response = await fetch(`${API_URL}/cliente06/midia-upload`, {
+            method: 'POST',
+            body: formData
+        });
+        
+        const data = await response.json();
+        
+        if (data.success) {
+            document.getElementById('progressBar').style.width = '100%';
+            document.getElementById('progressText').textContent = '✅ Link gerado! Arquivo será removido em 1h.';
+            midiaIdAtual = data.midia.id;
+            return data.midia.url;
+        } else {
+            throw new Error(data.error || 'Erro no upload');
+        }
+    } catch (error) {
+        console.error('Erro no upload:', error);
+        Swal.fire('Erro', error.message, 'error');
+        document.getElementById('uploadProgress').style.display = 'none';
+        return null;
+    }
+}
+
+// Deletar mídia após publicar
+async function deletarMidiaAposUso(midiaId) {
+    if (!midiaId) return;
+    try {
+        await fetch(`${API_URL}/cliente06/midia-deletar-apos-uso`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ midia_id: midiaId })
+        });
+    } catch (error) {
+        console.error('Erro ao deletar:', error);
+    }
+}
     async function enviarPost() {
-        if (!currentUser) { mostrarLoginPrompt(); return; }
-        
-        const text = document.getElementById('postText').value;
-        const media = document.getElementById('mediaUrl').value;
-        const anonymous = document.getElementById('postAnonimo').checked;
-        
-        if (!text && !media) {
-            Swal.fire('Atenção', 'Digite algo ou adicione uma mídia', 'warning');
-            return;
-        }
-        
-        let poll = null;
-        if (mediaType === 'enquete') {
-            const options = [];
-            document.querySelectorAll('#pollOptions .poll-option-input input').forEach(i => {
-                if (i.value.trim()) options.push({ text: i.value.trim(), votes: 0 });
-            });
-            if (options.length < 2) {
-                Swal.fire('Atenção', 'Adicione pelo menos 2 opções', 'warning');
-                return;
-            }
-            poll = { id: Date.now(), question: text || 'Vote na enquete', options };
-        }
-        
-        const newPost = {
-            author: { id: currentUser.id, nome: currentUser.nome, avatar: currentUser.avatar },
-            anonymous,
-            text,
-            media: media || null,
-            mediaType: mediaType === 'foto' ? 'image' : (mediaType === 'video' ? 'video' : null),
-            poll,
-            likes: [],
-            comments: [],
-            shares: 0,
-            status: 'pending',
-            createdAt: new Date().toISOString()
-        };
-        
+    if (!currentUser) { mostrarLoginPrompt(); return; }
+    
+    const text = document.getElementById('postText').value;
+    const mediaUrlInput = document.getElementById('mediaUrl').value;
+    const anonymous = document.getElementById('postAnonimo').checked;
+    
+    let mediaUrl = mediaUrlInput;
+    
+    // Se tem arquivo selecionado, faz upload primeiro
+    if (arquivoMidiaSelecionado) {
         Swal.fire({
-            title: 'Enviando...',
-            text: 'Seu post foi enviado para aprovação',
+            title: 'Enviando arquivo...',
+            text: 'Gerando link da sua mídia',
             allowOutsideClick: false,
             didOpen: () => Swal.showLoading()
         });
         
-        try {
-            const res = await fetch(`${API_URL}/cliente06/posts`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(newPost)
-            });
-            Swal.close();
-            if (res.ok) {
-                Swal.fire('Sucesso!', 'Post enviado para aprovação!', 'success');
-                fecharModal();
-                carregarPosts();
-            } else {
-                Swal.fire('Erro', 'Não foi possível criar o post', 'error');
-            }
-        } catch (e) {
-            Swal.close();
-            Swal.fire('Erro', e.message, 'error');
+        mediaUrl = await enviarMidiaParaServidor(arquivoMidiaSelecionado);
+        Swal.close();
+        
+        if (!mediaUrl) return;
+    }
+    
+    if (!text && !mediaUrl) {
+        Swal.fire('Atenção', 'Digite algo ou adicione uma mídia', 'warning');
+        return;
+    }
+    
+    // Determinar tipo de mídia
+    let mediaTypeValue = null;
+    if (mediaUrl) {
+        if (mediaUrl.match(/\.(jpg|jpeg|png|gif|webp)(\?.*)?$/i)) {
+            mediaTypeValue = 'image';
+        } else if (mediaUrl.match(/\.(mp4|webm|ogg|mov)(\?.*)?$/i) || mediaUrl.includes('youtube.com') || mediaUrl.includes('youtu.be')) {
+            mediaTypeValue = 'video';
+        } else if (arquivoMidiaSelecionado && arquivoMidiaSelecionado.type.startsWith('image/')) {
+            mediaTypeValue = 'image';
+        } else if (arquivoMidiaSelecionado && arquivoMidiaSelecionado.type.startsWith('video/')) {
+            mediaTypeValue = 'video';
         }
     }
+    
+    let poll = null;
+    if (mediaType === 'enquete') {
+        const options = [];
+        document.querySelectorAll('#pollOptions .poll-option-input input').forEach(i => {
+            if (i.value.trim()) options.push({ text: i.value.trim(), votes: 0 });
+        });
+        if (options.length < 2) {
+            Swal.fire('Atenção', 'Adicione pelo menos 2 opções', 'warning');
+            return;
+        }
+        poll = { id: Date.now(), question: text || 'Vote na enquete', options };
+    }
+    
+    const newPost = {
+        author: { id: currentUser.id, nome: currentUser.nome, avatar: currentUser.avatar },
+        anonymous,
+        text,
+        media: mediaUrl || null,
+        mediaType: mediaTypeValue,
+        poll,
+        likes: [],
+        comments: [],
+        shares: 0,
+        status: 'pending',
+        createdAt: new Date().toISOString()
+    };
+    
+    Swal.fire({
+        title: 'Enviando...',
+        text: 'Seu post foi enviado para aprovação',
+        allowOutsideClick: false,
+        didOpen: () => Swal.showLoading()
+    });
+    
+    try {
+        const res = await fetch(`${API_URL}/cliente06/posts`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(newPost)
+        });
+        Swal.close();
+        if (res.ok) {
+            // Deletar mídia temporária após publicar
+            if (midiaIdAtual) await deletarMidiaAposUso(midiaIdAtual);
+            
+            Swal.fire('Sucesso!', 'Post enviado para aprovação!', 'success');
+            fecharModal();
+            carregarPosts();
+            removerArquivoMidia();
+        } else {
+            Swal.fire('Erro', 'Não foi possível criar o post', 'error');
+        }
+    } catch (e) {
+        Swal.close();
+        Swal.fire('Erro', e.message, 'error');
+    }
+}
 
     // ==================== CHAT GLOBAL ====================
     

@@ -1,0 +1,848 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes, viewport-fit=cover">
+<title>NE Social | Rede de Oportunidades</title>
+<meta name="theme-color" content="#7c4dff">
+
+<!-- Fonts -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
+<!-- Font Awesome -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+
+<!-- SweetAlert -->
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+<style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
+    body {
+        font-family: 'Plus Jakarta Sans', sans-serif;
+        background: #0A0C15;
+        color: #EDF2F8;
+        overflow-x: hidden;
+        transition: background 0.3s ease, color 0.3s ease;
+    }
+    body.light-mode {
+        background: #F8FAFC;
+        color: #1A1F2E;
+    }
+    body.light-mode .post-card, body.light-mode .job-card, body.light-mode .news-card,
+    body.light-mode .chat-card, body.light-mode .modal-content, body.light-mode .create-post-card,
+    body.light-mode .trending-card, body.light-mode .vip-card, body.light-mode .perfil-card {
+        background: white !important;
+        border-color: #E2E8F0 !important;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.04) !important;
+    }
+    body.light-mode .navbar { background: rgba(255,255,255,0.98); border-bottom-color: #E2E8F0; }
+    body.light-mode .menu a { color: #64748B; }
+    body.light-mode .menu a:hover, body.light-mode .menu a.active { color: #7c4dff; }
+    body.light-mode .create-post-input, body.light-mode .comment-input input { background: #F1F5F9; border-color: #E2E8F0; }
+    :root {
+        --primary: #7c4dff;
+        --primary-dark: #5a2dff;
+        --primary-light: #9d6bff;
+        --bg: #0A0C15;
+        --card: #121216;
+        --border: #23232b;
+        --text2: #9b9bb3;
+        --success: #10b981;
+        --warning: #f59e0b;
+        --danger: #ef4444;
+    }
+    .container { width: 100%; max-width: 1400px; margin: 0 auto; padding: 0 16px; }
+    ::-webkit-scrollbar { width: 4px; }
+    ::-webkit-scrollbar-track { background: var(--card); }
+    ::-webkit-scrollbar-thumb { background: var(--primary); border-radius: 10px; }
+
+    /* Navbar */
+    .navbar {
+        width: 100%;
+        background: rgba(10,12,21,0.95);
+        backdrop-filter: blur(20px);
+        position: sticky;
+        top: 0;
+        z-index: 1000;
+        border-bottom: 1px solid rgba(255,255,255,0.05);
+        padding: 12px 0;
+    }
+    .nav-content { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+    .logo { display: flex; align-items: center; gap: 8px; cursor: pointer; }
+    .logo-circle { width: 38px; height: 38px; border-radius: 12px; background: linear-gradient(135deg, var(--primary), var(--primary-dark)); display: flex; align-items: center; justify-content: center; font-size: 18px; font-weight: 800; }
+    .logo h1 { font-size: 18px; line-height: 1.2; }
+    .logo span { color: var(--primary-light); }
+    .menu { display: flex; gap: 8px; background: rgba(255,255,255,0.05); padding: 4px; border-radius: 40px; }
+    .menu a { color: #9ca3af; text-decoration: none; font-size: 13px; font-weight: 500; padding: 6px 14px; border-radius: 30px; transition: all 0.2s; }
+    .menu a:hover { color: #fff; background: rgba(255,255,255,0.1); }
+    .menu a.active { background: var(--primary); color: white; }
+    .mobile-menu-btn { display: none; font-size: 20px; cursor: pointer; color: #fff; background: none; border: none; }
+    .right-nav { display: flex; align-items: center; gap: 8px; }
+    .icon-btn { width: 38px; height: 38px; border-radius: 12px; background: rgba(255,255,255,0.05); display: flex; align-items: center; justify-content: center; cursor: pointer; border: none; color: #fff; }
+    .icon-btn:hover { background: var(--primary); }
+    .profile { width: 38px; height: 38px; border-radius: 12px; background: linear-gradient(135deg, var(--primary), var(--primary-dark)); display: flex; align-items: center; justify-center: center; cursor: pointer; font-weight: 600; font-size: 16px; border: none; color: white; }
+
+    .floating-theme { position: fixed; bottom: 80px; right: 16px; width: 48px; height: 48px; border-radius: 50%; background: linear-gradient(135deg, var(--primary), var(--primary-dark)); display: flex; align-items: center; justify-content: center; cursor: pointer; z-index: 99; box-shadow: 0 4px 15px rgba(124,77,255,0.4); border: none; color: white; font-size: 20px; transition: 0.3s; }
+    .floating-theme:hover { transform: scale(1.1); }
+    .scroll-top { position: fixed; bottom: 140px; right: 16px; width: 48px; height: 48px; border-radius: 50%; background: var(--card); border: 1px solid var(--border); display: flex; align-items: center; justify-content: center; cursor: pointer; opacity: 0; visibility: hidden; transition: 0.3s; z-index: 99; color: white; }
+    .scroll-top.visible { opacity: 1; visibility: visible; }
+
+    .bottom-nav { display: none; position: fixed; bottom: 0; left: 0; right: 0; background: rgba(10,12,21,0.95); backdrop-filter: blur(20px); border-top: 1px solid rgba(255,255,255,0.05); padding: 10px 16px; z-index: 100; }
+    .bottom-nav-items { display: flex; justify-content: space-around; align-items: center; }
+    .bottom-nav-item { display: flex; flex-direction: column; align-items: center; gap: 4px; background: none; border: none; color: #9ca3af; cursor: pointer; padding: 8px; border-radius: 12px; transition: 0.2s; font-size: 12px; }
+    .bottom-nav-item i { font-size: 20px; }
+    .bottom-nav-item.active { color: var(--primary); background: rgba(124,77,255,0.1); }
+
+    .main-layout { display: flex; gap: 24px; margin: 20px 0 80px; }
+    .sidebar-left { width: 240px; position: sticky; top: 80px; height: fit-content; display: block; }
+    .menu-card { background: rgba(18,22,45,0.6); backdrop-filter: blur(10px); border-radius: 20px; padding: 16px; border: 1px solid rgba(255,255,255,0.05); margin-bottom: 16px; }
+    .menu-card h3 { font-size: 12px; color: var(--text2); margin-bottom: 12px; display: flex; align-items: center; gap: 8px; }
+    .menu-card-item { display: flex; align-items: center; gap: 10px; padding: 10px 12px; border-radius: 12px; cursor: pointer; transition: 0.2s; color: #cbd5e1; font-size: 13px; width: 100%; background: none; border: none; }
+    .menu-card-item:hover { background: rgba(124,77,255,0.1); color: white; }
+    .menu-card-item.active { background: linear-gradient(135deg, #7c4dff, #5a2dff); color: white; }
+
+    .feed-central { flex: 1; max-width: 600px; }
+    
+    /* Seções que devem ocupar toda largura disponível */
+    .vagas-container, .noticias-container, .chats-container, .perfil-container {
+        width: 100%;
+        flex: 1;
+    }
+    
+    /* Grids responsivos que se expandem */
+    .vagas-grid, .noticias-grid, .chats-grid { 
+        display: grid; 
+        grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); 
+        gap: 24px; 
+        margin-top: 16px; 
+        width: 100%;
+    }
+    
+    /* Cards que ocupam espaço proporcional */
+    .job-card, .news-card, .chat-card { 
+        background: rgba(18,22,45,0.8); 
+        backdrop-filter: blur(12px); 
+        border-radius: 20px; 
+        padding: 20px; 
+        cursor: pointer; 
+        transition: 0.3s; 
+        border: 1px solid rgba(255,255,255,0.05);
+        height: 100%;
+        display: flex;
+        flex-direction: column;
+    }
+    
+    .perfil-card { 
+        background: rgba(18,22,45,0.8); 
+        backdrop-filter: blur(12px); 
+        border-radius: 24px; 
+        padding: 32px; 
+        text-align: center;
+        max-width: 500px;
+        margin: 0 auto;
+        width: 100%;
+    }
+    
+    .company-logo { width: 56px; height: 56px; border-radius: 12px; background: white; display: flex; align-items: center; justify-content: center; margin-bottom: 16px; padding: 8px; }
+    .company-logo img { width: 100%; height: 100%; object-fit: contain; }
+    .job-title { font-size: 18px; font-weight: 700; margin-bottom: 6px; }
+    .job-company { font-size: 13px; color: var(--text2); margin-bottom: 12px; }
+    .job-info { display: flex; gap: 8px; flex-wrap: wrap; margin: 12px 0; }
+    .job-badge { background: rgba(124,77,255,0.15); padding: 4px 10px; border-radius: 20px; font-size: 11px; color: var(--primary-light); }
+    .job-salary { font-size: 16px; font-weight: 700; color: #10b981; margin-top: auto; padding-top: 12px; }
+    
+    .news-image { width: 100%; height: 180px; overflow: hidden; border-radius: 16px 16px 0 0; margin: -20px -20px 0 -20px; width: calc(100% + 40px); }
+    .news-image img { width: 100%; height: 100%; object-fit: cover; transition: 0.3s; }
+    .news-card:hover .news-image img { transform: scale(1.05); }
+    .news-info { padding: 16px 0 0 0; }
+    .news-title { font-size: 16px; font-weight: 700; margin-bottom: 8px; line-height: 1.4; }
+    .news-meta { font-size: 11px; color: var(--text2); display: flex; gap: 12px; margin-top: 8px; }
+    
+    .chat-icon { font-size: 48px; margin-bottom: 12px; text-align: center; }
+    .chat-name { font-size: 18px; font-weight: 700; text-align: center; margin-bottom: 6px; }
+    .chat-members { font-size: 12px; color: var(--text2); text-align: center; margin-bottom: 12px; }
+    .chat-price { font-size: 20px; font-weight: 700; color: var(--primary); text-align: center; margin-top: auto; padding-top: 12px; }
+
+    .create-post-card { background: rgba(18,22,45,0.8); backdrop-filter: blur(12px); border-radius: 20px; padding: 16px; margin-bottom: 16px; border: 1px solid rgba(255,255,255,0.05); }
+    .create-post-header { display: flex; align-items: center; gap: 12px; }
+    .create-post-avatar { width: 44px; height: 44px; border-radius: 50%; background: linear-gradient(135deg, var(--primary), var(--primary-dark)); display: flex; align-items: center; justify-content: center; font-size: 18px; font-weight: 600; flex-shrink: 0; }
+    .create-post-input { flex: 1; background: rgba(255,255,255,0.05); border: 1px solid var(--border); border-radius: 30px; padding: 12px 16px; cursor: pointer; color: var(--text2); font-size: 14px; transition: 0.2s; }
+    .create-post-input:hover { background: rgba(255,255,255,0.1); border-color: var(--primary); }
+    .create-post-options { display: flex; gap: 8px; margin-top: 12px; padding-top: 12px; border-top: 1px solid var(--border); }
+    .post-option { flex: 1; display: flex; align-items: center; justify-content: center; gap: 6px; padding: 8px; border-radius: 12px; cursor: pointer; color: var(--text2); font-size: 12px; transition: 0.2s; background: none; border: none; }
+    .post-option:hover { background: rgba(124,77,255,0.1); color: var(--primary); }
+
+    .post-card { background: rgba(18,22,45,0.8); backdrop-filter: blur(12px); border-radius: 20px; padding: 16px; margin-bottom: 16px; border: 1px solid rgba(255,255,255,0.05); transition: 0.3s; }
+    .post-card:hover { transform: translateY(-2px); border-color: rgba(124,77,255,0.2); }
+    .post-header { display: flex; gap: 12px; margin-bottom: 12px; }
+    .post-avatar { width: 44px; height: 44px; border-radius: 50%; background: linear-gradient(135deg, var(--primary), var(--primary-dark)); display: flex; align-items: center; justify-content: center; font-size: 18px; font-weight: 600; flex-shrink: 0; }
+    .post-author { font-weight: 600; font-size: 14px; }
+    .post-time { font-size: 11px; color: var(--text2); margin-top: 2px; }
+    .post-text { font-size: 14px; line-height: 1.5; margin-bottom: 12px; }
+    .post-media { border-radius: 16px; overflow: hidden; margin-bottom: 12px; }
+    .post-media img, .post-media video { width: 100%; max-height: 400px; object-fit: cover; }
+    
+    .poll-container {
+        background: rgba(0,0,0,0.2);
+        border-radius: 16px;
+        padding: 16px;
+        margin: 12px 0;
+    }
+    .poll-question {
+        font-weight: 700;
+        font-size: 14px;
+        margin-bottom: 12px;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+    .poll-option {
+        background: rgba(255,255,255,0.05);
+        border-radius: 12px;
+        padding: 10px 12px;
+        margin-bottom: 8px;
+        cursor: pointer;
+        transition: all 0.2s;
+        border: 1px solid transparent;
+    }
+    .poll-option:hover {
+        background: rgba(124,77,255,0.15);
+        border-color: rgba(124,77,255,0.3);
+        transform: translateX(4px);
+    }
+    .poll-option.voted {
+        background: rgba(124,77,255,0.2);
+        border-color: var(--primary);
+        cursor: default;
+    }
+    .poll-option-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 6px;
+        font-size: 13px;
+    }
+    .poll-option-text {
+        font-weight: 500;
+    }
+    .poll-option-percent {
+        color: var(--primary-light);
+        font-weight: 600;
+    }
+    .poll-bar-container {
+        height: 6px;
+        background: rgba(255,255,255,0.1);
+        border-radius: 10px;
+        overflow: hidden;
+    }
+    .poll-bar-fill {
+        height: 100%;
+        background: linear-gradient(90deg, var(--primary), var(--primary-light));
+        width: 0%;
+        border-radius: 10px;
+        transition: width 0.5s ease;
+    }
+    .poll-total {
+        font-size: 11px;
+        color: var(--text2);
+        margin-top: 10px;
+        text-align: right;
+    }
+    .poll-voted-badge {
+        display: inline-block;
+        background: rgba(16,185,129,0.2);
+        color: #10b981;
+        font-size: 10px;
+        padding: 2px 8px;
+        border-radius: 20px;
+        margin-left: 8px;
+    }
+
+    .post-stats { display: flex; gap: 16px; padding: 10px 0; border-top: 1px solid var(--border); border-bottom: 1px solid var(--border); margin: 10px 0; color: var(--text2); font-size: 12px; }
+    .post-actions { display: flex; gap: 12px; }
+    .post-action-btn { flex: 1; display: flex; align-items: center; justify-content: center; gap: 6px; padding: 8px; border-radius: 12px; cursor: pointer; color: var(--text2); font-size: 13px; transition: 0.2s; background: none; border: none; }
+    .post-action-btn:hover { background: rgba(124,77,255,0.1); color: var(--primary); }
+    .post-action-btn.liked { color: #ef4444; }
+
+    .comment-input { display: flex; gap: 8px; margin-bottom: 12px; }
+    .comment-input input { flex: 1; background: rgba(255,255,255,0.05); border: 1px solid var(--border); border-radius: 30px; padding: 10px 14px; color: white; outline: none; font-size: 13px; }
+    .comment-input input:focus { border-color: var(--primary); }
+    .comment-input button { background: var(--primary); border: none; border-radius: 30px; padding: 0 16px; cursor: pointer; color: white; font-weight: 600; }
+    .comment-card { display: flex; gap: 10px; margin-bottom: 12px; padding: 10px; background: rgba(255,255,255,0.03); border-radius: 16px; }
+    .comment-avatar { width: 32px; height: 32px; border-radius: 50%; background: var(--primary); display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 600; flex-shrink: 0; }
+    .comment-author { font-weight: 600; font-size: 12px; }
+    .comment-text { font-size: 12px; margin-top: 4px; }
+    .comment-time { font-size: 10px; color: var(--text2); margin-top: 4px; }
+
+    .sidebar-right { width: 280px; position: sticky; top: 80px; height: fit-content; }
+    .trending-card, .vip-card { background: rgba(18,22,45,0.6); backdrop-filter: blur(10px); border-radius: 20px; padding: 16px; margin-bottom: 16px; border: 1px solid rgba(255,255,255,0.05); }
+    .trending-item { display: flex; align-items: center; gap: 10px; padding: 8px 0; cursor: pointer; border-radius: 12px; }
+    .trending-item:hover { background: rgba(124,77,255,0.1); padding-left: 8px; }
+    .trending-number { font-size: 16px; font-weight: 700; color: var(--primary); width: 28px; }
+    .trending-title { font-size: 13px; }
+    .vip-card { text-align: center; background: linear-gradient(135deg, rgba(124,77,255,0.15), rgba(90,45,255,0.05)); border-color: rgba(124,77,255,0.3); }
+
+    .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); backdrop-filter: blur(8px); z-index: 2000; justify-content: center; align-items: center; }
+    .modal-content { background: linear-gradient(145deg, #1a1a24, #121216); max-width: 500px; width: 90%; max-height: 85vh; overflow-y: auto; border-radius: 24px; border: 1px solid rgba(255,255,255,0.08); }
+    .modal-header { padding: 16px 20px; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; position: sticky; top: 0; background: inherit; }
+    .modal-header h2 { font-size: 18px; font-weight: 700; }
+    .modal-close { cursor: pointer; font-size: 20px; color: var(--text2); width: 32px; height: 32px; display: flex; align-items: center; justify-content: center; border-radius: 50%; }
+    .modal-close:hover { background: rgba(255,255,255,0.1); color: white; }
+    .modal-body { padding: 20px; }
+    .form-group { margin-bottom: 16px; }
+    .form-group label { display: block; margin-bottom: 6px; font-weight: 600; font-size: 12px; }
+    .form-group input, .form-group textarea, .form-group select { width: 100%; padding: 12px; background: #1a1e2c; border: 1px solid #2a2e3d; border-radius: 12px; color: white; font-family: inherit; font-size: 14px; }
+    .form-group textarea { min-height: 80px; resize: vertical; }
+    .btn-primary { background: linear-gradient(135deg, #7c4dff, #5a2dff); border: none; padding: 12px; border-radius: 12px; color: white; font-weight: 600; cursor: pointer; width: 100%; transition: 0.2s; }
+    .btn-primary:hover { transform: translateY(-2px); box-shadow: 0 4px 12px rgba(124,77,255,0.4); }
+    .btn-secondary { background: rgba(255,255,255,0.1); border: 1px solid var(--border); padding: 10px; border-radius: 12px; color: white; font-weight: 600; cursor: pointer; }
+
+    .footer { background: #0a0a0c; border-top: 1px solid var(--border); padding: 32px 0 16px; margin-top: 40px; }
+    .footer-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 20px; margin-bottom: 24px; }
+    .footer-col h4 { color: var(--primary-light); margin-bottom: 10px; font-size: 12px; }
+    .footer-col a { display: block; color: var(--text2); text-decoration: none; margin-bottom: 6px; font-size: 11px; transition: 0.2s; }
+    .footer-col a:hover { color: var(--primary); transform: translateX(4px); }
+    .footer-bottom { text-align: center; padding-top: 16px; border-top: 1px solid var(--border); color: var(--text2); font-size: 10px; }
+
+    .loading-spinner { text-align: center; padding: 40px 20px; }
+    .spinner { width: 32px; height: 32px; border: 3px solid var(--border); border-top-color: var(--primary); border-radius: 50%; animation: spin 0.8s linear infinite; margin: 0 auto 12px; }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    .hide-on-mobile { display: block; }
+    .show-on-mobile { display: none; }
+
+    @media (max-width: 1024px) {
+        .sidebar-left, .sidebar-right { display: none; }
+        .hide-on-mobile { display: none; }
+        .show-on-mobile { display: flex; }
+        .bottom-nav { display: block; }
+        .main-layout { margin-bottom: 70px; }
+        .floating-theme { bottom: 70px; right: 12px; width: 44px; height: 44px; font-size: 18px; }
+        .scroll-top { bottom: 130px; right: 12px; width: 44px; height: 44px; }
+        .vagas-grid, .noticias-grid, .chats-grid { grid-template-columns: 1fr; gap: 16px; }
+    }
+    @media (max-width: 768px) {
+        .menu { display: none; position: absolute; top: 65px; left: 0; right: 0; background: rgba(10,12,21,0.98); flex-direction: column; padding: 16px; gap: 8px; border-radius: 0 0 20px 20px; }
+        .menu.show { display: flex; }
+        .mobile-menu-btn { display: block; }
+        .perfil-card { margin: 0 16px; }
+        .job-card, .news-card, .chat-card { padding: 16px; }
+        .news-image { height: 160px; }
+    }
+    body.light-mode .bottom-nav { background: rgba(255,255,255,0.98); border-top-color: #E2E8F0; }
+    body.light-mode .bottom-nav-item { color: #94a3b8; }
+    body.light-mode .bottom-nav-item.active { color: #7c4dff; background: rgba(124,77,255,0.1); }
+</style>
+</head>
+<body>
+
+<button class="floating-theme" id="floatingThemeBtn"><i class="fas fa-moon"></i></button>
+<button class="scroll-top" id="scrollTop"><i class="fas fa-arrow-up"></i></button>
+
+<nav class="navbar">
+    <div class="container nav-content">
+        <div class="logo" onclick="mudarSecao('feed')">
+            <div class="logo-circle">NE</div>
+            <h1>NE<span>Social</span></h1>
+        </div>
+        <div class="menu" id="mainMenu">
+            <a href="#" data-section="feed" class="active">Feed</a>
+            <a href="#" data-section="empregos">Empregos</a>
+            <a href="#" data-section="chats">Chats</a>
+            <a href="#" data-section="criar">Criar</a>
+            <a href="#" data-section="noticias">Notícias</a>
+            <a href="#" data-section="perfil">Perfil</a>
+        </div>
+        <button class="mobile-menu-btn" id="mobileMenuBtn"><i class="fas fa-bars"></i></button>
+        <div class="right-nav">
+            <button class="icon-btn" id="notificationBtn"><i class="fa-regular fa-bell"></i></button>
+            <button class="profile" id="profileBtn">👤</button>
+        </div>
+    </div>
+</nav>
+
+<div class="bottom-nav show-on-mobile">
+    <div class="bottom-nav-items">
+        <button class="bottom-nav-item" data-section="feed"><i class="fas fa-home"></i><span>Feed</span></button>
+        <button class="bottom-nav-item" data-section="empregos"><i class="fas fa-briefcase"></i><span>Empregos</span></button>
+        <button class="bottom-nav-item" data-section="criar"><i class="fas fa-plus-circle"></i><span>Criar</span></button>
+        <button class="bottom-nav-item" data-section="noticias"><i class="fas fa-newspaper"></i><span>Notícias</span></button>
+        <button class="bottom-nav-item" data-section="perfil"><i class="fas fa-user"></i><span>Perfil</span></button>
+    </div>
+</div>
+
+<div class="container">
+    <div class="main-layout">
+        <aside class="sidebar-left hide-on-mobile">
+            <div class="menu-card">
+                <h3><i class="fas fa-compass"></i> Menu Rápido</h3>
+                <button class="menu-card-item" onclick="mudarSecao('feed')"><i class="fas fa-home"></i> Feed</button>
+                <button class="menu-card-item" onclick="mudarSecao('empregos')"><i class="fas fa-briefcase"></i> Empregos</button>
+                <button class="menu-card-item" onclick="mudarSecao('chats')"><i class="fas fa-comments"></i> Chats</button>
+                <button class="menu-card-item" onclick="mudarSecao('criar')"><i class="fas fa-plus-circle"></i> Criar Post</button>
+            </div>
+            <div class="menu-card">
+                <h3><i class="fas fa-users"></i> Comunidade</h3>
+                <button class="menu-card-item"><i class="fas fa-fire"></i> Trending</button>
+                <button class="menu-card-item"><i class="fas fa-calendar"></i> Eventos</button>
+                <button class="menu-card-item"><i class="fas fa-trophy"></i> Rankings</button>
+            </div>
+        </aside>
+
+        <main class="feed-central" id="feedCentral">
+            <div class="create-post-card">
+                <div class="create-post-header">
+                    <div class="create-post-avatar" id="currentUserAvatar">👤</div>
+                    <div class="create-post-input" onclick="abrirModalCriarPost()"><i class="fas fa-pen"></i> O que você está pensando?</div>
+                </div>
+                <div class="create-post-options">
+                    <button class="post-option" onclick="abrirModalCriarPost('foto')"><i class="fas fa-image"></i> Foto</button>
+                    <button class="post-option" onclick="abrirModalCriarPost('video')"><i class="fas fa-video"></i> Vídeo</button>
+                    <button class="post-option" onclick="abrirModalCriarPost('enquete')"><i class="fas fa-chart-simple"></i> Enquete</button>
+                </div>
+            </div>
+            <div id="postsContainer"><div class="loading-spinner"><div class="spinner"></div><p>Carregando feed...</p></div></div>
+        </main>
+
+        <div class="vagas-container" id="vagasContainer" style="display: none;"></div>
+        <div class="noticias-container" id="noticiasContainer" style="display: none;"></div>
+        <div class="chats-container" id="chatsContainer" style="display: none;"></div>
+        <div class="perfil-container" id="perfilContainer" style="display: none;"></div>
+
+        <aside class="sidebar-right hide-on-mobile">
+            <div class="trending-card">
+                <h3><i class="fas fa-fire"></i> Trends</h3>
+                <div class="trending-item"><span class="trending-number">1</span><span class="trending-title">#VagasTI</span></div>
+                <div class="trending-item"><span class="trending-number">2</span><span class="trending-title">#FortalezaCE</span></div>
+                <div class="trending-item"><span class="trending-number">3</span><span class="trending-title">#Empreendedorismo</span></div>
+                <div class="trending-item"><span class="trending-number">4</span><span class="trending-title">#ConcursoNE</span></div>
+                <div class="trending-item"><span class="trending-number">5</span><span class="trending-title">#Tecnologia</span></div>
+            </div>
+            <div class="vip-card">
+                <h3><i class="fas fa-crown"></i> VIP com IA</h3>
+                <p>Conteúdo exclusivo e personalizado</p>
+                <button class="btn-primary" style="padding: 8px;" onclick="showVipModal()">Assinar VIP</button>
+            </div>
+        </aside>
+    </div>
+</div>
+
+<div id="createPostModal" class="modal"><div class="modal-content"><div class="modal-header"><h2>Criar publicação</h2><span class="modal-close" onclick="fecharModal()">&times;</span></div><div class="modal-body"><div class="form-group"><textarea id="postText" rows="3" placeholder="O que você quer compartilhar?"></textarea></div><div class="form-group" id="mediaUrlGroup" style="display:none;"><input type="text" id="mediaUrl" placeholder="URL da imagem/vídeo"></div><div id="pollContainer" style="display:none;"><div class="form-group"><label>Opções da enquete</label><div id="pollOptions"><div class="poll-option-input"><input type="text" placeholder="Opção 1"></div><div class="poll-option-input"><input type="text" placeholder="Opção 2"></div></div><button type="button" class="btn-secondary" style="margin-top:8px;" onclick="adicionarOpcaoEnquete()">+ Adicionar opção</button></div></div><div class="form-group"><label><input type="checkbox" id="postAnonimo"> Publicar anonimamente</label></div><button class="btn-primary" onclick="enviarPost()">Publicar</button><p style="font-size: 10px; margin-top: 12px; text-align: center;">📝 Seu post passará por moderação</p></div></div></div>
+
+<div id="commentsModal" class="modal"><div class="modal-content"><div class="modal-header"><h2>Comentários</h2><span class="modal-close" onclick="fecharModal()">&times;</span></div><div class="modal-body" id="commentsModalBody"></div></div></div>
+
+<div id="vagaModal" class="modal"><div class="modal-content"><div class="modal-header"><h2 id="vagaModalTitle">Detalhes da Vaga</h2><span class="modal-close" onclick="fecharModal()">&times;</span></div><div class="modal-body" id="vagaModalBody"></div><div class="modal-footer" style="padding: 16px 20px; border-top: 1px solid var(--border);"><button class="btn-primary" onclick="candidatarVaga()">Candidatar-se</button></div></div></div>
+
+<footer class="footer">
+    <div class="container">
+        <div class="footer-grid">
+            <div class="footer-col"><h4>Institucional</h4><a href="#" onclick="showLegalModal('Sobre nós')">Sobre nós</a><a href="#" onclick="showLegalModal('Trabalhe conosco')">Trabalhe conosco</a></div>
+            <div class="footer-col"><h4>Para você</h4><a href="#" data-section="empregos">Vagas</a><a href="#" data-section="chats">Chats</a><a href="#" data-section="criar">Criar post</a></div>
+            <div class="footer-col"><h4>Suporte</h4><a href="#" onclick="showContactModal()">Contato</a><a href="#" onclick="showLegalModal('Denunciar')">Denunciar</a></div>
+            <div class="footer-col"><h4>Legal</h4><a href="#" onclick="showLegalModal('Termos de uso')">Termos</a><a href="#" onclick="showLegalModal('Privacidade')">Privacidade</a></div>
+        </div>
+        <div class="footer-bottom"><p>© 2024 NE Social - Rede de Oportunidades do Nordeste</p></div>
+    </div>
+</footer>
+
+<script>
+    // ==================== CONFIG ====================
+    const API_URL = 'https://orange-hill-2e61.gbscabral15.workers.dev/br2.bronxyshost.com:4009';
+    let currentUser = JSON.parse(localStorage.getItem('currentUser') || 'null');
+    let posts = [], vagas = [], noticias = [], chats = [];
+    let currentSection = 'feed';
+    let mediaType = null;
+    let selectedVaga = null;
+
+    // ==================== THEME ====================
+    function initTheme() {
+        const saved = localStorage.getItem('theme');
+        if (saved === 'light') {
+            document.body.classList.add('light-mode');
+            document.getElementById('floatingThemeBtn').innerHTML = '<i class="fas fa-sun"></i>';
+        }
+    }
+    document.getElementById('floatingThemeBtn')?.addEventListener('click', () => {
+        document.body.classList.toggle('light-mode');
+        const isLight = document.body.classList.contains('light-mode');
+        localStorage.setItem('theme', isLight ? 'light' : 'dark');
+        document.getElementById('floatingThemeBtn').innerHTML = isLight ? '<i class="fas fa-sun"></i>' : '<i class="fas fa-moon"></i>';
+    });
+
+    // ==================== SISTEMA DE LIKES COM LOCALSTORAGE ====================
+    function usuarioJaCurtiu(postId) {
+        const liked = localStorage.getItem(`liked_${currentUser?.id}_${postId}`);
+        return liked === 'true';
+    }
+    function salvarCurtida(postId) {
+        localStorage.setItem(`liked_${currentUser?.id}_${postId}`, 'true');
+    }
+    function removerCurtida(postId) {
+        localStorage.removeItem(`liked_${currentUser?.id}_${postId}`);
+    }
+
+    // ==================== SISTEMA DE VOTOS NA ENQUETE ====================
+    function usuarioJaVotou(pollId, userId) {
+        const voted = localStorage.getItem(`poll_voted_${pollId}_${userId}`);
+        return voted === 'true';
+    }
+    function salvarVoto(pollId) {
+        localStorage.setItem(`poll_voted_${pollId}_${currentUser?.id}`, 'true');
+    }
+
+    // ==================== CARREGAR DADOS ====================
+    async function carregarDados() {
+        try {
+            const res = await fetch(`${API_URL}/cliente06/dadoscompletos`);
+            const data = await res.json();
+            vagas = data.vagas || [];
+            noticias = data.noticias || [];
+            chats = data.chats || [];
+            return data;
+        } catch (e) { console.error(e); return { vagas: [], noticias: [], chats: [] }; }
+    }
+
+    async function carregarPosts() {
+        const container = document.getElementById('postsContainer');
+        container.innerHTML = `<div class="loading-spinner"><div class="spinner"></div><p>Carregando...</p></div>`;
+        try {
+            const res = await fetch(`${API_URL}/cliente06/posts`);
+            posts = res.ok ? await res.json() : [];
+            renderizarFeed();
+        } catch (e) { container.innerHTML = `<div class="loading-spinner"><i class="fas fa-exclamation-triangle"></i><p>Erro ao carregar</p><button class="btn-secondary" onclick="carregarPosts()">Tentar</button></div>`; }
+    }
+
+    function renderizarFeed() {
+        const container = document.getElementById('postsContainer');
+        const aprovados = posts.filter(p => p.status === 'approved');
+        if (aprovados.length === 0) {
+            container.innerHTML = `<div class="loading-spinner"><i class="fas fa-newspaper"></i><p>Nenhum post. Seja o primeiro!</p><button class="btn-secondary" onclick="abrirModalCriarPost()">Criar post</button></div>`;
+            return;
+        }
+        container.innerHTML = aprovados.map(post => renderPost(post)).join('');
+    }
+
+    function renderPoll(poll, postId) {
+        const totalVotes = poll.options.reduce((s, o) => s + (o.votes || 0), 0);
+        const jaVotou = currentUser ? usuarioJaVotou(poll.id, currentUser.id) : false;
+        
+        return `
+            <div class="poll-container" data-poll-id="${poll.id}">
+                <div class="poll-question">
+                    <i class="fas fa-chart-simple"></i> ${escapeHtml(poll.question || 'Enquete')}
+                    ${jaVotou ? '<span class="poll-voted-badge"><i class="fas fa-check"></i> Você já votou</span>' : ''}
+                </div>
+                ${poll.options.map(opt => {
+                    const percent = totalVotes ? ((opt.votes || 0) / totalVotes * 100).toFixed(1) : 0;
+                    const isVotedOption = jaVotou && opt.votedBy?.includes(currentUser?.id);
+                    return `
+                        <div class="poll-option ${jaVotou ? 'voted' : ''}" onclick="${!jaVotou && currentUser ? `votarEnquete(${postId}, '${opt.text.replace(/'/g, "\\'")}')` : ''}">
+                            <div class="poll-option-header">
+                                <span class="poll-option-text">${escapeHtml(opt.text)}</span>
+                                <span class="poll-option-percent">${percent}%</span>
+                            </div>
+                            <div class="poll-bar-container">
+                                <div class="poll-bar-fill" style="width: ${percent}%"></div>
+                            </div>
+                        </div>
+                    `;
+                }).join('')}
+                <div class="poll-total">
+                    <i class="fas fa-users"></i> Total de votos: ${totalVotes}
+                </div>
+            </div>
+        `;
+    }
+
+    function renderPost(post) {
+        const isLiked = currentUser ? usuarioJaCurtiu(post.id) : false;
+        return `
+            <div class="post-card" data-post-id="${post.id}">
+                <div class="post-header">
+                    <div class="post-avatar">${post.anonymous ? '👤' : (post.author?.nome?.charAt(0)?.toUpperCase() || 'A')}</div>
+                    <div><div class="post-author">${post.anonymous ? 'Anônimo' : (post.author?.nome || 'Usuário')}</div><div class="post-time">${formatarData(post.createdAt)}</div></div>
+                </div>
+                <div class="post-text">${escapeHtml(post.text || '')}</div>
+                ${post.media ? `<div class="post-media">${post.mediaType === 'video' ? `<video controls src="${post.media}"></video>` : `<img src="${post.media}" alt="Post" loading="lazy">`}</div>` : ''}
+                ${post.poll ? renderPoll(post.poll, post.id) : ''}
+                <div class="post-stats"><span><i class="fas fa-heart"></i> ${post.likes?.length || 0}</span><span><i class="fas fa-comment"></i> ${post.comments?.length || 0}</span></div>
+                <div class="post-actions">
+                    <button class="post-action-btn ${isLiked ? 'liked' : ''}" onclick="likePost(${post.id})">
+                        <i class="fas fa-heart"></i> ${isLiked ? 'Curtido' : 'Curtir'}
+                    </button>
+                    <button class="post-action-btn" onclick="abrirComentarios(${post.id})"><i class="fas fa-comment"></i> Comentar</button>
+                    <button class="post-action-btn" onclick="compartilharPost()"><i class="fas fa-share"></i> Compartilhar</button>
+                </div>
+            </div>
+        `;
+    }
+
+    async function likePost(postId) {
+        if (!currentUser) { Swal.fire('Faça login', 'Você precisa estar logado para curtir', 'info'); return; }
+        if (usuarioJaCurtiu(postId)) {
+            Swal.fire('Aviso', 'Você já curtiu este post!', 'info');
+            return;
+        }
+        try {
+            salvarCurtida(postId);
+            const response = await fetch(`${API_URL}/cliente06/posts/${postId}/like`, {
+                method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ userId: currentUser.id })
+            });
+            if (response.ok) { carregarPosts(); }
+            else { removerCurtida(postId); Swal.fire('Erro', 'Não foi possível curtir', 'error'); }
+        } catch (error) { removerCurtida(postId); Swal.fire('Erro', error.message, 'error'); }
+    }
+
+    async function votarEnquete(postId, optionText) {
+        if (!currentUser) { Swal.fire('Faça login', 'Você precisa estar logado para votar', 'info'); return; }
+        const post = posts.find(p => p.id === postId);
+        if (!post?.poll) return;
+        if (usuarioJaVotou(post.poll.id, currentUser.id)) {
+            Swal.fire('Aviso', 'Você já votou nesta enquete!', 'info');
+            return;
+        }
+        try {
+            salvarVoto(post.poll.id);
+            const response = await fetch(`${API_URL}/cliente06/posts/${postId}/poll`, {
+                method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ userId: currentUser.id, option: optionText })
+            });
+            if (response.ok) { carregarPosts(); Swal.fire('Voto computado!', 'Obrigado por participar!', 'success'); }
+            else { localStorage.removeItem(`poll_voted_${post.poll.id}_${currentUser.id}`); Swal.fire('Erro', 'Não foi possível votar', 'error'); }
+        } catch (error) { localStorage.removeItem(`poll_voted_${post.poll.id}_${currentUser.id}`); Swal.fire('Erro', error.message, 'error'); }
+    }
+
+    async function abrirComentarios(postId) {
+        const post = posts.find(p => p.id === postId);
+        if (!post) return;
+        document.getElementById('commentsModalBody').innerHTML = `
+            <div style="margin-bottom:16px;padding:12px;background:rgba(0,0,0,0.2);border-radius:16px">${escapeHtml(post.text || '')}</div>
+            <div class="comment-input"><input type="text" id="newCommentText" placeholder="Escreva um comentário..."><button onclick="adicionarComentario(${postId})">Enviar</button></div>
+            <div id="commentsList">${post.comments?.map(c => `<div class="comment-card"><div class="comment-avatar">${c.author?.nome?.charAt(0)?.toUpperCase() || 'U'}</div><div><div class="comment-author">${c.author?.nome || 'Usuário'}</div><div class="comment-text">${escapeHtml(c.text)}</div><div class="comment-time">${formatarData(c.createdAt)}</div></div></div>`).join('') || '<p style="text-align:center;padding:20px;">💬 Nenhum comentário</p>'}</div>
+        `;
+        document.getElementById('commentsModal').style.display = 'flex';
+    }
+
+    async function adicionarComentario(postId) {
+        const text = document.getElementById('newCommentText')?.value;
+        if (!text || !currentUser) return;
+        await fetch(`${API_URL}/cliente06/posts/${postId}/comments`, {
+            method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ author: { id: currentUser.id, nome: currentUser.nome }, text })
+        });
+        carregarPosts();
+        abrirComentarios(postId);
+    }
+
+    function compartilharPost() { navigator.clipboard.writeText(window.location.href); Swal.fire('Link copiado!', 'Compartilhe com seus amigos!', 'success'); }
+
+    // ==================== VAGAS ====================
+    async function carregarVagas() {
+        const container = document.getElementById('vagasContainer');
+        container.innerHTML = `<div class="loading-spinner"><div class="spinner"></div><p>Carregando vagas...</p></div>`;
+        const data = await carregarDados();
+        vagas = data.vagas || [];
+        if (vagas.length === 0) { container.innerHTML = `<div class="loading-spinner"><i class="fas fa-briefcase"></i><p>Nenhuma vaga disponível</p></div>`; return; }
+        container.innerHTML = `<div class="vagas-grid">${vagas.map(v => `
+            <div class="job-card" onclick="abrirVagaModal(${v.id})">
+                <div class="company-logo"><img src="${v.logo || 'https://placehold.co/56x56?text=' + (v.empresa?.charAt(0) || 'E')}" onerror="this.src='https://placehold.co/56x56'"></div>
+                <div class="job-title">${escapeHtml(v.titulo)}</div>
+                <div class="job-company">${escapeHtml(v.empresa)} • ${escapeHtml(v.local)}</div>
+                <div class="job-info"><span class="job-badge">${escapeHtml(v.tipo)}</span><span class="job-badge">${escapeHtml(v.regime || 'Presencial')}</span></div>
+                <div class="job-salary">${escapeHtml(v.salario)}</div>
+            </div>
+        `).join('')}</div>`;
+    }
+
+    function abrirVagaModal(id) {
+        const v = vagas.find(v => v.id === id);
+        if (!v) return;
+        selectedVaga = v;
+        document.getElementById('vagaModalTitle').innerHTML = `${escapeHtml(v.empresa)} - ${escapeHtml(v.titulo)}`;
+        document.getElementById('vagaModalBody').innerHTML = `<div style="text-align:left"><p><strong>📍 Local:</strong> ${escapeHtml(v.local)}</p><p><strong>📋 Tipo:</strong> ${escapeHtml(v.tipo)}</p><p><strong>💰 Salário:</strong> ${escapeHtml(v.salario)}</p><p><strong>📌 Descrição:</strong> ${escapeHtml(v.descricao)}</p><p><strong>✅ Requisitos:</strong> ${escapeHtml(v.requisitos || 'Não informado')}</p><hr><p><strong>📧 Contato:</strong> ${escapeHtml(v.contato || 'recrutamento@' + v.empresa?.toLowerCase().replace(/ /g, '') + '.com.br')}</p></div>`;
+        document.getElementById('vagaModal').style.display = 'flex';
+    }
+
+    function candidatarVaga() {
+        if (!currentUser) { Swal.fire('Faça login', 'Você precisa estar logado', 'info'); return; }
+        Swal.fire('Sucesso!', `Candidatura enviada para ${selectedVaga?.empresa}! Boa sorte! 🍀`, 'success');
+        fecharModal();
+    }
+
+    // ==================== NOTÍCIAS ====================
+    async function carregarNoticias() {
+        const container = document.getElementById('noticiasContainer');
+        container.innerHTML = `<div class="loading-spinner"><div class="spinner"></div><p>Carregando notícias...</p></div>`;
+        const data = await carregarDados();
+        noticias = data.noticias || [];
+        if (noticias.length === 0) { container.innerHTML = `<div class="loading-spinner"><i class="fas fa-newspaper"></i><p>Nenhuma notícia</p></div>`; return; }
+        container.innerHTML = `<div class="noticias-grid">${noticias.map(n => `
+            <div class="news-card" onclick="abrirNoticiaModal(${n.id})">
+                <div class="news-image"><img src="${n.imagem}" onerror="this.src='https://placehold.co/400x180'"></div>
+                <div class="news-info"><div class="news-title">${escapeHtml(n.titulo)}</div><div class="news-meta"><span>${n.tag || '📰'} ${escapeHtml(n.categoria || 'Geral')}</span><span>👁️ ${n.visualizacoes || 0}</span></div></div>
+            </div>
+        `).join('')}</div>`;
+    }
+
+    function abrirNoticiaModal(id) {
+        const n = noticias.find(n => n.id === id);
+        if (!n) return;
+        Swal.fire({ title: n.titulo, html: `<div><img src="${n.imagem}" style="width:100%;border-radius:16px;margin-bottom:16px"><p>${n.conteudo || 'Leia no portal parceiro.'}</p></div>`, confirmButtonText: 'Fechar' });
+    }
+
+    // ==================== CHATS ====================
+    async function carregarChats() {
+        const container = document.getElementById('chatsContainer');
+        container.innerHTML = `<div class="loading-spinner"><div class="spinner"></div><p>Carregando chats...</p></div>`;
+        const data = await carregarDados();
+        chats = data.chats || [];
+        if (chats.length === 0) { container.innerHTML = `<div class="loading-spinner"><i class="fas fa-comments"></i><p>Nenhum chat disponível</p></div>`; return; }
+        container.innerHTML = `<div class="chats-grid">${chats.map(c => `
+            <div class="chat-card" onclick="entrarChat('${escapeHtml(c.nome)}', ${c.preco || 5})">
+                <div class="chat-icon">${c.icone || '💬'}</div>
+                <div class="chat-name">${escapeHtml(c.nome)}</div>
+                <div class="chat-members">👥 ${c.membros?.length || 0} membros</div>
+                <div class="chat-price">R$ ${c.preco || 5}</div>
+            </div>
+        `).join('')}</div>`;
+    }
+
+    function entrarChat(nome, preco) { Swal.fire({ title: nome, html: `<p>💰 Valor: R$ ${preco}</p>`, confirmButtonText: `Pagar R$ ${preco}` }).then(r => { if (r.isConfirmed) Swal.fire('Sucesso!', `Você entrou no chat ${nome}!`, 'success'); }); }
+
+    // ==================== PERFIL ====================
+    function renderizarPerfil() {
+        const container = document.getElementById('perfilContainer');
+        if (!currentUser) {
+            container.innerHTML = `<div class="perfil-card"><div class="perfil-avatar">👤</div><div class="perfil-name">Visitante</div><div class="perfil-email">Faça login</div><button class="btn-primary" onclick="abrirLogin()">Entrar</button></div>`;
+            return;
+        }
+        const userPosts = posts.filter(p => p.author?.id === currentUser.id).length;
+        container.innerHTML = `
+            <div class="perfil-card">
+                <div class="perfil-avatar">${currentUser.nome?.charAt(0)?.toUpperCase() || '👤'}</div>
+                <div class="perfil-name">${escapeHtml(currentUser.nome)}</div>
+                <div class="perfil-email">${escapeHtml(currentUser.email)}</div>
+                <div class="perfil-stats"><div><div class="perfil-stat-number">${userPosts}</div><div class="perfil-stat-label">Posts</div></div><div><div class="perfil-stat-number">${posts.filter(p => p.likes?.includes(currentUser.id)).length}</div><div class="perfil-stat-label">Curtidas</div></div></div>
+                <button class="btn-secondary" onclick="logout()" style="background:#ef4444; border-color:#ef4444; color:white;">Sair</button>
+            </div>
+        `;
+    }
+
+    function abrirLogin() {
+        Swal.fire({
+            title: 'Bem-vindo!',
+            html: `<input id="userName" class="swal2-input" placeholder="Seu nome"><input id="userEmail" class="swal2-input" type="email" placeholder="E-mail">`,
+            confirmButtonText: 'Entrar',
+            preConfirm: () => {
+                const nome = document.getElementById('userName')?.value;
+                const email = document.getElementById('userEmail')?.value;
+                if (!nome || !email) { Swal.showValidationMessage('Preencha todos os campos'); return false; }
+                currentUser = { id: Date.now(), nome, email, criadoEm: new Date().toISOString() };
+                localStorage.setItem('currentUser', JSON.stringify(currentUser));
+                atualizarPerfilUI();
+                renderizarPerfil();
+                Swal.fire('Bem-vindo!', `Olá ${nome}!`, 'success');
+                return true;
+            }
+        });
+    }
+
+    function logout() { localStorage.removeItem('currentUser'); currentUser = null; atualizarPerfilUI(); renderizarPerfil(); Swal.fire('Até logo!', 'Você saiu da conta.', 'info'); }
+
+    // ==================== CRIAR POST ====================
+    function abrirModalCriarPost(tipo = null) {
+        if (!currentUser) { Swal.fire('Acesso Restrito', 'Faça login para criar posts!', 'info'); return; }
+        mediaType = tipo;
+        document.getElementById('mediaUrlGroup').style.display = tipo === 'foto' || tipo === 'video' ? 'block' : 'none';
+        document.getElementById('pollContainer').style.display = tipo === 'enquete' ? 'block' : 'none';
+        document.getElementById('postText').value = '';
+        document.getElementById('mediaUrl').value = '';
+        document.getElementById('createPostModal').style.display = 'flex';
+    }
+
+    function adicionarOpcaoEnquete() {
+        const container = document.getElementById('pollOptions');
+        const div = document.createElement('div'); div.className = 'poll-option-input'; div.innerHTML = '<input type="text" placeholder="Opção">';
+        container.appendChild(div);
+    }
+
+    async function enviarPost() {
+        const text = document.getElementById('postText').value;
+        const media = document.getElementById('mediaUrl').value;
+        const anonymous = document.getElementById('postAnonimo').checked;
+        if (!text && !media) { Swal.fire('Atenção', 'Digite algo ou adicione uma mídia', 'warning'); return; }
+        let poll = null;
+        if (mediaType === 'enquete') {
+            const options = []; document.querySelectorAll('#pollOptions .poll-option-input input').forEach(i => { if (i.value.trim()) options.push({ text: i.value.trim(), votes: 0 }); });
+            if (options.length < 2) { Swal.fire('Atenção', 'Adicione pelo menos 2 opções', 'warning'); return; }
+            poll = { id: Date.now(), question: text || 'Vote na enquete', options };
+        }
+        const newPost = { author: { id: currentUser.id, nome: currentUser.nome }, anonymous, text, media: media || null, mediaType: mediaType === 'foto' ? 'image' : (mediaType === 'video' ? 'video' : null), poll, likes: [], comments: [], shares: 0, status: 'pending', createdAt: new Date().toISOString() };
+        Swal.fire({ title: 'Enviando...', text: 'Seu post foi enviado para aprovação', allowOutsideClick: false, didOpen: () => Swal.showLoading() });
+        try {
+            const res = await fetch(`${API_URL}/cliente06/posts`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(newPost) });
+            Swal.close();
+            if (res.ok) { Swal.fire('Sucesso!', 'Post enviado para aprovação!', 'success'); fecharModal(); carregarPosts(); }
+            else { Swal.fire('Erro', 'Não foi possível criar o post', 'error'); }
+        } catch (e) { Swal.close(); Swal.fire('Erro', e.message, 'error'); }
+    }
+
+    // ==================== NAVEGAÇÃO ====================
+    function mudarSecao(section) {
+        currentSection = section;
+        document.querySelectorAll('.menu a').forEach(a => a.classList.remove('active'));
+        document.querySelector(`.menu a[data-section="${section}"]`)?.classList.add('active');
+        document.querySelectorAll('.bottom-nav-item').forEach(i => i.classList.remove('active'));
+        document.querySelector(`.bottom-nav-item[data-section="${section}"]`)?.classList.add('active');
+        document.getElementById('feedCentral').style.display = section === 'feed' ? 'block' : 'none';
+        document.getElementById('vagasContainer').style.display = section === 'empregos' ? 'block' : 'none';
+        document.getElementById('noticiasContainer').style.display = section === 'noticias' ? 'block' : 'none';
+        document.getElementById('chatsContainer').style.display = section === 'chats' ? 'block' : 'none';
+        document.getElementById('perfilContainer').style.display = section === 'perfil' ? 'block' : 'none';
+        if (section === 'feed') carregarPosts();
+        if (section === 'empregos') carregarVagas();
+        if (section === 'noticias') carregarNoticias();
+        if (section === 'chats') carregarChats();
+        if (section === 'perfil') renderizarPerfil();
+        if (section === 'criar') abrirModalCriarPost();
+        if (window.innerWidth <= 768) document.getElementById('mainMenu')?.classList.remove('show');
+    }
+
+    // ==================== UTILITÁRIOS ====================
+    function escapeHtml(str) { if (!str) return ''; return str.replace(/[&<>]/g, m => m === '&' ? '&amp;' : m === '<' ? '&lt;' : m === '>' ? '&gt;' : m); }
+    function formatarData(d) { if (!d) return 'agora'; const date = new Date(d); const diff = Math.floor((Date.now() - date) / 1000); if (diff < 60) return 'agora'; if (diff < 3600) return `${Math.floor(diff / 60)}min`; if (diff < 86400) return `${Math.floor(diff / 3600)}h`; if (diff < 2592000) return `${Math.floor(diff / 86400)}d`; return date.toLocaleDateString('pt-BR'); }
+    function fecharModal() { document.querySelectorAll('.modal').forEach(m => m.style.display = 'none'); }
+    function atualizarPerfilUI() {
+        const btn = document.getElementById('profileBtn');
+        const avatar = document.getElementById('currentUserAvatar');
+        if (currentUser) {
+            btn.innerHTML = currentUser.nome?.charAt(0)?.toUpperCase() || '👤';
+            if (avatar) avatar.innerHTML = currentUser.nome?.charAt(0)?.toUpperCase() || '👤';
+        } else {
+            btn.innerHTML = '👤';
+            if (avatar) avatar.innerHTML = '👤';
+        }
+    }
+    function showVipModal() { Swal.fire('Plano VIP', 'R$ 19,90/mês - Vagas exclusivas e curadoria por IA!', 'info'); }
+    function showLegalModal(t) { Swal.fire(t, 'Informações disponíveis em breve.', 'info'); }
+    function showContactModal() { Swal.fire('Contato', '📧 contato@nesocial.com.br', 'info'); }
+
+    // ==================== EVENTOS ====================
+    document.getElementById('profileBtn')?.addEventListener('click', () => mudarSecao('perfil'));
+    document.getElementById('notificationBtn')?.addEventListener('click', () => Swal.fire('Notificações', `📢 ${posts.filter(p => p.status === 'pending').length} posts pendentes`, 'info'));
+    document.getElementById('mobileMenuBtn')?.addEventListener('click', () => document.getElementById('mainMenu')?.classList.toggle('show'));
+    document.querySelectorAll('.menu a').forEach(link => { link.addEventListener('click', (e) => { e.preventDefault(); mudarSecao(link.getAttribute('data-section')); document.getElementById('mainMenu')?.classList.remove('show'); }); });
+    document.querySelectorAll('.bottom-nav-item').forEach(btn => { btn.addEventListener('click', () => { mudarSecao(btn.getAttribute('data-section')); }); });
+    window.onclick = (e) => { if (e.target.classList.contains('modal')) fecharModal(); };
+    const scrollTop = document.getElementById('scrollTop');
+    window.addEventListener('scroll', () => scrollTop?.classList.toggle('visible', window.scrollY > 300));
+    scrollTop?.addEventListener('click', () => window.scrollTo({ top: 0, behavior: 'smooth' }));
+
+    // ==================== INICIALIZAÇÃO ====================
+    initTheme();
+    atualizarPerfilUI();
+    mudarSecao('feed');
+</script>
+</body>
+</html>

@@ -996,6 +996,7 @@ body.light-mode .online-user-card {
                     </div>
                 </div>
                 
+
             </div>
             
             <div id="pollContainer" style="display:none;">
@@ -2180,27 +2181,26 @@ async function votarEnquete(postId, optionText) {
 
     // ==================== CRIAÇÃO DE POSTS ====================
     
-// Resetar upload quando abrir modal
-const abrirModalCriarPostOriginal = abrirModalCriarPost;
-abrirModalCriarPost = function(tipo = null) {
+function abrirModalCriarPost(tipo = null) {
     if (!currentUser) { mostrarLoginPrompt(); return; }
     mediaType = tipo;
-    
-    // Resetar campos
-    document.getElementById('postText').value = '';
-    document.getElementById('postAnonimo').checked = false;
-    document.getElementById('uploadPreview').style.display = 'none';
-    document.getElementById('previewImage').style.display = 'none';
-    document.getElementById('previewVideo').style.display = 'none';
-    document.getElementById('uploadArea').style.display = 'block';
-    document.getElementById('uploadProgress').style.display = 'none';
+    document.getElementById('mediaUrlGroup').style.display = (tipo === 'foto' || tipo === 'video') ? 'block' : 'none';
     document.getElementById('pollContainer').style.display = tipo === 'enquete' ? 'block' : 'none';
+    document.getElementById('postText').value = '';
+    document.getElementById('mediaUrl').value = '';
     
-    arquivoMidiaSelecionado = null;
-    midiaIdAtual = null;
-    
+    // MELHORIA: Placeholder específico para cada tipo
+const mediaInput = document.getElementById('mediaUrl');
+if (mediaInput) {
+    if (tipo === 'foto') {
+        mediaInput.placeholder = 'URL da imagem (ex: https://exemplo.com/foto.jpg)';
+    } else if (tipo === 'video') {
+        mediaInput.placeholder = 'URL do vídeo (YouTube ou MP4)';
+    }
+}
     document.getElementById('createPostModal').style.display = 'flex';
-};
+}
+
     function adicionarOpcaoEnquete() {
         const container = document.getElementById('pollOptions');
         const div = document.createElement('div');
@@ -2221,7 +2221,6 @@ abrirModalCriarPost = function(tipo = null) {
     
     // Resetar campos
     document.getElementById('postText').value = '';
-    document.getElementById('mediaUrl').value = '';
     document.getElementById('postAnonimo').checked = false;
     document.getElementById('uploadPreview').style.display = 'none';
     document.getElementById('previewImage').style.display = 'none';
@@ -2233,18 +2232,8 @@ abrirModalCriarPost = function(tipo = null) {
     arquivoMidiaSelecionado = null;
     midiaIdAtual = null;
     
-    const mediaInput = document.getElementById('mediaUrl');
-    if (mediaInput) {
-        if (tipo === 'foto') {
-            mediaInput.placeholder = 'URL da imagem (ex: https://exemplo.com/foto.jpg)';
-        } else if (tipo === 'video') {
-            mediaInput.placeholder = 'URL do vídeo (YouTube ou MP4)';
-        }
-    }
-    
     document.getElementById('createPostModal').style.display = 'flex';
 };
-
 // Lidar com seleção de arquivo
 function handleFileSelect(event) {
     const file = event.target.files[0];

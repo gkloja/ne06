@@ -3238,26 +3238,7 @@ body.light-mode .watch-empty-title { color: #111; }
     margin-top: 16px; 
     width: 100%; 
 }
-/* CORREÇÃO PARA VAGAS E NOTÍCIAS - GARANTIR VISIBILIDADE */
-.vagas-container, 
-.noticias-container, 
-.perfil-container,
-.radio-page-container,
-.watch-container {
-    display: block !important;
-    width: 100% !important;
-    min-height: 400px !important;
-}
 
-.vagas-container[style*="display: none"],
-.noticias-container[style*="display: none"],
-.perfil-container[style*="display: none"] {
-    display: none !important;
-}
-
-.vagas-container:not([style*="display: none"]) {
-    display: block !important;
-}
 
 /* Garantir que o grid de vagas apareça */
 .vagas-grid {
@@ -8403,43 +8384,57 @@ function mudarSecao(section) {
     const bottomLink = document.querySelector(`.bottom-nav-item[data-section="${section}"]`);
     if (bottomLink) bottomLink.classList.add('active');
     
-    // Esconder todas as seções
-    document.getElementById('feedCentral').style.display = 'none';
-    document.getElementById('vagasContainer').style.display = 'none';
-    document.getElementById('noticiasContainer').style.display = 'none';
-    document.getElementById('perfilContainer').style.display = 'none';
-    document.getElementById('chatLayout').style.display = 'none';
-    document.getElementById('radioPageContainer').style.display = 'none';
-    document.getElementById('watchContainer').style.display = 'none';
+    // Esconder todas as seções (usando style property diretamente, sem depender de classes CSS)
+    const feedCentral = document.getElementById('feedCentral');
+    const vagasContainer = document.getElementById('vagasContainer');
+    const noticiasContainer = document.getElementById('noticiasContainer');
+    const perfilContainer = document.getElementById('perfilContainer');
+    const chatLayout = document.getElementById('chatLayout');
+    const radioPageContainer = document.getElementById('radioPageContainer');
+    const watchContainer = document.getElementById('watchContainer');
+    
+    if (feedCentral) feedCentral.style.display = 'none';
+    if (vagasContainer) vagasContainer.style.display = 'none';
+    if (noticiasContainer) noticiasContainer.style.display = 'none';
+    if (perfilContainer) perfilContainer.style.display = 'none';
+    if (chatLayout) chatLayout.style.display = 'none';
+    if (radioPageContainer) radioPageContainer.style.display = 'none';
+    if (watchContainer) watchContainer.style.display = 'none';
     
     // Mostrar seção selecionada
     switch(section) {
         case 'feed': 
-            document.getElementById('feedCentral').style.display = 'block'; 
+            if (feedCentral) feedCentral.style.display = 'block'; 
             break;
-case 'empregos': 
-    document.getElementById('vagasContainer').style.display = 'block';
-    console.log('📌 Mostrando seção de empregos');
-    carregarVagas(); // ← GARANTIR QUE CHAMA A FUNÇÃO
-    break;
+        case 'empregos': 
+            if (vagasContainer) {
+                vagasContainer.style.display = 'block';
+                console.log('📌 Mostrando seção de empregos');
+                carregarVagas();
+            }
+            break;
         case 'noticias': 
-            document.getElementById('noticiasContainer').style.display = 'block'; 
-            carregarNoticias(); // ← CARREGAR NOTÍCIAS AUTOMATICAMENTE
+            if (noticiasContainer) {
+                noticiasContainer.style.display = 'block';
+                carregarNoticias();
+            }
             break;
         case 'perfil': 
-            document.getElementById('perfilContainer').style.display = 'block'; 
-            renderizarPerfil();
+            if (perfilContainer) {
+                perfilContainer.style.display = 'block';
+                renderizarPerfil();
+            }
             break;
         case 'chat': 
-            document.getElementById('chatLayout').style.display = 'flex'; 
+            if (chatLayout) chatLayout.style.display = 'flex'; 
             carregarChat();
             break;
         case 'watch': 
-            document.getElementById('watchContainer').style.display = 'block'; 
+            if (watchContainer) watchContainer.style.display = 'block'; 
             carregarWatchRooms(); 
             break;
         case 'radio': 
-            document.getElementById('radioPageContainer').style.display = 'block'; 
+            if (radioPageContainer) radioPageContainer.style.display = 'block'; 
             carregarRadioPage(); 
             break;
     }

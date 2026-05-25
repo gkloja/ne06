@@ -2880,6 +2880,346 @@ body.light-mode .watch-empty-title { color: #111; }
 .news-state-badge.centro-oeste {
     background: linear-gradient(135deg, #ef4444, #dc2626);
 }
+/* ========== MODAL DE NOTÍCIAS PROFISSIONAL ========== */
+
+.noticia-modal-profissional {
+    border-radius: 20px !important;
+    overflow: hidden !important;
+    background: var(--bg) !important;
+    transition: all 0.3s ease;
+}
+
+/* Container principal */
+.noticia-modal-container {
+    max-height: 85vh;
+    overflow-y: auto;
+    scrollbar-width: thin;
+}
+
+.noticia-modal-container::-webkit-scrollbar {
+    width: 4px;
+}
+
+.noticia-modal-container::-webkit-scrollbar-track {
+    background: var(--border);
+    border-radius: 10px;
+}
+
+.noticia-modal-container::-webkit-scrollbar-thumb {
+    background: var(--primary);
+    border-radius: 10px;
+}
+
+/* Imagem de capa */
+.noticia-modal-cover {
+    position: relative;
+    width: 100%;
+    height: 220px;
+    overflow: hidden;
+    background: #000;
+}
+
+.noticia-modal-cover img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.noticia-modal-cover-overlay {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 100px;
+    background: linear-gradient(to top, var(--bg) 0%, transparent 100%);
+}
+
+.noticia-modal-cover-placeholder {
+    background: linear-gradient(135deg, var(--primary), #7c4dff);
+    min-height: 100px;
+}
+
+/* Badges */
+.noticia-modal-badges {
+    position: absolute;
+    bottom: 16px;
+    left: 16px;
+    right: 16px;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    z-index: 2;
+}
+
+.noticia-modal-badge-local,
+.noticia-modal-badge-fonte,
+.noticia-modal-badge-tempo {
+    padding: 6px 14px;
+    border-radius: 30px;
+    font-size: 11px;
+    font-weight: 600;
+    backdrop-filter: blur(10px);
+}
+
+.noticia-modal-badge-local {
+    background: rgba(37, 99, 235, 0.9);
+    color: white;
+}
+
+.noticia-modal-badge-fonte {
+    background: rgba(0, 0, 0, 0.7);
+    color: white;
+}
+
+.noticia-modal-badge-tempo {
+    background: rgba(16, 185, 129, 0.9);
+    color: white;
+}
+
+/* Título */
+.noticia-modal-titulo {
+    font-size: 22px;
+    font-weight: 800;
+    line-height: 1.3;
+    margin: 20px 24px 16px;
+    color: var(--text-color);
+}
+
+/* Meta informações */
+.noticia-modal-meta {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+    padding: 0 24px;
+    margin-bottom: 20px;
+    flex-wrap: wrap;
+}
+
+.noticia-modal-autor {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.noticia-modal-autor-icon {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, var(--primary), #7c4dff);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.noticia-modal-autor-icon i {
+    font-size: 16px;
+    color: white;
+}
+
+.noticia-modal-autor-nome {
+    font-weight: 700;
+    font-size: 13px;
+    color: var(--text-color);
+}
+
+.noticia-modal-autor-cargo {
+    font-size: 10px;
+    color: var(--text2);
+}
+
+.noticia-modal-meta-divider {
+    width: 1px;
+    height: 30px;
+    background: var(--border);
+}
+
+.noticia-modal-data-label {
+    font-size: 10px;
+    color: var(--text2);
+    margin-bottom: 2px;
+}
+
+.noticia-modal-data-valor {
+    font-weight: 600;
+    font-size: 12px;
+    color: var(--text-color);
+}
+
+/* Conteúdo */
+.noticia-modal-conteudo {
+    padding: 0 24px;
+    font-size: 15px;
+    line-height: 1.7;
+    color: var(--text-color);
+    text-align: justify;
+}
+
+/* Compartilhar */
+.noticia-modal-share {
+    background: var(--card);
+    border-radius: 16px;
+    padding: 16px;
+    margin: 20px 24px;
+    border: 1px solid var(--border);
+}
+
+.noticia-modal-share-titulo {
+    font-weight: 700;
+    font-size: 13px;
+    margin-bottom: 12px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    color: var(--text-color);
+}
+
+.noticia-modal-share-botoes {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+}
+
+.noticia-share-btn {
+    padding: 10px 18px;
+    border-radius: 40px;
+    font-weight: 600;
+    font-size: 12px;
+    cursor: pointer;
+    transition: all 0.2s;
+    border: none;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.noticia-share-btn:hover {
+    transform: translateY(-2px);
+}
+
+.noticia-share-btn.whatsapp {
+    background: #25D366;
+    color: white;
+}
+
+.noticia-share-btn.twitter {
+    background: #1DA1F2;
+    color: white;
+}
+
+.noticia-share-btn.facebook {
+    background: #1877F2;
+    color: white;
+}
+
+.noticia-share-btn.copiar {
+    background: var(--primary);
+    color: white;
+}
+
+/* Fonte original */
+.noticia-modal-fonte {
+    text-align: center;
+    padding: 16px 24px 24px;
+    border-top: 1px solid var(--border);
+    margin-top: 8px;
+}
+
+.noticia-modal-fonte a {
+    color: var(--primary);
+    text-decoration: none;
+    font-size: 12px;
+    font-weight: 600;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    transition: opacity 0.2s;
+}
+
+.noticia-modal-fonte a:hover {
+    opacity: 0.8;
+}
+
+/* Responsivo */
+@media (max-width: 768px) {
+    .noticia-modal-profissional {
+        width: 95% !important;
+    }
+    
+    .noticia-modal-titulo {
+        font-size: 18px;
+        margin: 16px 16px 12px;
+    }
+    
+    .noticia-modal-meta {
+        padding: 0 16px;
+        gap: 12px;
+    }
+    
+    .noticia-modal-conteudo {
+        padding: 0 16px;
+        font-size: 14px;
+    }
+    
+    .noticia-modal-share {
+        margin: 16px;
+        padding: 12px;
+    }
+    
+    .noticia-share-btn {
+        padding: 8px 14px;
+        font-size: 11px;
+    }
+    
+    .noticia-modal-cover {
+        height: 180px;
+    }
+    
+    .noticia-modal-badges {
+        bottom: 12px;
+        left: 12px;
+        right: 12px;
+    }
+    
+    .noticia-modal-badge-local,
+    .noticia-modal-badge-fonte,
+    .noticia-modal-badge-tempo {
+        padding: 4px 10px;
+        font-size: 10px;
+    }
+}
+/* Ajustes do modal de notícias */
+.noticia-modal-profissional {
+    border-radius: 20px !important;
+    overflow: hidden !important;
+    background: transparent !important;
+    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5) !important;
+}
+
+/* Scroll suave */
+.noticia-modal-profissional .swal2-html-container {
+    padding: 0 !important;
+    overflow: visible !important;
+}
+
+/* Responsivo */
+@media (max-width: 768px) {
+    .noticia-modal-profissional {
+        width: 95% !important;
+    }
+    
+    .swal2-popup .swal2-html-container div > div > h2 {
+        font-size: 18px !important;
+        margin: 16px 16px 12px !important;
+    }
+    
+    .swal2-popup .swal2-html-container div > div > div[style*="display: flex"] {
+        padding: 0 16px !important;
+    }
+    
+    .swal2-popup .swal2-html-container div > div > div[style*="padding: 0 24px"] {
+        padding: 0 16px !important;
+    }
+}
 </style>
 </head>
 <body>
@@ -6719,39 +7059,76 @@ async function carregarNoticias() {
     const container = document.getElementById('noticiasContainer');
     if (!container) return;
     
-    // Tentar carregar do cache primeiro
-    const cache = localStorage.getItem(CACHE_KEY);
-    let noticiasDoCache = null;
+    container.innerHTML = `
+        <div class="noticias-loading">
+            <div class="loading-spinner">
+                <div class="spinner"></div>
+                <p>📰 Carregando notícias do Brasil...</p>
+            </div>
+        </div>`;
     
-    if (cache) {
-        try {
-            const dados = JSON.parse(cache);
-            if (Date.now() - dados.timestamp < CACHE_EXPIRY) {
-                noticiasDoCache = dados.noticias;
-                todasNoticiasCache = noticiasDoCache;
-                console.log('📦 Notícias carregadas do cache local:', todasNoticiasCache.length);
-            }
-        } catch (e) {}
+    try {
+        let todasNoticias = [];
+        
+        // Buscar JSON de cada estado via API_URL
+        for (const estado of ESTADOS_NORDESTE) {
+            try {
+                const response = await fetch(`${API_URL}/cache/estados/${estado.key}.json`);
+                if (response.ok) {
+                    const data = await response.json();
+                    
+                    // Formato com array 'noticias' (dados completos)
+if (data.noticiasCompletas && Array.isArray(data.noticiasCompletas) && data.noticiasCompletas.length > 0) {
+    for (const noticia of data.noticiasCompletas) {
+        if (!todasNoticias.some(n => n.url === noticia.url)) {
+            todasNoticias.push({
+                url: noticia.url,
+                titulo: noticia.titulo,
+                resumo: noticia.resumo || (noticia.conteudoCompleto ? noticia.conteudoCompleto.substring(0, 120) : 'Clique para ler'),
+                estado: noticia.estado || estado.nome,
+                sigla: noticia.sigla || estado.sigla,
+                data: noticia.dataPublicacao || data.ultimaSincronizacao,
+                timestamp: noticia.timestamp || new Date(data.ultimaSincronizacao).getTime(),
+                imagem: noticia.imagem || null,
+                conteudoCompleto: noticia.conteudoCompleto || null
+            });
+        }
     }
-    
-    if (noticiasDoCache && noticiasDoCache.length > 0) {
-        // Mostrar do cache imediatamente
+}
+                }
+            } catch (error) {
+                console.log(`⚠️ Erro ao carregar ${estado.nome}:`, error.message);
+            }
+        }
+        
+        // Ordenar por data (mais recentes primeiro)
+        todasNoticias.sort((a, b) => b.timestamp - a.timestamp);
+        todasNoticiasCache = todasNoticias;
+        
+        console.log(`📰 Total: ${todasNoticias.length} notícias carregadas do JSON!`);
+        
+        if (todasNoticias.length === 0) {
+            container.innerHTML = `
+                <div class="noticias-empty">
+                    <i class="fas fa-newspaper" style="font-size: 48px; color: var(--text2); margin-bottom: 16px; display: block;"></i>
+                    <h3>Nenhuma notícia encontrada</h3>
+                    <p>Tente novamente mais tarde.</p>
+                    <button class="btn-primary" onclick="carregarNoticias()">Tentar novamente</button>
+                </div>`;
+            return;
+        }
+        
         renderizarNoticias();
         
-        // Atualizar em segundo plano
-        atualizarNoticiasBackground();
-    } else {
-        // Mostrar loading
+    } catch (error) {
+        console.error('Erro ao carregar notícias:', error);
         container.innerHTML = `
-            <div class="noticias-loading">
-                <div class="loading-spinner">
-                    <div class="spinner"></div>
-                    <p>📰 Carregando notícias do Nordeste...</p>
-                </div>
+            <div class="noticias-error">
+                <i class="fas fa-exclamation-triangle" style="font-size: 48px; color: #ef4444; margin-bottom: 16px; display: block;"></i>
+                <h3>⚠️ Erro ao carregar notícias</h3>
+                <p>Não foi possível conectar ao servidor.</p>
+                <button class="btn-primary" onclick="carregarNoticias()">Tentar novamente</button>
             </div>`;
-        
-        // Buscar notícias
-        await buscarNoticias();
     }
 }
 
@@ -7045,67 +7422,420 @@ function carregarMaisNoticias() {
     }
 }
 
+// ==================== ÁUDIO DA NOTÍCIA ====================
+
+async function gerarAudioNoticia(texto, voice = "Francisca") {
+    try {
+        // Normalizar texto
+        const textoLimpo = texto
+            .replace(/\*/g, '')
+            .replace(/[\u{1F600}-\u{1F6FF}]/gu, '')
+            .replace(/[\u{2600}-\u{26FF}]/gu, '')
+            .replace(/[\u{2700}-\u{27BF}]/gu, '')
+            .replace(/[\u{1F300}-\u{1F5FF}]/gu, '')
+            .replace(/[\u{1F900}-\u{1F9FF}]/gu, '')
+            .replace(/[\u{1FA00}-\u{1FA6F}]/gu, '')
+            .replace(/\s+/g, ' ')
+            .trim();
+        
+        if (!textoLimpo || textoLimpo.length < 2) {
+            console.error('❌ Texto vazio');
+            return null;
+        }
+        
+        // Mostrar loading
+        Swal.fire({
+            title: '🎙️ Gerando áudio...',
+            text: 'Aguarde enquanto preparamos a narração',
+            allowOutsideClick: false,
+            didOpen: () => Swal.showLoading()
+        });
+        
+        const response = await fetch(`${API_URL}/cliente06/tts/gerar`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ texto: textoLimpo, voz: voice })
+        });
+        
+        Swal.close();
+        
+        if (response.ok) {
+            const data = await response.json();
+            if (data.audioUrl) {
+                return data.audioUrl;
+            }
+        }
+        
+        throw new Error('Erro ao gerar áudio');
+        
+    } catch (error) {
+        console.error('❌ Erro no áudio:', error);
+        Swal.fire({
+            icon: 'error',
+            title: 'Erro ao gerar áudio',
+            text: 'Tente novamente mais tarde',
+            confirmButtonText: 'OK'
+        });
+        return null;
+    }
+}
+
+let audioAtual = null;
+let audioNoticiaAtiva = false;
+
+function playAudioNoticia(audioUrl) {
+    if (audioAtual) {
+        audioAtual.pause();
+        audioAtual = null;
+    }
+    
+    audioAtual = new Audio(audioUrl);
+    audioAtual.play();
+    audioNoticiaAtiva = true;
+    
+    audioAtual.onended = () => {
+        audioNoticiaAtiva = false;
+        audioAtual = null;
+    };
+    
+    audioAtual.onerror = () => {
+        audioNoticiaAtiva = false;
+        audioAtual = null;
+        Swal.fire({
+            icon: 'error',
+            title: 'Erro ao reproduzir',
+            text: 'Não foi possível reproduzir o áudio',
+            timer: 2000,
+            showConfirmButton: false
+        });
+    };
+}
+
+function pararAudioNoticia() {
+    if (audioAtual) {
+        audioAtual.pause();
+        audioAtual = null;
+        audioNoticiaAtiva = false;
+    }
+}
+
 async function abrirNoticiaCompleta(url, estado) {
     if (!url) return;
     
-    Swal.fire({
-        title: 'Carregando notícia...',
-        html: `<div class="spinner" style="margin: 0 auto;"></div>`,
-        allowOutsideClick: false,
-        showConfirmButton: false
-    });
+    // Procura a notícia no cache atual
+    const noticiaCache = todasNoticiasCache.find(n => n.url === url);
     
-    try {
-        const response = await fetch(`${API_URL}/api/noticia/completa`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ url: url })
-        });
+    if (noticiaCache && noticiaCache.conteudoCompleto) {
+        // Gerar link único do site para esta notícia
+        const siteLink = `${window.location.origin}${window.location.pathname}?noticia=${encodeURIComponent(url)}`;
         
-        const noticia = await response.json();
-        Swal.close();
+        // Formata a data de publicação
+        const dataPublicacao = noticiaCache.data ? new Date(noticiaCache.data).toLocaleDateString('pt-BR', {
+            day: '2-digit',
+            month: 'long',
+            year: 'numeric'
+        }) : 'Data não disponível';
         
-        if (noticia.success) {
-            Swal.fire({
-                title: noticia.titulo || 'Notícia G1',
-                html: `
-                    <div style="text-align: left; max-height: 65vh; overflow-y: auto; padding: 4px;">
-                        ${noticia.imagem ? `<img src="${noticia.imagem}" style="width: 100%; border-radius: 16px; margin-bottom: 16px;" onerror="this.style.display='none'">` : ''}
-                        <div style="margin-bottom: 16px; display: flex; gap: 8px; flex-wrap: wrap;">
-                            <span style="background: var(--primary); color: white; padding: 4px 12px; border-radius: 20px; font-size: 11px;">
+        // Calcula tempo de leitura aproximado
+        const tempoLeitura = Math.max(1, Math.ceil((noticiaCache.conteudoCompleto?.length || 0) / 1000));
+        
+        // Detectar tema atual
+        const isDarkMode = document.body.classList.contains('light-mode') ? false : true;
+        const bgCor = isDarkMode ? '#1A1A1A' : '#FFFFFF';
+        const textCor = isDarkMode ? '#F5F5F5' : '#111111';
+        const text2Cor = isDarkMode ? '#A0A0A0' : '#666666';
+        const borderCor = isDarkMode ? '#333333' : '#E5E5E5';
+        const cardCor = isDarkMode ? '#222222' : '#F5F5F5';
+        
+        const modalHtml = `
+            <div style="background: ${bgCor}; color: ${textCor}; border-radius: 20px; overflow: hidden; max-height: 85vh; overflow-y: auto;">
+                <!-- Imagem de capa -->
+                ${noticiaCache.imagem ? `
+                    <div style="position: relative; width: 100%; height: 220px; overflow: hidden; background: #000;">
+                        <img src="${noticiaCache.imagem}" 
+                             style="width: 100%; height: 100%; object-fit: cover;"
+                             onerror="this.style.display='none'">
+                        <div style="position: absolute; bottom: 0; left: 0; right: 0; height: 100px; background: linear-gradient(to top, ${bgCor} 0%, transparent 100%);"></div>
+                        <div style="position: absolute; bottom: 16px; left: 16px; right: 16px; display: flex; flex-wrap: wrap; gap: 8px;">
+                            <span style="background: #2563eb; color: white; padding: 6px 14px; border-radius: 30px; font-size: 11px; font-weight: 600;">
                                 <i class="fas fa-map-marker-alt"></i> ${escapeHtml(estado)}
                             </span>
-                            <span style="background: rgba(0,0,0,0.05); padding: 4px 12px; border-radius: 20px; font-size: 11px;">
+                            <span style="background: rgba(0,0,0,0.7); color: white; padding: 6px 14px; border-radius: 30px; font-size: 11px; font-weight: 600;">
                                 <i class="fas fa-newspaper"></i> G1
                             </span>
-                        </div>
-                        <div style="font-size: 14px; line-height: 1.6;">
-                            ${noticia.conteudo}
-                        </div>
-                        <div style="margin-top: 16px; padding-top: 12px; border-top: 1px solid var(--border); text-align: center;">
-                            <a href="${url}" target="_blank" style="color: var(--primary); text-decoration: none; font-size: 12px;">
-                                <i class="fas fa-external-link-alt"></i> Ler matéria original no G1
-                            </a>
+                            <span style="background: #10b981; color: white; padding: 6px 14px; border-radius: 30px; font-size: 11px; font-weight: 600;">
+                                <i class="fas fa-clock"></i> ${tempoLeitura} min
+                            </span>
                         </div>
                     </div>
-                `,
-                showConfirmButton: false,
-                showCancelButton: true,
-                cancelButtonText: 'Fechar',
-                width: '600px'
-            });
-        } else {
-            throw new Error(noticia.error);
-        }
-    } catch (error) {
-        Swal.close();
-        Swal.fire({
-            title: '📰 Erro',
-            text: 'Não foi possível carregar a notícia.',
-            icon: 'error',
-            confirmButtonText: 'OK'
+                ` : `
+                    <div style="background: linear-gradient(135deg, #2563eb, #7c4dff); min-height: 100px; padding: 16px;">
+                        <div style="display: flex; flex-wrap: wrap; gap: 8px;">
+                            <span style="background: rgba(255,255,255,0.2); color: white; padding: 6px 14px; border-radius: 30px; font-size: 11px; font-weight: 600;">
+                                <i class="fas fa-map-marker-alt"></i> ${escapeHtml(estado)}
+                            </span>
+                            <span style="background: rgba(255,255,255,0.2); color: white; padding: 6px 14px; border-radius: 30px; font-size: 11px; font-weight: 600;">
+                                <i class="fas fa-newspaper"></i> G1
+                            </span>
+                            <span style="background: rgba(255,255,255,0.2); color: white; padding: 6px 14px; border-radius: 30px; font-size: 11px; font-weight: 600;">
+                                <i class="fas fa-clock"></i> ${tempoLeitura} min
+                            </span>
+                        </div>
+                    </div>
+                `}
+                
+                <!-- Player de Áudio -->
+                <div style="background: ${cardCor}; border-radius: 16px; padding: 16px; margin: 20px 24px; border: 1px solid ${borderCor};">
+                    <div style="display: flex; align-items: center; gap: 12px; flex-wrap: wrap;">
+                        <div style="display: flex; align-items: center; gap: 8px;">
+                            <i class="fas fa-headphones" style="color: #10b981; font-size: 20px;"></i>
+                            <span style="font-weight: 700; font-size: 14px;">Ouvir notícia</span>
+                        </div>
+                        <div style="flex: 1; display: flex; gap: 8px;">
+                            <button id="btnOuvirNoticia" 
+                                    style="background: #10b981; border: none; padding: 10px 20px; border-radius: 40px; color: white; font-weight: 600; font-size: 13px; cursor: pointer; display: inline-flex; align-items: center; gap: 8px; transition: all 0.2s;">
+                                <i class="fas fa-play"></i> Ouvir Agora
+                            </button>
+                            <button id="btnPararAudio" 
+                                    style="background: ${borderCor}; border: none; padding: 10px 20px; border-radius: 40px; color: ${textCor}; font-weight: 600; font-size: 13px; cursor: pointer; display: inline-flex; align-items: center; gap: 8px; transition: all 0.2s;">
+                                <i class="fas fa-stop"></i> Parar
+                            </button>
+                        </div>
+                    </div>
+                    <div id="audioStatus" style="margin-top: 12px; font-size: 11px; color: ${text2Cor}; display: none;">
+                        <i class="fas fa-spinner fa-spin"></i> Gerando áudio...
+                    </div>
+                </div>
+                
+                <!-- Título -->
+                <h2 style="font-size: 22px; font-weight: 800; line-height: 1.3; margin: 0 24px 16px; color: ${textCor};">
+                    ${escapeHtml(noticiaCache.titulo || noticiaCache.tituloCompleto || 'Notícia')}
+                </h2>
+                
+                <!-- Meta informações -->
+                <div style="display: flex; align-items: center; gap: 20px; padding: 0 24px; margin-bottom: 20px; flex-wrap: wrap;">
+                    <div style="display: flex; align-items: center; gap: 10px;">
+                        <div style="width: 36px; height: 36px; border-radius: 50%; background: linear-gradient(135deg, #2563eb, #7c4dff); display: flex; align-items: center; justify-content: center;">
+                            <i class="fas fa-user" style="font-size: 16px; color: white;"></i>
+                        </div>
+                        <div>
+                            <div style="font-weight: 700; font-size: 13px; color: ${textCor};">NE Conecta</div>
+                            <div style="font-size: 10px; color: ${text2Cor};">Portal de Notícias</div>
+                        </div>
+                    </div>
+                    <div style="width: 1px; height: 30px; background: ${borderCor};"></div>
+                    <div>
+                        <div style="font-size: 10px; color: ${text2Cor}; margin-bottom: 2px;">Publicado</div>
+                        <div style="font-weight: 600; font-size: 12px; color: ${textCor};">${dataPublicacao}</div>
+                    </div>
+                </div>
+                
+                <!-- Conteúdo -->
+                <div style="padding: 0 24px; font-size: 15px; line-height: 1.7; color: ${textCor}; text-align: justify;">
+                    ${escapeHtml(noticiaCache.conteudoCompleto)}
+                </div>
+                
+                <!-- Compartilhar -->
+                <div style="background: ${cardCor}; border-radius: 16px; padding: 16px; margin: 20px 24px; border: 1px solid ${borderCor};">
+                    <div style="font-weight: 700; font-size: 13px; margin-bottom: 12px; display: flex; align-items: center; gap: 8px; color: ${textCor};">
+                        <i class="fas fa-share-alt" style="color: #2563eb;"></i> Compartilhar esta notícia
+                    </div>
+                    <div style="display: flex; flex-wrap: wrap; gap: 10px;">
+                        <button onclick="compartilharNoticiaSite('whatsapp', '${siteLink.replace(/'/g, "\\'")}', '${escapeHtml(noticiaCache.titulo).replace(/'/g, "\\'")}')" 
+                                style="background: #25D366; border: none; padding: 10px 18px; border-radius: 40px; color: white; font-weight: 600; font-size: 12px; cursor: pointer; display: inline-flex; align-items: center; gap: 8px; transition: transform 0.2s;">
+                            <i class="fab fa-whatsapp"></i> WhatsApp
+                        </button>
+                        <button onclick="compartilharNoticiaSite('twitter', '${siteLink.replace(/'/g, "\\'")}', '${escapeHtml(noticiaCache.titulo).replace(/'/g, "\\'")}')" 
+                                style="background: #1DA1F2; border: none; padding: 10px 18px; border-radius: 40px; color: white; font-weight: 600; font-size: 12px; cursor: pointer; display: inline-flex; align-items: center; gap: 8px; transition: transform 0.2s;">
+                            <i class="fab fa-twitter"></i> Twitter
+                        </button>
+                        <button onclick="compartilharNoticiaSite('facebook', '${siteLink.replace(/'/g, "\\'")}', '${escapeHtml(noticiaCache.titulo).replace(/'/g, "\\'")}')" 
+                                style="background: #1877F2; border: none; padding: 10px 18px; border-radius: 40px; color: white; font-weight: 600; font-size: 12px; cursor: pointer; display: inline-flex; align-items: center; gap: 8px; transition: transform 0.2s;">
+                            <i class="fab fa-facebook-f"></i> Facebook
+                        </button>
+                        <button onclick="copiarLinkNoticiaSite('${siteLink.replace(/'/g, "\\'")}')" 
+                                style="background: #2563eb; border: none; padding: 10px 18px; border-radius: 40px; color: white; font-weight: 600; font-size: 12px; cursor: pointer; display: inline-flex; align-items: center; gap: 8px; transition: transform 0.2s;">
+                            <i class="fas fa-link"></i> Copiar Link
+                        </button>
+                    </div>
+                </div>
+                
+                <!-- Fonte original -->
+                <div style="text-align: center; padding: 16px 24px 24px; border-top: 1px solid ${borderCor}; margin-top: 8px;">
+                    <a href="${url}" target="_blank" style="color: #2563eb; text-decoration: none; font-size: 12px; font-weight: 600; display: inline-flex; align-items: center; gap: 6px;">
+                        <i class="fas fa-external-link-alt"></i> Ver matéria original no G1
+                    </a>
+                </div>
+            </div>
+        `;
+        
+        await Swal.fire({
+            title: '',
+            html: modalHtml,
+            showConfirmButton: false,
+            showCancelButton: true,
+            cancelButtonText: 'Fechar',
+            cancelButtonColor: '#6b7280',
+            width: '850px',
+            padding: '0',
+            background: 'transparent',
+            backdrop: 'rgba(0,0,0,0.8)',
+            customClass: {
+                popup: 'noticia-modal-profissional'
+            },
+            didOpen: () => {
+                // Evento do botão Ouvir
+                const btnOuvir = document.getElementById('btnOuvirNoticia');
+                const btnParar = document.getElementById('btnPararAudio');
+                const audioStatus = document.getElementById('audioStatus');
+                
+                let audioUrlAtual = null;
+                
+                btnOuvir.onclick = async () => {
+                    if (audioNoticiaAtiva) {
+                        pararAudioNoticia();
+                        btnOuvir.innerHTML = '<i class="fas fa-play"></i> Ouvir Agora';
+                        btnOuvir.style.background = '#10b981';
+                        return;
+                    }
+                    
+                    audioStatus.style.display = 'block';
+                    btnOuvir.disabled = true;
+                    btnOuvir.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Gerando...';
+                    
+                    const audioUrl = await gerarAudioNoticia(noticiaCache.conteudoCompleto);
+                    
+                    audioStatus.style.display = 'none';
+                    btnOuvir.disabled = false;
+                    
+                    if (audioUrl) {
+                        audioUrlAtual = audioUrl;
+                        playAudioNoticia(audioUrl);
+                        btnOuvir.innerHTML = '<i class="fas fa-pause"></i> Pausar';
+                        btnOuvir.style.background = '#ef4444';
+                    } else {
+                        btnOuvir.innerHTML = '<i class="fas fa-play"></i> Ouvir Agora';
+                        btnOuvir.style.background = '#10b981';
+                    }
+                };
+                
+                btnParar.onclick = () => {
+                    pararAudioNoticia();
+                    btnOuvir.innerHTML = '<i class="fas fa-play"></i> Ouvir Agora';
+                    btnOuvir.style.background = '#10b981';
+                };
+            },
+            willClose: () => {
+                pararAudioNoticia();
+            }
         });
+    } else {
+        window.open(url, '_blank');
     }
+}
+function compartilharNoticiaSite(plataforma, link, titulo) {
+    let shareUrl = '';
+    
+    switch(plataforma) {
+        case 'whatsapp':
+            shareUrl = `https://wa.me/?text=${encodeURIComponent(`📰 ${titulo}\n\nLeia mais no NE Conecta:\n${link}`)}`;
+            break;
+        case 'twitter':
+            shareUrl = `https://twitter.com/intent/tweet?text=${encodeURIComponent(`📰 ${titulo}\n\n${link}`)}`;
+            break;
+        case 'facebook':
+            shareUrl = `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(link)}`;
+            break;
+    }
+    
+    if (shareUrl) {
+        window.open(shareUrl, '_blank', 'width=600,height=400');
+    }
+}
+
+function copiarLinkNoticiaSite(link) {
+    navigator.clipboard.writeText(link).then(() => {
+        Swal.fire({
+            icon: 'success',
+            title: '✅ Link copiado!',
+            text: 'Link da notícia copiado para a área de transferência.',
+            timer: 2000,
+            showConfirmButton: false,
+            toast: true,
+            position: 'top-end'
+        });
+    });
+}
+
+function abrirNoticiaPorLink() {
+    const urlParams = new URLSearchParams(window.location.search);
+    const noticiaUrl = urlParams.get('noticia');
+    
+    if (noticiaUrl) {
+        setTimeout(() => {
+            mudarSecao('noticias');
+            setTimeout(() => {
+                abrirNoticiaCompleta(noticiaUrl, '');
+            }, 800);
+        }, 500);
+    }
+}
+
+function copiarLinkNoticiaSite(link) {
+    navigator.clipboard.writeText(link).then(() => {
+        Swal.fire({
+            icon: 'success',
+            title: '✅ Link copiado!',
+            text: 'Link da notícia copiado para a área de transferência.',
+            timer: 2000,
+            showConfirmButton: false,
+            toast: true,
+            position: 'top-end'
+        });
+    });
+}
+
+// Função para abrir notícia diretamente pelo link do site
+function abrirNoticiaPorLink() {
+    const urlParams = new URLSearchParams(window.location.search);
+    const noticiaUrl = urlParams.get('noticia');
+    
+    if (noticiaUrl) {
+        setTimeout(() => {
+            mudarSecao('noticias');
+            setTimeout(() => {
+                abrirNoticiaCompleta(noticiaUrl, '');
+            }, 800);
+        }, 500);
+    }
+}
+// Funções de compartilhamento para notícias
+function compartilharNoticiaWhatsApp(url, titulo) {
+    const text = encodeURIComponent(`📰 *${titulo}*\n\nLeia mais no NE Conecta:\n${url}`);
+    window.open(`https://wa.me/?text=${text}`, '_blank');
+}
+
+function compartilharNoticiaTwitter(url, titulo) {
+    const text = encodeURIComponent(`📰 ${titulo}\n\n${url}`);
+    window.open(`https://twitter.com/intent/tweet?text=${text}`, '_blank');
+}
+
+function compartilharNoticiaFacebook(url) {
+    window.open(`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(url)}`, '_blank');
+}
+
+function copiarLinkNoticia(url) {
+    navigator.clipboard.writeText(url).then(() => {
+        Swal.fire({
+            icon: 'success',
+            title: '✅ Link copiado!',
+            text: 'Link da notícia copiado para a área de transferência.',
+            timer: 2000,
+            showConfirmButton: false,
+            toast: true,
+            position: 'top-end'
+        });
+    });
 }
 
 function extrairTituloDaUrl(url) {
@@ -7868,6 +8598,7 @@ function verificarSalaWatchNaUrl() {
     
     // 5. Verificar se há post na URL para scrollar até ele
     verificarPostNaUrl();
+    abrirNoticiaPorLink()
     
     console.log('✅ Sistema inicializado!');
 }

@@ -2537,6 +2537,293 @@ body.light-mode .watch-empty-title { color: #111; }
         padding-bottom: 56.25%;
     }
 }
+/* Badge do estado na notícia */
+.news-image {
+    position: relative;
+}
+
+.news-state-badge {
+    position: absolute;
+    top: 8px;
+    left: 8px;
+    background: rgba(0,0,0,0.7);
+    backdrop-filter: blur(4px);
+    color: white;
+    padding: 4px 10px;
+    border-radius: 20px;
+    font-size: 10px;
+    font-weight: 700;
+    z-index: 2;
+}
+
+.news-resumo {
+    font-size: 12px;
+    color: var(--text2);
+    margin-top: 8px;
+    line-height: 1.4;
+}
+.news-card {
+    cursor: pointer;
+    transition: all 0.3s ease;
+    overflow: hidden;
+}
+
+.news-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 8px 25px rgba(0,0,0,0.1);
+}
+
+.news-image {
+    position: relative;
+    height: 180px;
+    overflow: hidden;
+}
+
+.news-image img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform 0.3s ease;
+}
+
+.news-card:hover .news-image img {
+    transform: scale(1.05);
+}
+
+.news-info {
+    padding: 12px;
+}
+
+.news-title {
+    font-size: 14px;
+    font-weight: 700;
+    line-height: 1.4;
+    margin-bottom: 6px;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+}
+
+.news-meta {
+    display: flex;
+    gap: 12px;
+    font-size: 10px;
+    color: var(--text2);
+    margin-bottom: 6px;
+}
+
+.news-resumo {
+    font-size: 11px;
+    color: var(--text2);
+    line-height: 1.4;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+}
+/* ========== SEÇÃO DE NOTÍCIAS MELHORADA ========== */
+
+.noticias-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 24px;
+    flex-wrap: wrap;
+    gap: 16px;
+}
+
+.noticias-titulo {
+    font-size: 22px;
+    font-weight: 800;
+    margin-bottom: 4px;
+}
+
+.noticias-subtitulo {
+    font-size: 12px;
+    color: var(--text2);
+}
+
+.noticias-badge {
+    background: #ef4444;
+    color: white;
+    padding: 4px 12px;
+    border-radius: 20px;
+    font-size: 11px;
+    font-weight: 700;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    animation: pulse 2s infinite;
+}
+
+.noticias-badge i {
+    font-size: 10px;
+}
+
+.btn-refresh {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 50%;
+    width: 36px;
+    height: 36px;
+    cursor: pointer;
+    color: var(--text-color);
+    transition: all 0.2s;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.btn-refresh:hover {
+    background: var(--primary);
+    color: white;
+    transform: rotate(180deg);
+}
+
+.noticias-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+    gap: 20px;
+    margin-bottom: 24px;
+}
+
+.news-card {
+    background: var(--card);
+    border-radius: 16px;
+    overflow: hidden;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    border: 1px solid var(--border);
+}
+
+.news-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 8px 25px rgba(0,0,0,0.15);
+    border-color: var(--primary);
+}
+
+.news-image {
+    position: relative;
+    height: 180px;
+    overflow: hidden;
+    background: #000;
+}
+
+.news-image img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform 0.3s ease;
+}
+
+.news-card:hover .news-image img {
+    transform: scale(1.05);
+}
+
+.news-state-badge {
+    position: absolute;
+    top: 10px;
+    left: 10px;
+    background: rgba(0,0,0,0.75);
+    backdrop-filter: blur(4px);
+    color: white;
+    padding: 4px 10px;
+    border-radius: 20px;
+    font-size: 10px;
+    font-weight: 700;
+    z-index: 2;
+}
+
+.news-info {
+    padding: 14px;
+}
+
+.news-title {
+    font-size: 14px;
+    font-weight: 700;
+    line-height: 1.4;
+    margin-bottom: 8px;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+}
+
+.news-meta {
+    display: flex;
+    gap: 12px;
+    font-size: 10px;
+    color: var(--text2);
+    margin-bottom: 8px;
+}
+
+.news-resumo {
+    font-size: 11px;
+    color: var(--text2);
+    line-height: 1.4;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+}
+
+.noticias-footer {
+    text-align: center;
+    padding-top: 20px;
+    border-top: 1px solid var(--border);
+}
+
+.noticias-footer-text {
+    font-size: 11px;
+    color: var(--text2);
+}
+
+.noticias-empty, .noticias-error {
+    text-align: center;
+    padding: 60px 20px;
+    background: var(--card);
+    border-radius: 20px;
+    border: 1px solid var(--border);
+}
+
+.noticias-loading {
+    min-height: 400px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+/* Modal de notícia completa */
+.noticia-modal-content {
+    max-height: 70vh;
+    overflow-y: auto;
+}
+
+.noticia-conteudo {
+    font-size: 14px;
+    line-height: 1.6;
+}
+
+.noticia-conteudo p {
+    margin-bottom: 12px;
+}
+
+/* Responsivo */
+@media (max-width: 768px) {
+    .noticias-grid {
+        grid-template-columns: 1fr;
+        gap: 12px;
+    }
+    
+    .noticias-titulo {
+        font-size: 18px;
+    }
+    
+    .news-image {
+        height: 150px;
+    }
+}
 </style>
 </head>
 <body>
@@ -2574,14 +2861,29 @@ body.light-mode .watch-empty-title { color: #111; }
     </div>
 </nav>
 <div class="bottom-nav show-on-mobile">
-<div class="bottom-nav-items">
-    <button class="bottom-nav-item active" data-section="feed"><i class="fas fa-home"></i><span>Feed</span></button>
-    <button class="bottom-nav-item" data-section="empregos"><i class="fas fa-briefcase"></i><span>Empregos</span></button>
-    <button class="bottom-nav-item" data-section="radio"><i class="fas fa-radio"></i><span>Rádio</span></button>
-<button class="bottom-nav-item" data-section="watch"><i class="fas fa-play-circle"></i><span>Assistir</span></button>
-    <button class="bottom-nav-item" data-section="chat"><i class="fas fa-comments"></i><span>Chat</span></button>
-    <button class="bottom-nav-item" data-section="perfil"><i class="fas fa-user"></i><span>Perfil</span></button>
-</div>
+    <div class="bottom-nav-items">
+        <button class="bottom-nav-item active" data-section="feed">
+            <i class="fas fa-home"></i><span>Feed</span>
+        </button>
+        <button class="bottom-nav-item" data-section="empregos">
+            <i class="fas fa-briefcase"></i><span>Empregos</span>
+        </button>
+        <button class="bottom-nav-item" data-section="radio">
+            <i class="fas fa-radio"></i><span>Rádio</span>
+        </button>
+        <button class="bottom-nav-item" data-section="watch">
+            <i class="fas fa-play-circle"></i><span>Assistir</span>
+        </button>
+        <button class="bottom-nav-item" data-section="chat">
+            <i class="fas fa-comments"></i><span>Chat</span>
+        </button>
+        <button class="bottom-nav-item" data-section="noticias">
+            <i class="fas fa-newspaper"></i><span>Notícias</span>
+        </button>
+        <button class="bottom-nav-item" data-section="perfil">
+            <i class="fas fa-user"></i><span>Perfil</span>
+        </button>
+    </div>
 </div>
 
 <div class="container">
@@ -6332,25 +6634,206 @@ async function enviarVaga() {
 
     // ==================== NOTÍCIAS ====================
     
-    async function carregarNoticias() {
-        const container = document.getElementById('noticiasContainer');
-        container.innerHTML = `<div class="loading-spinner"><div class="spinner"></div><p>Carregando notícias...</p></div>`;
-        const data = await carregarDados();
-        noticias = data.noticias || [];
+// ==================== NOTÍCIAS DO G1 (AUTOMÁTICO DO SEU BOT) ====================
+
+async function carregarNoticias() {
+    const container = document.getElementById('noticiasContainer');
+    
+    if (!container) return;
+    
+    // Mostrar loading com estilo melhorado
+    container.innerHTML = `
+        <div class="noticias-loading">
+            <div class="loading-spinner">
+                <div class="spinner"></div>
+                <p><i class="fas fa-newspaper"></i> Buscando últimas notícias do Nordeste...</p>
+                <p style="font-size: 11px; color: var(--text2); margin-top: 8px;">
+                    🔄 Notícias atualizadas automaticamente do G1
+                </p>
+            </div>
+        </div>`;
+    
+    try {
+        // Tenta buscar do seu servidor primeiro
+        let noticias = [];
+        let fonte = 'cache';
+        
+        // Tentativa 1: Buscar do endpoint do seu servidor
+        try {
+            const response = await fetch(`${API_URL}/api/noticias/nordeste`);
+            if (response.ok) {
+                const data = await response.json();
+                noticias = data.noticias || [];
+                fonte = 'servidor';
+                console.log('✅ Notícias carregadas do servidor:', noticias.length);
+            }
+        } catch (error) {
+            console.log('⚠️ Erro ao buscar do servidor, tentando cache local...');
+        }
+        
+        // Se não conseguiu do servidor, tenta do cache local do bot
         if (noticias.length === 0) {
-            container.innerHTML = `<div class="loading-spinner"><i class="fas fa-newspaper"></i><p>Nenhuma notícia</p></div>`;
+            try {
+                const response = await fetch(`${API_URL}/cliente06/noticias/cache`);
+                if (response.ok) {
+                    const data = await response.json();
+                    noticias = data;
+                    fonte = 'cache';
+                }
+            } catch (error) {
+                console.log('⚠️ Erro no cache local');
+            }
+        }
+        
+        // Se ainda não tem notícias, mostra notícias de exemplo ou mensagem
+        if (noticias.length === 0) {
+            container.innerHTML = `
+                <div class="noticias-empty">
+                    <i class="fas fa-newspaper" style="font-size: 48px; color: var(--primary); margin-bottom: 16px; display: block;"></i>
+                    <h3 style="margin-bottom: 8px;">📰 Nenhuma notícia no momento</h3>
+                    <p style="color: var(--text2);">As notícias serão carregadas automaticamente em breve.</p>
+                    <button class="btn-primary" onclick="carregarNoticias()" style="margin-top: 20px;">
+                        <i class="fas fa-sync-alt"></i> Tentar novamente
+                    </button>
+                </div>`;
             return;
         }
-        container.innerHTML = `<div class="noticias-grid">${noticias.map(n => `
-            <div class="news-card" onclick="abrirNoticiaModal(${n.id})">
-                <div class="news-image"><img src="${n.imagem}" onerror="this.src='https://placehold.co/400x150'" alt="Notícia"></div>
-                <div class="news-info">
-                    <div class="news-title">${escapeHtml(n.titulo)}</div>
-                    <div class="news-meta"><span>${n.tag || '📰'} ${escapeHtml(n.categoria || 'Geral')}</span><span>👁️ ${n.visualizacoes || 0}</span></div>
+        
+        // Renderizar notícias
+        container.innerHTML = `
+            <div class="noticias-header">
+                <div class="noticias-header-left">
+                    <h2 class="noticias-titulo">
+                        <i class="fas fa-newspaper" style="color: var(--primary);"></i> 
+                        Últimas do Nordeste
+                    </h2>
+                    <p class="noticias-subtitulo">
+                        📍 Notícias do Ceará, Bahia, Pernambuco e mais
+                    </p>
+                </div>
+                <div class="noticias-header-right">
+                    <span class="noticias-badge">
+                        <i class="fas fa-sync-alt"></i> Ao vivo
+                    </span>
+                    <button class="btn-refresh" onclick="carregarNoticias()" title="Atualizar notícias">
+                        <i class="fas fa-redo-alt"></i>
+                    </button>
                 </div>
             </div>
-        `).join('')}</div>`;
+            
+            <div class="noticias-grid">
+                ${noticias.map(noticia => `
+                    <div class="news-card" onclick="abrirNoticiaCompleta('${escapeHtml(noticia.url)}', '${escapeHtml(noticia.titulo || noticia.title)}', '${escapeHtml(noticia.imagem || noticia.image || '')}', '${escapeHtml(noticia.conteudo || noticia.content || noticia.resumo || '')}', '${escapeHtml(noticia.estado || 'Nordeste')}')">
+                        <div class="news-image">
+                            <img src="${noticia.imagem || noticia.image || 'https://placehold.co/800x400?text=NE+Conecta'}" 
+                                 onerror="this.src='https://placehold.co/800x400?text=NE+Conecta'" 
+                                 alt="${escapeHtml(noticia.titulo || noticia.title)}">
+                            <span class="news-state-badge">${noticia.sigla || noticia.estado?.substring(0, 2) || 'NE'}</span>
+                        </div>
+                        <div class="news-info">
+                            <div class="news-title">${escapeHtml((noticia.titulo || noticia.title || '').substring(0, 100))}${(noticia.titulo || noticia.title || '').length > 100 ? '...' : ''}</div>
+                            <div class="news-meta">
+                                <span><i class="fas fa-map-marker-alt"></i> ${escapeHtml(noticia.estado || 'Nordeste')}</span>
+                                <span><i class="far fa-clock"></i> ${formatarData(noticia.data || noticia.createdAt || new Date())}</span>
+                            </div>
+                            <div class="news-resumo">${escapeHtml((noticia.resumo || '').substring(0, 120))}${(noticia.resumo || '').length > 120 ? '...' : ''}</div>
+                        </div>
+                    </div>
+                `).join('')}
+            </div>
+            
+            <div class="noticias-footer">
+                <p class="noticias-footer-text">
+                    <i class="fas fa-database"></i> 
+                    Fonte: G1 • Atualizado automaticamente
+                </p>
+            </div>
+        `;
+        
+    } catch (error) {
+        console.error('❌ Erro ao carregar notícias:', error);
+        container.innerHTML = `
+            <div class="noticias-error">
+                <i class="fas fa-exclamation-triangle" style="font-size: 48px; color: #ef4444; margin-bottom: 16px; display: block;"></i>
+                <h3>⚠️ Erro ao carregar notícias</h3>
+                <p style="color: var(--text2); margin-bottom: 16px;">${error.message || 'Verifique sua conexão com a internet'}</p>
+                <button class="btn-primary" onclick="carregarNoticias()">
+                    <i class="fas fa-sync-alt"></i> Tentar novamente
+                </button>
+            </div>`;
     }
+}
+
+// Função para abrir notícia completa (sem sair do site)
+function abrirNoticiaCompleta(url, titulo, imagem, conteudo, estado) {
+    // Se não tem conteúdo, tenta buscar da URL
+    if (!conteudo || conteudo.length < 50) {
+        Swal.fire({
+            title: 'Carregando notícia...',
+            text: 'Buscando conteúdo completo',
+            allowOutsideClick: false,
+            didOpen: () => Swal.showLoading()
+        });
+        
+        // Buscar conteúdo da notícia
+        fetch(`${API_URL}/api/noticia/detalhes`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ url: url })
+        })
+        .then(res => res.json())
+        .then(data => {
+            Swal.close();
+            mostrarModalNoticia(titulo, imagem, data.conteudo || conteudo, estado, url);
+        })
+        .catch(() => {
+            Swal.close();
+            mostrarModalNoticia(titulo, imagem, conteudo, estado, url);
+        });
+    } else {
+        mostrarModalNoticia(titulo, imagem, conteudo, estado, url);
+    }
+}
+
+function mostrarModalNoticia(titulo, imagem, conteudo, estado, url) {
+    Swal.fire({
+        title: titulo,
+        html: `
+            <div class="noticia-modal-content" style="text-align: left; max-height: 70vh; overflow-y: auto;">
+                <img src="${imagem}" 
+                     style="width: 100%; border-radius: 16px; margin-bottom: 16px;" 
+                     onerror="this.style.display='none'">
+                
+                <div style="margin-bottom: 16px; display: flex; gap: 8px; flex-wrap: wrap;">
+                    <span style="background: var(--primary); color: white; padding: 4px 12px; border-radius: 20px; font-size: 11px; font-weight: 600;">
+                        <i class="fas fa-map-marker-alt"></i> ${escapeHtml(estado)}
+                    </span>
+                    <span style="background: rgba(0,0,0,0.05); padding: 4px 12px; border-radius: 20px; font-size: 11px; font-weight: 600;">
+                        <i class="fas fa-newspaper"></i> G1
+                    </span>
+                </div>
+                
+                <div class="noticia-conteudo" style="font-size: 14px; line-height: 1.6; color: var(--text-color);">
+                    ${escapeHtml(conteudo || 'Conteúdo não disponível').replace(/\n/g, '<br>')}
+                </div>
+                
+                <div style="margin-top: 20px; padding-top: 16px; border-top: 1px solid var(--border); text-align: center;">
+                    <a href="${url}" target="_blank" style="color: var(--primary); text-decoration: none; font-weight: 600; display: inline-flex; align-items: center; gap: 8px;">
+                        <i class="fas fa-external-link-alt"></i> Ler matéria completa no G1
+                    </a>
+                </div>
+            </div>
+        `,
+        showConfirmButton: false,
+        showCancelButton: true,
+        cancelButtonText: 'Fechar',
+        cancelButtonColor: '#4b5563',
+        width: '650px',
+        customClass: {
+            popup: 'noticia-completa-modal'
+        }
+    });
+}
 
     function abrirNoticiaModal(id) {
         const n = noticias.find(n => n.id === id);
@@ -6784,6 +7267,7 @@ function mudarSecao(section) {
     
     currentSection = section;
     
+    // Atualizar classes ativas nos menus
     document.querySelectorAll('.menu a').forEach(a => a.classList.remove('active'));
     const menuLink = document.querySelector(`.menu a[data-section="${section}"]`);
     if (menuLink) menuLink.classList.add('active');
@@ -6792,35 +7276,50 @@ function mudarSecao(section) {
     const bottomLink = document.querySelector(`.bottom-nav-item[data-section="${section}"]`);
     if (bottomLink) bottomLink.classList.add('active');
     
-// Esconde todas
-document.getElementById('feedCentral').style.display = 'none';
-document.getElementById('vagasContainer').style.display = 'none';
-document.getElementById('noticiasContainer').style.display = 'none';
-document.getElementById('perfilContainer').style.display = 'none';
-document.getElementById('chatLayout').style.display = 'none';
-document.getElementById('radioPageContainer').style.display = 'none';
-document.getElementById('watchContainer').style.display = 'none'; // ← Adicione esta linha
+    // Esconder todas as seções
+    document.getElementById('feedCentral').style.display = 'none';
+    document.getElementById('vagasContainer').style.display = 'none';
+    document.getElementById('noticiasContainer').style.display = 'none';
+    document.getElementById('perfilContainer').style.display = 'none';
+    document.getElementById('chatLayout').style.display = 'none';
+    document.getElementById('radioPageContainer').style.display = 'none';
+    document.getElementById('watchContainer').style.display = 'none';
     
+    // Mostrar seção selecionada
     switch(section) {
-        case 'feed': document.getElementById('feedCentral').style.display = 'block'; break;
-        case 'empregos': document.getElementById('vagasContainer').style.display = 'block'; break;
-        case 'noticias': document.getElementById('noticiasContainer').style.display = 'block'; break;
-        case 'perfil': document.getElementById('perfilContainer').style.display = 'block'; break;
-        case 'chat': document.getElementById('chatLayout').style.display = 'flex'; break;
-        // No switch do mudarSecao:
-case 'watch': 
-    document.getElementById('watchContainer').style.display = 'block'; 
-    carregarWatchRooms(); 
-    break;
-        case 'radio': document.getElementById('radioPageContainer').style.display = 'block'; carregarRadioPage(); break; // ← NOVO
+        case 'feed': 
+            document.getElementById('feedCentral').style.display = 'block'; 
+            break;
+        case 'empregos': 
+            document.getElementById('vagasContainer').style.display = 'block'; 
+            break;
+        case 'noticias': 
+            document.getElementById('noticiasContainer').style.display = 'block'; 
+            carregarNoticias(); // ← CARREGAR NOTÍCIAS AUTOMATICAMENTE
+            break;
+        case 'perfil': 
+            document.getElementById('perfilContainer').style.display = 'block'; 
+            renderizarPerfil();
+            break;
+        case 'chat': 
+            document.getElementById('chatLayout').style.display = 'flex'; 
+            carregarChat();
+            break;
+        case 'watch': 
+            document.getElementById('watchContainer').style.display = 'block'; 
+            carregarWatchRooms(); 
+            break;
+        case 'radio': 
+            document.getElementById('radioPageContainer').style.display = 'block'; 
+            carregarRadioPage(); 
+            break;
     }
     
+    // Responsivo
     if (window.innerWidth <= 1024) {
         const sidebar = document.querySelector('.sidebar-right');
         if (sidebar) sidebar.style.display = 'none';
     }
-    
-    carregarFeedCompleto();
     
     if (window.innerWidth <= 768) {
         document.getElementById('mainMenu')?.classList.remove('show');

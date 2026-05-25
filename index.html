@@ -2824,6 +2824,62 @@ body.light-mode .watch-empty-title { color: #111; }
         height: 150px;
     }
 }
+/* Filtros de região */
+.noticias-filtros {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    align-items: center;
+}
+
+.filtro-btn {
+    background: var(--card);
+    border: 1px solid var(--border);
+    padding: 8px 14px;
+    border-radius: 30px;
+    font-size: 12px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+    color: var(--text-color);
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.filtro-btn:hover {
+    background: var(--primary);
+    color: white;
+    border-color: var(--primary);
+    transform: translateY(-2px);
+}
+
+.filtro-btn.active {
+    background: var(--primary);
+    color: white;
+    border-color: var(--primary);
+}
+
+/* Badges por região */
+.news-state-badge.nordeste {
+    background: linear-gradient(135deg, #2563eb, #7c4dff);
+}
+
+.news-state-badge.norte {
+    background: linear-gradient(135deg, #10b981, #059669);
+}
+
+.news-state-badge.sudeste {
+    background: linear-gradient(135deg, #f59e0b, #d97706);
+}
+
+.news-state-badge.sul {
+    background: linear-gradient(135deg, #ec4899, #db2777);
+}
+
+.news-state-badge.centro-oeste {
+    background: linear-gradient(135deg, #ef4444, #dc2626);
+}
 </style>
 </head>
 <body>
@@ -6631,209 +6687,468 @@ async function enviarVaga() {
         Swal.fire('✅ Sucesso!', `Candidatura enviada para ${selectedVaga?.empresa}! Boa sorte! 🍀`, 'success');
         fecharModal();
     }
+// ==================== NOTÍCIAS OTIMIZADAS (MAIS RÁPIDAS) ====================
+// ==================== NOTÍCIAS OTIMIZADAS (5 POR ESTADO) ====================
 
-    // ==================== NOTÍCIAS ====================
-    
-// ==================== NOTÍCIAS DO G1 (AUTOMÁTICO DO SEU BOT) ====================
+// Estados do Nordeste
+// ==================== NOTÍCIAS COM PAGINAÇÃO (MAIS RÁPIDO) ====================
+// ==================== NOTÍCIAS SIMPLIFICADAS (RÁPIDAS) ====================
+// ==================== NOTÍCIAS COM CACHE LOCAL E IMAGENS ====================
+
+// Estados do Nordeste
+const ESTADOS_NORDESTE = [
+    { key: 'ceara', nome: 'Ceará', sigla: 'CE' },
+    { key: 'bahia', nome: 'Bahia', sigla: 'BA' },
+    { key: 'pernambuco', nome: 'Pernambuco', sigla: 'PE' },
+    { key: 'maranhao', nome: 'Maranhão', sigla: 'MA' },
+    { key: 'paraiba', nome: 'Paraíba', sigla: 'PB' },
+    { key: 'piaui', nome: 'Piauí', sigla: 'PI' },
+    { key: 'rioGrandeDoNorte', nome: 'Rio Grande do Norte', sigla: 'RN' },
+    { key: 'sergipe', nome: 'Sergipe', sigla: 'SE' },
+    { key: 'alagoas', nome: 'Alagoas', sigla: 'AL' }
+];
+
+// Cache no localStorage
+const CACHE_KEY = 'neconecta_noticias_cache';
+const CACHE_EXPIRY = 30 * 60 * 1000; // 30 minutos
+
+let todasNoticiasCache = [];
+let carregandoImagens = false;
 
 async function carregarNoticias() {
     const container = document.getElementById('noticiasContainer');
-    
     if (!container) return;
     
-    // Mostrar loading com estilo melhorado
-    container.innerHTML = `
-        <div class="noticias-loading">
-            <div class="loading-spinner">
-                <div class="spinner"></div>
-                <p><i class="fas fa-newspaper"></i> Buscando últimas notícias do Nordeste...</p>
-                <p style="font-size: 11px; color: var(--text2); margin-top: 8px;">
-                    🔄 Notícias atualizadas automaticamente do G1
-                </p>
-            </div>
-        </div>`;
+    // Tentar carregar do cache primeiro
+    const cache = localStorage.getItem(CACHE_KEY);
+    let noticiasDoCache = null;
     
-    try {
-        // Tenta buscar do seu servidor primeiro
-        let noticias = [];
-        let fonte = 'cache';
-        
-        // Tentativa 1: Buscar do endpoint do seu servidor
+    if (cache) {
         try {
-            const response = await fetch(`${API_URL}/api/noticias/nordeste`);
-            if (response.ok) {
-                const data = await response.json();
-                noticias = data.noticias || [];
-                fonte = 'servidor';
-                console.log('✅ Notícias carregadas do servidor:', noticias.length);
+            const dados = JSON.parse(cache);
+            if (Date.now() - dados.timestamp < CACHE_EXPIRY) {
+                noticiasDoCache = dados.noticias;
+                todasNoticiasCache = noticiasDoCache;
+                console.log('📦 Notícias carregadas do cache local:', todasNoticiasCache.length);
             }
-        } catch (error) {
-            console.log('⚠️ Erro ao buscar do servidor, tentando cache local...');
-        }
+        } catch (e) {}
+    }
+    
+    if (noticiasDoCache && noticiasDoCache.length > 0) {
+        // Mostrar do cache imediatamente
+        renderizarNoticias();
         
-        // Se não conseguiu do servidor, tenta do cache local do bot
-        if (noticias.length === 0) {
-            try {
-                const response = await fetch(`${API_URL}/cliente06/noticias/cache`);
-                if (response.ok) {
-                    const data = await response.json();
-                    noticias = data;
-                    fonte = 'cache';
-                }
-            } catch (error) {
-                console.log('⚠️ Erro no cache local');
-            }
-        }
-        
-        // Se ainda não tem notícias, mostra notícias de exemplo ou mensagem
-        if (noticias.length === 0) {
-            container.innerHTML = `
-                <div class="noticias-empty">
-                    <i class="fas fa-newspaper" style="font-size: 48px; color: var(--primary); margin-bottom: 16px; display: block;"></i>
-                    <h3 style="margin-bottom: 8px;">📰 Nenhuma notícia no momento</h3>
-                    <p style="color: var(--text2);">As notícias serão carregadas automaticamente em breve.</p>
-                    <button class="btn-primary" onclick="carregarNoticias()" style="margin-top: 20px;">
-                        <i class="fas fa-sync-alt"></i> Tentar novamente
-                    </button>
-                </div>`;
-            return;
-        }
-        
-        // Renderizar notícias
+        // Atualizar em segundo plano
+        atualizarNoticiasBackground();
+    } else {
+        // Mostrar loading
         container.innerHTML = `
-            <div class="noticias-header">
-                <div class="noticias-header-left">
-                    <h2 class="noticias-titulo">
-                        <i class="fas fa-newspaper" style="color: var(--primary);"></i> 
-                        Últimas do Nordeste
-                    </h2>
-                    <p class="noticias-subtitulo">
-                        📍 Notícias do Ceará, Bahia, Pernambuco e mais
-                    </p>
+            <div class="noticias-loading">
+                <div class="loading-spinner">
+                    <div class="spinner"></div>
+                    <p>📰 Carregando notícias do Nordeste...</p>
                 </div>
-                <div class="noticias-header-right">
-                    <span class="noticias-badge">
-                        <i class="fas fa-sync-alt"></i> Ao vivo
-                    </span>
-                    <button class="btn-refresh" onclick="carregarNoticias()" title="Atualizar notícias">
-                        <i class="fas fa-redo-alt"></i>
-                    </button>
-                </div>
-            </div>
-            
-            <div class="noticias-grid">
-                ${noticias.map(noticia => `
-                    <div class="news-card" onclick="abrirNoticiaCompleta('${escapeHtml(noticia.url)}', '${escapeHtml(noticia.titulo || noticia.title)}', '${escapeHtml(noticia.imagem || noticia.image || '')}', '${escapeHtml(noticia.conteudo || noticia.content || noticia.resumo || '')}', '${escapeHtml(noticia.estado || 'Nordeste')}')">
-                        <div class="news-image">
-                            <img src="${noticia.imagem || noticia.image || 'https://placehold.co/800x400?text=NE+Conecta'}" 
-                                 onerror="this.src='https://placehold.co/800x400?text=NE+Conecta'" 
-                                 alt="${escapeHtml(noticia.titulo || noticia.title)}">
-                            <span class="news-state-badge">${noticia.sigla || noticia.estado?.substring(0, 2) || 'NE'}</span>
-                        </div>
-                        <div class="news-info">
-                            <div class="news-title">${escapeHtml((noticia.titulo || noticia.title || '').substring(0, 100))}${(noticia.titulo || noticia.title || '').length > 100 ? '...' : ''}</div>
-                            <div class="news-meta">
-                                <span><i class="fas fa-map-marker-alt"></i> ${escapeHtml(noticia.estado || 'Nordeste')}</span>
-                                <span><i class="far fa-clock"></i> ${formatarData(noticia.data || noticia.createdAt || new Date())}</span>
-                            </div>
-                            <div class="news-resumo">${escapeHtml((noticia.resumo || '').substring(0, 120))}${(noticia.resumo || '').length > 120 ? '...' : ''}</div>
-                        </div>
-                    </div>
-                `).join('')}
-            </div>
-            
-            <div class="noticias-footer">
-                <p class="noticias-footer-text">
-                    <i class="fas fa-database"></i> 
-                    Fonte: G1 • Atualizado automaticamente
-                </p>
-            </div>
-        `;
-        
-    } catch (error) {
-        console.error('❌ Erro ao carregar notícias:', error);
-        container.innerHTML = `
-            <div class="noticias-error">
-                <i class="fas fa-exclamation-triangle" style="font-size: 48px; color: #ef4444; margin-bottom: 16px; display: block;"></i>
-                <h3>⚠️ Erro ao carregar notícias</h3>
-                <p style="color: var(--text2); margin-bottom: 16px;">${error.message || 'Verifique sua conexão com a internet'}</p>
-                <button class="btn-primary" onclick="carregarNoticias()">
-                    <i class="fas fa-sync-alt"></i> Tentar novamente
-                </button>
             </div>`;
+        
+        // Buscar notícias
+        await buscarNoticias();
     }
 }
 
-// Função para abrir notícia completa (sem sair do site)
-function abrirNoticiaCompleta(url, titulo, imagem, conteudo, estado) {
-    // Se não tem conteúdo, tenta buscar da URL
-    if (!conteudo || conteudo.length < 50) {
-        Swal.fire({
-            title: 'Carregando notícia...',
-            text: 'Buscando conteúdo completo',
-            allowOutsideClick: false,
-            didOpen: () => Swal.showLoading()
-        });
+async function buscarNoticias() {
+    try {
+        let todasNoticias = [];
         
-        // Buscar conteúdo da notícia
-        fetch(`${API_URL}/api/noticia/detalhes`, {
+        // Buscar cada estado
+        for (const estado of ESTADOS_NORDESTE) {
+            try {
+                const response = await fetch(`${API_URL}/cache/estados/${estado.key}.json`);
+                if (response.ok) {
+                    const data = await response.json();
+                    const noticias = data.noticiasEnviadas || [];
+                    
+                    for (const link of noticias.slice(-5)) {
+                        todasNoticias.push({
+                            url: link,
+                            titulo: extrairTituloDaUrl(link),
+                            estado: estado.nome,
+                            sigla: estado.sigla,
+                            data: data.ultimaSincronizacao,
+                            timestamp: new Date(data.ultimaSincronizacao).getTime(),
+                            imagem: null,
+                            resumo: null
+                        });
+                    }
+                }
+            } catch (error) {
+                console.log(`⚠️ Erro em ${estado.nome}`);
+            }
+        }
+        
+        // Ordenar por data (mais recentes primeiro)
+        todasNoticias.sort((a, b) => b.timestamp - a.timestamp);
+        todasNoticiasCache = todasNoticias;
+        
+        // Salvar no cache local
+        localStorage.setItem(CACHE_KEY, JSON.stringify({
+            timestamp: Date.now(),
+            noticias: todasNoticias
+        }));
+        
+        // Renderizar
+        renderizarNoticias();
+        
+        // Buscar imagens em background
+        buscarImagensBackground();
+        
+    } catch (error) {
+        console.error('Erro ao buscar notícias:', error);
+        const container = document.getElementById('noticiasContainer');
+        if (container) {
+            container.innerHTML = `
+                <div class="noticias-error">
+                    <i class="fas fa-exclamation-triangle" style="font-size: 48px; color: #ef4444; margin-bottom: 16px; display: block;"></i>
+                    <h3>⚠️ Erro ao carregar notícias</h3>
+                    <button class="btn-primary" onclick="carregarNoticias()">Tentar novamente</button>
+                </div>`;
+        }
+    }
+}
+
+async function atualizarNoticiasBackground() {
+    console.log('🔄 Atualizando notícias em background...');
+    try {
+        let noticiasAtualizadas = [];
+        
+        for (const estado of ESTADOS_NORDESTE) {
+            try {
+                const response = await fetch(`${API_URL}/cache/estados/${estado.key}.json`);
+                if (response.ok) {
+                    const data = await response.json();
+                    const noticias = data.noticiasEnviadas || [];
+                    
+                    for (const link of noticias.slice(-5)) {
+                        // Verificar se já existe
+                        const existe = noticiasAtualizadas.some(n => n.url === link);
+                        if (!existe) {
+                            noticiasAtualizadas.push({
+                                url: link,
+                                titulo: extrairTituloDaUrl(link),
+                                estado: estado.nome,
+                                sigla: estado.sigla,
+                                data: data.ultimaSincronizacao,
+                                timestamp: new Date(data.ultimaSincronizacao).getTime(),
+                                imagem: null,
+                                resumo: null
+                            });
+                        }
+                    }
+                }
+            } catch (error) {}
+        }
+        
+        noticiasAtualizadas.sort((a, b) => b.timestamp - a.timestamp);
+        
+        // Verificar se mudou
+        if (JSON.stringify(noticiasAtualizadas) !== JSON.stringify(todasNoticiasCache)) {
+            console.log('📰 Novas notícias encontradas!');
+            todasNoticiasCache = noticiasAtualizadas;
+            
+            localStorage.setItem(CACHE_KEY, JSON.stringify({
+                timestamp: Date.now(),
+                noticias: todasNoticiasCache
+            }));
+            
+            renderizarNoticias();
+            buscarImagensBackground();
+        }
+    } catch (error) {
+        console.log('Erro na atualização em background:', error);
+    }
+}
+
+async function buscarImagensBackground() {
+    if (carregandoImagens) return;
+    carregandoImagens = true;
+    
+    console.log('🖼️ Buscando imagens das notícias...');
+    
+    // Processa todas as notícias em paralelo (mais rápido)
+    const promessas = [];
+    for (let i = 0; i < todasNoticiasCache.length; i++) {
+        const noticia = todasNoticiasCache[i];
+        
+        // Pular se já tem imagem
+        if (noticia.imagem) {
+            // Se já tem imagem, garante que ela aparece
+            const imgElement = document.getElementById(`news-img-${i}`);
+            if (imgElement && imgElement.src !== noticia.imagem) {
+                imgElement.src = noticia.imagem;
+                imgElement.style.display = 'block';
+                const placeholder = document.getElementById(`news-placeholder-${i}`);
+                if (placeholder) placeholder.style.display = 'none';
+            }
+            continue;
+        }
+        
+        // Criar promessa para buscar imagem em background
+        const promessa = (async (index, not) => {
+            try {
+                const response = await fetch(`${API_URL}/api/noticia/imagem`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ url: not.url })
+                });
+                
+                if (response.ok) {
+                    const data = await response.json();
+                    if (data.imagem) {
+                        not.imagem = data.imagem;
+                        
+                        // Atualizar imagem no card
+                        const imgElement = document.getElementById(`news-img-${index}`);
+                        if (imgElement) {
+                            imgElement.src = data.imagem;
+                            imgElement.style.display = 'block';
+                            const placeholder = document.getElementById(`news-placeholder-${index}`);
+                            if (placeholder) placeholder.style.display = 'none';
+                        }
+                        
+                        // Salvar no cache
+                        localStorage.setItem(CACHE_KEY, JSON.stringify({
+                            timestamp: JSON.parse(localStorage.getItem(CACHE_KEY))?.timestamp || Date.now(),
+                            noticias: todasNoticiasCache
+                        }));
+                    }
+                }
+            } catch (error) {
+                console.log(`Erro ao buscar imagem ${index}:`, error);
+            }
+        })(i, noticia);
+        
+        promessas.push(promessa);
+    }
+    
+    // Aguarda todas as imagens serem buscadas (ou falharem)
+    await Promise.all(promessas);
+    
+    carregandoImagens = false;
+    console.log('✅ Todas as imagens foram processadas');
+}
+
+function renderizarNoticias() {
+    const container = document.getElementById('noticiasContainer');
+    const noticiasMostrar = todasNoticiasCache.slice(0, 15);
+    
+    container.innerHTML = `
+        <div class="noticias-header">
+            <div>
+                <h2 class="noticias-titulo">
+                    <i class="fas fa-newspaper" style="color: var(--primary);"></i> 
+                    Últimas do Nordeste
+                </h2>
+                <p class="noticias-subtitulo">
+                    📍 ${todasNoticiasCache.length} notícias disponíveis
+                </p>
+            </div>
+            <button class="btn-refresh" onclick="carregarNoticias()" title="Atualizar">
+                <i class="fas fa-redo-alt"></i>
+            </button>
+        </div>
+        
+        <div class="noticias-grid">
+            ${noticiasMostrar.map((noticia, index) => `
+                <div class="news-card" onclick="abrirNoticiaCompleta('${noticia.url.replace(/'/g, "\\'")}', '${noticia.estado}')">
+                    <div class="news-image" style="position: relative;">
+                        <!-- Placeholder com ícone enquanto a imagem não carrega -->
+                        <div id="news-placeholder-${index}" style="width: 100%; height: 100%; background: linear-gradient(135deg, #2563eb, #7c4dff); display: flex; align-items: center; justify-content: center;">
+                            <i class="fas fa-newspaper" style="font-size: 42px; color: white; opacity: 0.9;"></i>
+                        </div>
+                        <!-- Imagem SEMPRE será exibida, mesmo sem src inicial -->
+                        <img id="news-img-${index}" src="${noticia.imagem || ''}" 
+                             style="width: 100%; height: 100%; object-fit: cover; position: absolute; top: 0; left: 0;" 
+                             onerror="this.style.display='none'; document.getElementById('news-placeholder-${index}').style.display='flex';">
+                        <span class="news-state-badge">${noticia.sigla}</span>
+                    </div>
+                    <div class="news-info">
+                        <div class="news-title">${escapeHtml(noticia.titulo)}</div>
+                        <div class="news-meta">
+                            <span><i class="fas fa-map-marker-alt"></i> ${noticia.estado}</span>
+                            <span><i class="far fa-clock"></i> ${formatarData(noticia.data)}</span>
+                        </div>
+                        <div class="news-resumo">
+                            📰 Clique para ler a notícia completa
+                        </div>
+                    </div>
+                </div>
+            `).join('')}
+        </div>
+        
+        ${todasNoticiasCache.length > 15 ? `
+            <div class="ver-mais-container" style="text-align: center; margin-top: 20px;">
+                <button class="ver-mais-btn" onclick="carregarMaisNoticias()">
+                    <i class="fas fa-arrow-down"></i> Ver mais notícias (${todasNoticiasCache.length - 15} restantes)
+                </button>
+            </div>
+        ` : ''}
+        
+        <div class="noticias-footer">
+            <p class="noticias-footer-text">
+                <i class="fas fa-database"></i> 
+                Fonte: G1 • Clique na notícia para ler completa
+            </p>
+        </div>
+    `;
+
+    // 🔥 NOVIDADE: Forçar a busca de imagens IMEDIATAMENTE após renderizar
+    buscarImagensBackground();
+}
+
+let noticiasVisiveis = 15;
+function carregarMaisNoticias() {
+    noticiasVisiveis += 10;
+    const container = document.getElementById('noticiasContainer');
+    const noticiasMostrar = todasNoticiasCache.slice(0, noticiasVisiveis);
+    
+    const grid = document.querySelector('#noticiasContainer .noticias-grid');
+    if (grid) {
+        const novasNoticias = noticiasMostrar.slice(-10).map((noticia, idx) => {
+            const globalIndex = todasNoticiasCache.findIndex(n => n.url === noticia.url);
+            return `
+                <div class="news-card" onclick="abrirNoticiaCompleta('${noticia.url.replace(/'/g, "\\'")}', '${noticia.estado}')">
+                    <div class="news-image" style="position: relative;">
+                        <div id="news-placeholder-${globalIndex}" style="width: 100%; height: 100%; background: linear-gradient(135deg, #2563eb, #7c4dff); display: flex; align-items: center; justify-content: center;">
+                            <i class="fas fa-newspaper" style="font-size: 42px; color: white; opacity: 0.9;"></i>
+                        </div>
+                        <img id="news-img-${globalIndex}" src="${noticia.imagem || ''}" style="width: 100%; height: 100%; object-fit: cover; display: ${noticia.imagem ? 'block' : 'none'};" 
+                             onerror="this.style.display='none'; document.getElementById('news-placeholder-${globalIndex}').style.display='flex';">
+                        <span class="news-state-badge">${noticia.sigla}</span>
+                    </div>
+                    <div class="news-info">
+                        <div class="news-title">${escapeHtml(noticia.titulo)}</div>
+                        <div class="news-meta">
+                            <span><i class="fas fa-map-marker-alt"></i> ${noticia.estado}</span>
+                            <span><i class="far fa-clock"></i> ${formatarData(noticia.data)}</span>
+                        </div>
+                        <div class="news-resumo">📰 Clique para ler</div>
+                    </div>
+                </div>
+            `;
+        }).join('');
+        
+        grid.insertAdjacentHTML('beforeend', novasNoticias);
+        
+        if (noticiasVisiveis >= todasNoticiasCache.length) {
+            const btn = document.querySelector('.ver-mais-btn');
+            if (btn) btn.remove();
+        }
+    }
+}
+
+async function abrirNoticiaCompleta(url, estado) {
+    if (!url) return;
+    
+    Swal.fire({
+        title: 'Carregando notícia...',
+        html: `<div class="spinner" style="margin: 0 auto;"></div>`,
+        allowOutsideClick: false,
+        showConfirmButton: false
+    });
+    
+    try {
+        const response = await fetch(`${API_URL}/api/noticia/completa`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ url: url })
-        })
-        .then(res => res.json())
-        .then(data => {
-            Swal.close();
-            mostrarModalNoticia(titulo, imagem, data.conteudo || conteudo, estado, url);
-        })
-        .catch(() => {
-            Swal.close();
-            mostrarModalNoticia(titulo, imagem, conteudo, estado, url);
         });
-    } else {
-        mostrarModalNoticia(titulo, imagem, conteudo, estado, url);
+        
+        const noticia = await response.json();
+        Swal.close();
+        
+        if (noticia.success) {
+            Swal.fire({
+                title: noticia.titulo || 'Notícia G1',
+                html: `
+                    <div style="text-align: left; max-height: 65vh; overflow-y: auto; padding: 4px;">
+                        ${noticia.imagem ? `<img src="${noticia.imagem}" style="width: 100%; border-radius: 16px; margin-bottom: 16px;" onerror="this.style.display='none'">` : ''}
+                        <div style="margin-bottom: 16px; display: flex; gap: 8px; flex-wrap: wrap;">
+                            <span style="background: var(--primary); color: white; padding: 4px 12px; border-radius: 20px; font-size: 11px;">
+                                <i class="fas fa-map-marker-alt"></i> ${escapeHtml(estado)}
+                            </span>
+                            <span style="background: rgba(0,0,0,0.05); padding: 4px 12px; border-radius: 20px; font-size: 11px;">
+                                <i class="fas fa-newspaper"></i> G1
+                            </span>
+                        </div>
+                        <div style="font-size: 14px; line-height: 1.6;">
+                            ${noticia.conteudo}
+                        </div>
+                        <div style="margin-top: 16px; padding-top: 12px; border-top: 1px solid var(--border); text-align: center;">
+                            <a href="${url}" target="_blank" style="color: var(--primary); text-decoration: none; font-size: 12px;">
+                                <i class="fas fa-external-link-alt"></i> Ler matéria original no G1
+                            </a>
+                        </div>
+                    </div>
+                `,
+                showConfirmButton: false,
+                showCancelButton: true,
+                cancelButtonText: 'Fechar',
+                width: '600px'
+            });
+        } else {
+            throw new Error(noticia.error);
+        }
+    } catch (error) {
+        Swal.close();
+        Swal.fire({
+            title: '📰 Erro',
+            text: 'Não foi possível carregar a notícia.',
+            icon: 'error',
+            confirmButtonText: 'OK'
+        });
     }
 }
 
-function mostrarModalNoticia(titulo, imagem, conteudo, estado, url) {
-    Swal.fire({
-        title: titulo,
-        html: `
-            <div class="noticia-modal-content" style="text-align: left; max-height: 70vh; overflow-y: auto;">
-                <img src="${imagem}" 
-                     style="width: 100%; border-radius: 16px; margin-bottom: 16px;" 
-                     onerror="this.style.display='none'">
-                
-                <div style="margin-bottom: 16px; display: flex; gap: 8px; flex-wrap: wrap;">
-                    <span style="background: var(--primary); color: white; padding: 4px 12px; border-radius: 20px; font-size: 11px; font-weight: 600;">
-                        <i class="fas fa-map-marker-alt"></i> ${escapeHtml(estado)}
-                    </span>
-                    <span style="background: rgba(0,0,0,0.05); padding: 4px 12px; border-radius: 20px; font-size: 11px; font-weight: 600;">
-                        <i class="fas fa-newspaper"></i> G1
-                    </span>
-                </div>
-                
-                <div class="noticia-conteudo" style="font-size: 14px; line-height: 1.6; color: var(--text-color);">
-                    ${escapeHtml(conteudo || 'Conteúdo não disponível').replace(/\n/g, '<br>')}
-                </div>
-                
-                <div style="margin-top: 20px; padding-top: 16px; border-top: 1px solid var(--border); text-align: center;">
-                    <a href="${url}" target="_blank" style="color: var(--primary); text-decoration: none; font-weight: 600; display: inline-flex; align-items: center; gap: 8px;">
-                        <i class="fas fa-external-link-alt"></i> Ler matéria completa no G1
-                    </a>
-                </div>
-            </div>
-        `,
-        showConfirmButton: false,
-        showCancelButton: true,
-        cancelButtonText: 'Fechar',
-        cancelButtonColor: '#4b5563',
-        width: '650px',
-        customClass: {
-            popup: 'noticia-completa-modal'
-        }
-    });
+function extrairTituloDaUrl(url) {
+    try {
+        let titulo = url.split('/').pop().replace('.ghtml', '').replace(/-/g, ' ');
+        titulo = decodeURIComponent(titulo);
+        titulo = titulo.split(' ').map(word => 
+            word.charAt(0).toUpperCase() + word.slice(1)
+        ).join(' ');
+        if (titulo.length > 80) titulo = titulo.substring(0, 77) + '...';
+        return titulo;
+    } catch (error) {
+        return 'Notícia do G1';
+    }
 }
+
+// CSS adicional para o botão ver mais
+const style = document.createElement('style');
+style.textContent = `
+    .ver-mais-btn {
+        background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+        border: none;
+        padding: 12px 24px;
+        border-radius: 40px;
+        color: white;
+        font-weight: 700;
+        font-size: 14px;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        display: inline-flex;
+        align-items: center;
+        gap: 10px;
+    }
+    .ver-mais-btn:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 5px 15px rgba(37, 99, 235, 0.3);
+    }
+    .ver-mais-container {
+        text-align: center;
+        margin: 20px 0;
+    }
+`;
+document.head.appendChild(style);
 
     function abrirNoticiaModal(id) {
         const n = noticias.find(n => n.id === id);

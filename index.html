@@ -7527,7 +7527,12 @@ async function abrirNoticiaCompleta(url, estado) {
     
     if (noticiaCache && noticiaCache.conteudoCompleto) {
         // Gerar link único do site para esta notícia
-        const siteLink = `${window.location.origin}${window.location.pathname}?noticia=${encodeURIComponent(url)}`;
+// Gera um ID único para a notícia baseado na URL
+const noticiaId = btoa(url).substring(0, 30).replace(/[^a-zA-Z0-9]/g, '');
+const siteLink = `${window.location.origin}${window.location.pathname}?n=${noticiaId}`;
+
+// Salva a URL original no sessionStorage para recuperar depois
+sessionStorage.setItem(`noticia_${noticiaId}`, url);
         
         // Formata a data de publicação
         const dataPublicacao = noticiaCache.data ? new Date(noticiaCache.data).toLocaleDateString('pt-BR', {
@@ -7769,15 +7774,33 @@ function copiarLinkNoticiaSite(link) {
 
 function abrirNoticiaPorLink() {
     const urlParams = new URLSearchParams(window.location.search);
-    const noticiaUrl = urlParams.get('noticia');
+    const noticiaId = urlParams.get('n');
     
-    if (noticiaUrl) {
-        setTimeout(() => {
-            mudarSecao('noticias');
+    if (noticiaId) {
+        // Recupera a URL original
+        const noticiaUrl = sessionStorage.getItem(`noticia_${noticiaId}`);
+        
+        if (noticiaUrl) {
+            // Remove o parâmetro da URL sem recarregar a página
+            const newUrl = window.location.pathname;
+            window.history.replaceState({}, '', newUrl);
+            
+            // Aguarda o DOM carregar e a seção de notícias estar pronta
             setTimeout(() => {
-                abrirNoticiaCompleta(noticiaUrl, '');
-            }, 800);
-        }, 500);
+                // Garante que estamos na seção de notícias
+                if (currentSection !== 'noticias') {
+                    mudarSecao('noticias');
+                    // Aguarda a seção carregar
+                    setTimeout(() => {
+                        abrirNoticiaCompleta(noticiaUrl, '');
+                    }, 800);
+                } else {
+                    abrirNoticiaCompleta(noticiaUrl, '');
+                }
+            }, 500);
+        } else {
+            console.log('Notícia não encontrada no cache');
+        }
     }
 }
 
@@ -8575,30 +8598,39 @@ function verificarSalaWatchNaUrl() {
     function inicializar() {
     console.log('🚀 Inicializando NE Conecta...');
     
-    // 1. Configura o tema
     initTheme();
-    initRadio()
+    initRadio();
     loadYouTubeAPI();
-    // 2. Tenta restaurar a sessão
-    const sessaoRestaurada = restaurarSessao();
     
+    const sessaoRestaurada = restaurarSessao();
     
     if (sessaoRestaurada) {
         console.log('✅ Sessão restaurada!');
     }
     
-    // 3. Configura o Firebase
     initAuth();
+    
+    // Verificar se há sala na URL (watch party)
     verificarSalaWatchNaUrl();
+    
+    // Verificar se há post na URL
+    verificarPostNaUrl();
+    
+    // Verificar se há notícia na URL (apenas se não for watch ou post)
+    const urlParams = new URLSearchParams(window.location.search);
+    const isWatch = urlParams.has('watch');
+    const isPost = urlParams.has('post');
+    const isNoticia = urlParams.has('n');
+    
+    if (isNoticia && !isWatch && !isPost) {
+        setTimeout(abrirNoticiaPorLink, 1000);
+    }
+    
     setTimeout(verificarNotificacoes, 2000);
-    // 4. Carrega o feed inicial
+    
     if (!sessaoRestaurada) {
         carregarPosts();
     }
-    
-    // 5. Verificar se há post na URL para scrollar até ele
-    verificarPostNaUrl();
-    abrirNoticiaPorLink()
     
     console.log('✅ Sistema inicializado!');
 }

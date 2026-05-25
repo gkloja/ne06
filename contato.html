@@ -1,0 +1,250 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NE Conecta | Contato e FAQ</title>
+    <meta name="description" content="Entre em contato com o criador do NE Conecta, tire dúvidas e veja perguntas frequentes.">
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <style>
+        /* mesmo estilo base */
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            background: #0A0A0A;
+            color: #F5F5F5;
+            transition: background 0.3s, color 0.3s;
+        }
+        body.light-mode {
+            background: #FFFFFF;
+            color: #111111;
+        }
+        :root {
+            --primary: #2563eb;
+            --border: #333333;
+            --card: #1A1A1A;
+            --text2: #A0A0A0;
+        }
+        .container { max-width: 900px; margin: 0 auto; padding: 0 20px; }
+        .navbar {
+            background: rgba(10,10,10,0.97);
+            backdrop-filter: blur(20px);
+            padding: 12px 0;
+            border-bottom: 1px solid rgba(255,255,255,0.08);
+        }
+        body.light-mode .navbar {
+            background: rgba(255,255,255,0.97);
+            border-bottom: 2px solid #111;
+        }
+        .nav-content {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            max-width: 1280px;
+            margin: 0 auto;
+            padding: 0 16px;
+        }
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            cursor: pointer;
+        }
+        .logo img {
+            width: 42px;
+            height: 42px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 2px solid var(--primary);
+        }
+        .logo h1 { font-size: 18px; font-weight: 800; }
+        .logo span { color: var(--primary); }
+        .back-link { color: var(--primary); text-decoration: none; font-weight: 600; }
+        .main-card {
+            background: var(--card);
+            border-radius: 24px;
+            padding: 32px;
+            margin: 40px 0;
+            border: 1px solid var(--border);
+        }
+        body.light-mode .main-card { background: #FFFFFF; }
+        h1 { font-size: 28px; margin-bottom: 8px; }
+        h2 { font-size: 20px; margin: 24px 0 12px; color: var(--primary); }
+        p, li { line-height: 1.6; margin-bottom: 12px; color: var(--text2); }
+        body.light-mode p, body.light-mode li { color: #444; }
+        .contact-buttons {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 16px;
+            margin: 24px 0;
+        }
+        .contact-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            background: var(--primary);
+            color: white;
+            padding: 12px 24px;
+            border-radius: 40px;
+            text-decoration: none;
+            font-weight: 700;
+            transition: transform 0.2s;
+        }
+        .contact-btn:hover { transform: translateY(-2px); }
+        .whatsapp-btn { background: #25D366; }
+        .faq-item {
+            margin-bottom: 20px;
+            border-bottom: 1px solid var(--border);
+            padding-bottom: 12px;
+        }
+        .faq-question {
+            font-weight: 700;
+            font-size: 16px;
+            cursor: pointer;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .faq-answer {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.3s ease;
+            margin-top: 8px;
+            padding-left: 16px;
+            border-left: 2px solid var(--primary);
+        }
+        .faq-item.open .faq-answer {
+            max-height: 300px;
+        }
+        .footer { background: #0A0A0A; border-top: 1px solid var(--border); padding: 32px 0 16px; text-align: center; }
+        @media (max-width: 768px) {
+            .main-card { padding: 20px; margin: 20px; }
+            h1 { font-size: 24px; }
+        }
+    </style>
+</head>
+<body>
+<nav class="navbar">
+    <div class="nav-content">
+        <div class="logo" onclick="window.location.href='/'">
+            <img src="/IMG-20260523-WA0031.jpg" alt="NE Conecta">
+            <h1>NE<span> Conecta</span></h1>
+        </div>
+        <a href="/" class="back-link"><i class="fas fa-arrow-left"></i> Voltar</a>
+    </div>
+</nav>
+
+<div class="container">
+    <div class="main-card">
+        <h1><i class="fas fa-headset"></i> Contato e FAQ</h1>
+        <p>Precisa de ajuda, tem uma sugestão ou deseja anunciar? Fale diretamente com o criador.</p>
+        
+        <div class="contact-buttons">
+            <a href="https://wa.me/5521989047220" target="_blank" class="contact-btn whatsapp-btn">
+                <i class="fab fa-whatsapp fa-lg"></i> WhatsApp (21) 98904-7220
+            </a>
+            <a href="mailto:contato@neconecta.com.br" class="contact-btn">
+                <i class="fas fa-envelope"></i> E-mail
+            </a>
+        </div>
+        
+        <h2>📌 Perguntas Frequentes (FAQ)</h2>
+        
+        <div class="faq-item">
+            <div class="faq-question" onclick="toggleFaq(this)">
+                <span>❓ Como faço para postar uma vaga de emprego?</span>
+                <i class="fas fa-chevron-down"></i>
+            </div>
+            <div class="faq-answer">
+                <p>Acesse a seção "Empregos" e clique no botão "Enviar Vaga". Preencha os dados e aguarde a aprovação. Sua vaga será analisada rapidamente.</p>
+            </div>
+        </div>
+        
+        <div class="faq-item">
+            <div class="faq-question" onclick="toggleFaq(this)">
+                <span>❓ Posso publicar anonimamente?</span>
+                <i class="fas fa-chevron-down"></i>
+            </div>
+            <div class="faq-answer">
+                <p>Sim! No momento de criar uma publicação, marque a opção "Publicar anonimamente". Seu nome não será exibido, mas a moderação ainda se aplica.</p>
+            </div>
+        </div>
+        
+        <div class="faq-item">
+            <div class="faq-question" onclick="toggleFaq(this)">
+                <span>❓ Como ganho XP e subo de nível?</span>
+                <i class="fas fa-chevron-down"></i>
+            </div>
+            <div class="faq-answer">
+                <p>Você ganha XP ao: criar posts (10 XP), receber curtidas (2 XP por curtida), comentar (5 XP) e ganhar seguidores (15 XP por seguidor). Acesse seu perfil para ver o progresso.</p>
+            </div>
+        </div>
+        
+        <div class="faq-item">
+            <div class="faq-question" onclick="toggleFaq(this)">
+                <span>❓ O NE Conecta é gratuito?</span>
+                <i class="fas fa-chevron-down"></i>
+            </div>
+            <div class="faq-answer">
+                <p>Sim, 100% gratuito. Não cobramos nada para usar a plataforma. Futuramente poderemos ter recursos opcionais pagos, mas o essencial sempre será livre.</p>
+            </div>
+        </div>
+        
+        <div class="faq-item">
+            <div class="faq-question" onclick="toggleFaq(this)">
+                <span>❓ Como denunciar um conteúdo impróprio?</span>
+                <i class="fas fa-chevron-down"></i>
+            </div>
+            <div class="faq-answer">
+                <p>Em qualquer postagem, clique no ícone de três pontinhos (⋯) e selecione "Denunciar". Nossa equipe analisará e tomará as medidas cabíveis.</p>
+            </div>
+        </div>
+        
+        <div class="faq-item">
+            <div class="faq-question" onclick="toggleFaq(this)">
+                <span>❓ Meus dados estão seguros?</span>
+                <i class="fas fa-chevron-down"></i>
+            </div>
+            <div class="faq-answer">
+                <p>Sim. Seguimos a LGPD e armazenamos seus dados no Firebase com altos padrões de segurança. Leia nossa <a href="/privacidade.html">Política de Privacidade</a> para mais detalhes.</p>
+            </div>
+        </div>
+        
+        <div class="faq-item">
+            <div class="faq-question" onclick="toggleFaq(this)">
+                <span>❓ Posso excluir minha conta?</span>
+                <i class="fas fa-chevron-down"></i>
+            </div>
+            <div class="faq-answer">
+                <p>Sim. Entre em contato pelo WhatsApp ou e-mail solicitando a exclusão. Seus dados serão removidos em até 30 dias.</p>
+            </div>
+        </div>
+        
+        <p style="margin-top: 32px; font-size: 12px; text-align: center;">Atendimento de segunda a sexta, 9h às 18h. Respondemos em até 24h úteis.</p>
+    </div>
+</div>
+
+<footer class="footer">
+    <div class="container">
+        <p>NE Conecta • <a href="/sobre.html" style="color: var(--primary);">Sobre</a> • <a href="/termos.html" style="color: var(--primary);">Termos</a> • <a href="/privacidade.html" style="color: var(--primary);">Privacidade</a></p>
+    </div>
+</footer>
+
+<script>
+    const savedTheme = localStorage.getItem('theme');
+    if (savedTheme === 'light') document.body.classList.add('light-mode');
+
+    function toggleFaq(element) {
+        const faqItem = element.closest('.faq-item');
+        faqItem.classList.toggle('open');
+        const icon = element.querySelector('i');
+        if (faqItem.classList.contains('open')) {
+            icon.style.transform = 'rotate(180deg)';
+        } else {
+            icon.style.transform = 'rotate(0deg)';
+        }
+    }
+</script>
+</body>
+</html>

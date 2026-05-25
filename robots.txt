@@ -1,0 +1,14 @@
+# Permite todos os robôs de busca
+User-agent: *
+Allow: /
+
+# Bloqueia pastas desnecessárias (se existirem)
+Disallow: /admin/
+Disallow: /private/
+Disallow: /tmp/
+
+# Indica a localização do sitemap XML
+Sitemap: https://neconecta.onrender.com/sitemap.xml
+
+# Atraso entre requisições (gentileza com o servidor)
+Crawl-delay: 1

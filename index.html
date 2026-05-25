@@ -7518,21 +7518,33 @@ function pararAudioNoticia() {
         audioNoticiaAtiva = false;
     }
 }
+// ==================== NOTÍCIAS CORRIGIDAS (COMPARTILHAMENTO) ====================
 
+// Função corrigida para gerar link seguro da notícia
+function gerarLinkNoticia(urlOriginal) {
+    // Criar um ID simples baseado na URL (removendo caracteres especiais)
+    let id = urlOriginal.replace(/[^a-zA-Z0-9]/g, '').substring(0, 30);
+    // Adicionar timestamp para garantir unicidade
+    id = id + Date.now().toString().substring(8);
+    return `${window.location.origin}${window.location.pathname}?n=${id}`;
+}
+
+// Função corrigida para abrir notícia completa
 async function abrirNoticiaCompleta(url, estado) {
     if (!url) return;
+    
+    console.log('🔗 Abrindo notícia:', url);
     
     // Procura a notícia no cache atual
     const noticiaCache = todasNoticiasCache.find(n => n.url === url);
     
     if (noticiaCache && noticiaCache.conteudoCompleto) {
         // Gerar link único do site para esta notícia
-// Gera um ID único para a notícia baseado na URL
-const noticiaId = btoa(url).substring(0, 30).replace(/[^a-zA-Z0-9]/g, '');
-const siteLink = `${window.location.origin}${window.location.pathname}?n=${noticiaId}`;
-
-// Salva a URL original no sessionStorage para recuperar depois
-sessionStorage.setItem(`noticia_${noticiaId}`, url);
+        const noticiaId = url.replace(/[^a-zA-Z0-9]/g, '').substring(0, 25);
+        const siteLink = `${window.location.origin}${window.location.pathname}?n=${noticiaId}`;
+        
+        // Salva a URL original no sessionStorage com a chave correta
+        sessionStorage.setItem(`noticia_${noticiaId}`, url);
         
         // Formata a data de publicação
         const dataPublicacao = noticiaCache.data ? new Date(noticiaCache.data).toLocaleDateString('pt-BR', {
@@ -7735,30 +7747,61 @@ sessionStorage.setItem(`noticia_${noticiaId}`, url);
             }
         });
     } else {
+        // Abrir diretamente no navegador
         window.open(url, '_blank');
     }
 }
-function compartilharNoticiaSite(plataforma, link, titulo) {
-    let shareUrl = '';
+
+// Função CORRIGIDA para abrir notícia pelo link do site
+function abrirNoticiaPorLink() {
+    const urlParams = new URLSearchParams(window.location.search);
+    const noticiaId = urlParams.get('n');
     
-    switch(plataforma) {
-        case 'whatsapp':
-            shareUrl = `https://wa.me/?text=${encodeURIComponent(`📰 ${titulo}\n\nLeia mais no NE Conecta:\n${link}`)}`;
-            break;
-        case 'twitter':
-            shareUrl = `https://twitter.com/intent/tweet?text=${encodeURIComponent(`📰 ${titulo}\n\n${link}`)}`;
-            break;
-        case 'facebook':
-            shareUrl = `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(link)}`;
-            break;
-    }
+    console.log('🔍 Verificando notícia na URL, parâmetro n =', noticiaId);
     
-    if (shareUrl) {
-        window.open(shareUrl, '_blank', 'width=600,height=400');
+    if (noticiaId) {
+        // Recuperar a URL original do sessionStorage
+        const urlOriginal = sessionStorage.getItem(`noticia_${noticiaId}`);
+        
+        console.log('📌 URL original recuperada:', urlOriginal);
+        
+        if (urlOriginal) {
+            // Aguarda um pouco para garantir que a página carregou
+            setTimeout(() => {
+                // Mudar para a aba de notícias
+                mudarSecao('noticias');
+                
+                // Aguardar a renderização das notícias e abrir
+                setTimeout(async () => {
+                    // Tentar encontrar a notícia no cache
+                    if (todasNoticiasCache && todasNoticiasCache.length > 0) {
+                        const noticia = todasNoticiasCache.find(n => n.url === urlOriginal);
+                        if (noticia) {
+                            console.log('✅ Notícia encontrada no cache!');
+                            await abrirNoticiaCompleta(urlOriginal, noticia.estado || '');
+                        } else {
+                            console.log('⚠️ Notícia não encontrada no cache, abrindo diretamente');
+                            window.open(urlOriginal, '_blank');
+                        }
+                    } else {
+                        console.log('⚠️ Cache vazio, recarregando notícias...');
+                        await carregarNoticias();
+                        const noticia = todasNoticiasCache.find(n => n.url === urlOriginal);
+                        if (noticia) {
+                            await abrirNoticiaCompleta(urlOriginal, noticia.estado || '');
+                        } else {
+                            window.open(urlOriginal, '_blank');
+                        }
+                    }
+                }, 800);
+            }, 500);
+        } else {
+            console.log('❌ URL original não encontrada no sessionStorage');
+        }
     }
 }
 
-
+// Função auxiliar para copiar link
 function copiarLinkNoticiaSite(link) {
     navigator.clipboard.writeText(link).then(() => {
         Swal.fire({
@@ -7770,48 +7813,12 @@ function copiarLinkNoticiaSite(link) {
             toast: true,
             position: 'top-end'
         });
-    });
-}
-
-// Função para abrir notícia diretamente pelo link do site
-function abrirNoticiaPorLink() {
-    const urlParams = new URLSearchParams(window.location.search);
-    const noticiaUrl = urlParams.get('noticia');
-    
-    if (noticiaUrl) {
-        setTimeout(() => {
-            mudarSecao('noticias');
-            setTimeout(() => {
-                abrirNoticiaCompleta(noticiaUrl, '');
-            }, 800);
-        }, 500);
-    }
-}
-// Funções de compartilhamento para notícias
-function compartilharNoticiaWhatsApp(url, titulo) {
-    const text = encodeURIComponent(`📰 *${titulo}*\n\nLeia mais no NE Conecta:\n${url}`);
-    window.open(`https://wa.me/?text=${text}`, '_blank');
-}
-
-function compartilharNoticiaTwitter(url, titulo) {
-    const text = encodeURIComponent(`📰 ${titulo}\n\n${url}`);
-    window.open(`https://twitter.com/intent/tweet?text=${text}`, '_blank');
-}
-
-function compartilharNoticiaFacebook(url) {
-    window.open(`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(url)}`, '_blank');
-}
-
-function copiarLinkNoticia(url) {
-    navigator.clipboard.writeText(url).then(() => {
+    }).catch(() => {
         Swal.fire({
-            icon: 'success',
-            title: '✅ Link copiado!',
-            text: 'Link da notícia copiado para a área de transferência.',
-            timer: 2000,
-            showConfirmButton: false,
-            toast: true,
-            position: 'top-end'
+            icon: 'info',
+            title: 'Copie manualmente',
+            html: `<input type="text" value="${link}" style="width:100%; padding:8px; border-radius:8px;" onclick="this.select()">`,
+            confirmButtonText: 'Fechar'
         });
     });
 }
@@ -8580,7 +8587,8 @@ function verificarSalaWatchNaUrl() {
     if (isNoticia && !isWatch && !isPost) {
         setTimeout(abrirNoticiaPorLink, 1000);
     }
-    
+    // Dentro da função inicializar(), adicione:
+setTimeout(abrirNoticiaPorLink, 1000);
     setTimeout(verificarNotificacoes, 2000);
     
     if (!sessaoRestaurada) {

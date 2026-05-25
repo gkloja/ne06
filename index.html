@@ -980,6 +980,479 @@
     .noticia-modal-fonte { text-align: center; padding: 16px 24px 24px; border-top: 1px solid var(--border); margin-top: 8px; }
     .noticia-modal-fonte a { color: var(--primary); text-decoration: none; font-size: 12px; font-weight: 600; display: inline-flex; align-items: center; gap: 6px; transition: opacity 0.2s; }
     .noticia-modal-fonte a:hover { opacity: 0.8; }
+/* ========== PERFIL - REDESIGN PROFISSIONAL COMPLETO ========== */
+
+/* Container do perfil */
+.perfil-container {
+    width: 100%;
+    max-width: 100%;
+    padding: 0;
+    margin: 0 auto;
+}
+
+/* Card principal do perfil */
+.perfil-card {
+    background: #1A1A1A;
+    border-radius: 24px;
+    padding: 0;
+    text-align: center;
+    border: none;
+    overflow: hidden;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+}
+
+body.light-mode .perfil-card {
+    background: #FFFFFF;
+    border: none;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.06);
+}
+
+/* Cabeçalho do perfil com gradiente */
+.perfil-header {
+    background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
+    padding: 30px 20px 20px;
+    text-align: center;
+    position: relative;
+}
+
+body.light-mode .perfil-header {
+    background: linear-gradient(135deg, #f0f4ff 0%, #e8eeff 50%, #dbe4ff 100%);
+}
+
+/* Avatar */
+.perfil-avatar {
+    width: 90px;
+    height: 90px;
+    border-radius: 50%;
+    background: #111;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 36px;
+    font-weight: 700;
+    margin: 0 auto 12px;
+    object-fit: cover;
+    border: 4px solid rgba(255,255,255,0.2);
+    box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+}
+
+body.light-mode .perfil-avatar {
+    border: 4px solid rgba(37,99,235,0.3);
+    box-shadow: 0 4px 15px rgba(37,99,235,0.15);
+}
+
+/* Nome e email */
+.perfil-nome {
+    font-size: 22px;
+    font-weight: 800;
+    color: white;
+    margin-bottom: 2px;
+}
+
+body.light-mode .perfil-nome {
+    color: #111827;
+}
+
+.perfil-email {
+    color: rgba(255,255,255,0.7);
+    font-size: 13px;
+    margin-bottom: 12px;
+}
+
+body.light-mode .perfil-email {
+    color: #6b7280;
+}
+
+/* ========== NÍVEL E XP ========== */
+.perfil-level-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    background: rgba(255,255,255,0.15);
+    border: 2px solid rgba(255,215,0,0.5);
+    border-radius: 30px;
+    padding: 6px 14px;
+    margin-bottom: 12px;
+    backdrop-filter: blur(10px);
+}
+
+body.light-mode .perfil-level-badge {
+    background: rgba(37,99,235,0.1);
+    border-color: rgba(37,99,235,0.3);
+}
+
+.perfil-level-icon {
+    font-size: 20px;
+}
+
+.perfil-level-text {
+    font-weight: 700;
+    font-size: 14px;
+    color: #FFD700;
+}
+
+body.light-mode .perfil-level-text {
+    color: #2563eb;
+}
+
+.perfil-level-number {
+    font-weight: 800;
+    font-size: 16px;
+    color: #FFD700;
+}
+
+body.light-mode .perfil-level-number {
+    color: #2563eb;
+}
+
+/* Barra de XP */
+.perfil-xp-container {
+    padding: 0 20px;
+    margin-bottom: 4px;
+}
+
+.perfil-xp-info {
+    display: flex;
+    justify-content: space-between;
+    font-size: 11px;
+    color: rgba(255,255,255,0.6);
+    margin-bottom: 4px;
+}
+
+body.light-mode .perfil-xp-info {
+    color: #888;
+}
+
+.perfil-xp-bar {
+    height: 6px;
+    background: rgba(255,255,255,0.1);
+    border-radius: 10px;
+    overflow: hidden;
+}
+
+body.light-mode .perfil-xp-bar {
+    background: #E5E5E5;
+}
+
+.perfil-xp-fill {
+    height: 100%;
+    background: linear-gradient(90deg, #FFD700, #FFA500);
+    border-radius: 10px;
+    transition: width 0.5s ease;
+    width: 0%;
+}
+
+/* ========== ESTATÍSTICAS DO PERFIL ========== */
+.perfil-stats {
+    display: flex;
+    justify-content: center;
+    gap: 0;
+    padding: 0;
+    background: transparent;
+    border-radius: 0;
+    margin: 0;
+    border-top: 1px solid rgba(255,255,255,0.1);
+    border-bottom: 1px solid rgba(255,255,255,0.1);
+}
+
+body.light-mode .perfil-stats {
+    border-top: 1px solid #E5E5E5;
+    border-bottom: 1px solid #E5E5E5;
+}
+
+.perfil-stat-item {
+    flex: 1;
+    text-align: center;
+    padding: 16px 8px;
+    cursor: pointer;
+    transition: all 0.2s;
+    border-right: 1px solid rgba(255,255,255,0.1);
+}
+
+body.light-mode .perfil-stat-item {
+    border-right: 1px solid #E5E5E5;
+}
+
+.perfil-stat-item:last-child {
+    border-right: none;
+}
+
+.perfil-stat-item:hover {
+    background: rgba(255,255,255,0.05);
+    transform: translateY(-2px);
+}
+
+body.light-mode .perfil-stat-item:hover {
+    background: #F5F5F5;
+}
+
+.perfil-stat-value {
+    font-size: 20px;
+    font-weight: 800;
+    color: white;
+    margin-bottom: 2px;
+}
+
+body.light-mode .perfil-stat-value {
+    color: #111827;
+}
+
+.perfil-stat-label {
+    font-size: 10px;
+    color: rgba(255,255,255,0.5);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+body.light-mode .perfil-stat-label {
+    color: #888;
+}
+
+/* ========== MENU DO PERFIL ========== */
+.perfil-menu {
+    display: flex;
+    flex-direction: column;
+    padding: 8px 16px 16px;
+    gap: 4px;
+}
+
+.perfil-menu-btn {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    width: 100%;
+    padding: 14px 16px;
+    background: rgba(255,255,255,0.03);
+    border: 1px solid transparent;
+    border-radius: 14px;
+    color: #F5F5F5;
+    font-family: inherit;
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    text-align: left;
+}
+
+body.light-mode .perfil-menu-btn {
+    background: #F9FAFB;
+    color: #111827;
+    border: 1px solid #E5E5E5;
+}
+
+.perfil-menu-btn:hover {
+    background: rgba(255,255,255,0.08);
+    border-color: rgba(255,255,255,0.1);
+    transform: translateX(4px);
+}
+
+body.light-mode .perfil-menu-btn:hover {
+    background: #F3F4F6;
+    border-color: #E5E5E5;
+}
+
+.perfil-menu-btn i:first-child {
+    width: 24px;
+    text-align: center;
+    font-size: 18px;
+}
+
+.perfil-menu-btn.danger {
+    color: #ef4444;
+}
+
+.perfil-menu-btn.danger:hover {
+    background: rgba(239,68,68,0.1);
+    border-color: rgba(239,68,68,0.3);
+}
+
+/* ========== RANKING MODAL ========== */
+.ranking-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.ranking-table th {
+    text-align: left;
+    padding: 12px 8px;
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    color: var(--text2);
+    border-bottom: 2px solid var(--border);
+}
+
+.ranking-table td {
+    padding: 12px 8px;
+    font-size: 13px;
+    border-bottom: 1px solid var(--border);
+}
+
+.ranking-top1 { font-size: 24px; font-weight: 800; }
+.ranking-top2 { font-size: 20px; font-weight: 700; }
+.ranking-top3 { font-size: 18px; font-weight: 700; }
+
+.ranking-user-me {
+    background: rgba(37,99,235,0.1);
+    font-weight: 700;
+    border-left: 3px solid var(--primary);
+}
+
+.ranking-avatar {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    object-fit: cover;
+}
+
+.ranking-level-badge-sm {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    background: rgba(255,215,0,0.15);
+    border-radius: 20px;
+    padding: 3px 10px;
+    font-size: 11px;
+    font-weight: 700;
+    color: #FFD700;
+}
+
+/* Hover nas linhas do ranking */
+.ranking-table tbody tr {
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.ranking-table tbody tr:hover {
+    background: rgba(37,99,235,0.08) !important;
+    transform: scale(1.01);
+}
+
+/* ========== AVATARES DOS VOTANTES NA ENQUETE ========== */
+.poll-voters-preview {
+    display: flex;
+    align-items: center;
+    gap: -6px;
+    padding-left: 2px;
+}
+
+.poll-voter-avatar {
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 2px solid var(--bg);
+    margin-left: -6px;
+    transition: transform 0.2s;
+}
+
+.poll-voter-avatar:first-child {
+    margin-left: 0;
+}
+
+.poll-voter-avatar:hover {
+    transform: scale(1.1);
+    z-index: 1;
+}
+
+.poll-more-voters {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    background: rgba(0,0,0,0.1);
+    font-size: 10px;
+    font-weight: 700;
+    color: var(--text2);
+    margin-left: -6px;
+    border: 2px solid var(--bg);
+    cursor: pointer;
+    transition: 0.2s;
+}
+
+.poll-more-voters:hover {
+    background: var(--primary);
+    color: white;
+}
+
+.poll-voter-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 8px 0;
+    border-bottom: 1px solid var(--border);
+    cursor: pointer;
+    transition: 0.2s;
+}
+
+.poll-voter-item:hover {
+    background: rgba(37,99,235,0.05);
+    padding-left: 8px;
+}
+
+.poll-voter-item-avatar {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    object-fit: cover;
+}
+
+.poll-voter-item-name {
+    font-weight: 600;
+    font-size: 13px;
+}
+
+.poll-voter-item-time {
+    font-size: 10px;
+    color: var(--text2);
+}
+
+/* ========== ANIMAÇÕES EXTRAS ========== */
+@keyframes slideUp {
+    from { transform: translateY(100%); opacity: 0; }
+    to { transform: translateY(0); opacity: 1; }
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+.perfil-card {
+    animation: fadeIn 0.4s ease;
+}
+
+/* ========== RESPONSIVIDADE DO PERFIL ========== */
+@media (max-width: 768px) {
+    .perfil-header {
+        padding: 20px 16px 16px;
+    }
+    
+    .perfil-avatar {
+        width: 70px;
+        height: 70px;
+        font-size: 28px;
+    }
+    
+    .perfil-nome {
+        font-size: 18px;
+    }
+    
+    .perfil-stat-value {
+        font-size: 16px;
+    }
+    
+    .perfil-stat-label {
+        font-size: 9px;
+    }
+    
+    .perfil-menu-btn {
+        padding: 12px 14px;
+        font-size: 13px;
+    }
+}
 </style>
 </head>
 <body>

@@ -7758,51 +7758,6 @@ function compartilharNoticiaSite(plataforma, link, titulo) {
     }
 }
 
-function copiarLinkNoticiaSite(link) {
-    navigator.clipboard.writeText(link).then(() => {
-        Swal.fire({
-            icon: 'success',
-            title: '✅ Link copiado!',
-            text: 'Link da notícia copiado para a área de transferência.',
-            timer: 2000,
-            showConfirmButton: false,
-            toast: true,
-            position: 'top-end'
-        });
-    });
-}
-
-function abrirNoticiaPorLink() {
-    const urlParams = new URLSearchParams(window.location.search);
-    const noticiaId = urlParams.get('n');
-    
-    if (noticiaId) {
-        // Recupera a URL original
-        const noticiaUrl = sessionStorage.getItem(`noticia_${noticiaId}`);
-        
-        if (noticiaUrl) {
-            // Remove o parâmetro da URL sem recarregar a página
-            const newUrl = window.location.pathname;
-            window.history.replaceState({}, '', newUrl);
-            
-            // Aguarda o DOM carregar e a seção de notícias estar pronta
-            setTimeout(() => {
-                // Garante que estamos na seção de notícias
-                if (currentSection !== 'noticias') {
-                    mudarSecao('noticias');
-                    // Aguarda a seção carregar
-                    setTimeout(() => {
-                        abrirNoticiaCompleta(noticiaUrl, '');
-                    }, 800);
-                } else {
-                    abrirNoticiaCompleta(noticiaUrl, '');
-                }
-            }, 500);
-        } else {
-            console.log('Notícia não encontrada no cache');
-        }
-    }
-}
 
 function copiarLinkNoticiaSite(link) {
     navigator.clipboard.writeText(link).then(() => {

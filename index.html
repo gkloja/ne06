@@ -2470,7 +2470,7 @@ function cancelarGravacao() {
     respostaAudioContexto = null;
 }
 
-// Mostrar prévia do áudio
+// Mostrar prévia do áudio com contexto da resposta
 function mostrarPreviewAudio(audioBlob, respostaContexto) {
     const audioUrl = URL.createObjectURL(audioBlob);
     const duracao = tempoGravacao;
@@ -2488,10 +2488,15 @@ function mostrarPreviewAudio(audioBlob, respostaContexto) {
                 🎤 Duração: ${duracaoTexto}
             </p>`;
     
+    // Se for resposta a uma mensagem
     if (respostaContexto) {
         htmlPreview += `
-            <div style="background: rgba(37,99,235,0.1); padding: 8px; border-radius: 12px; margin: 12px 0;">
-                <i class="fas fa-reply"></i> Respondendo para <strong>${escapeHtml(respostaContexto.nome)}</strong>
+            <div style="background: rgba(37,99,235,0.15); padding: 10px; border-radius: 12px; margin: 12px 0; border-left: 3px solid #2563eb;">
+                <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 4px;">
+                    <i class="fas fa-reply" style="color: #2563eb; font-size: 12px;"></i>
+                    <span style="font-weight: 600; font-size: 12px;">Respondendo para <span style="color: #2563eb;">${escapeHtml(respostaContexto.nome)}</span></span>
+                </div>
+                ${respostaContexto.texto ? `<p style="font-size: 11px; color: var(--text2); margin-left: 20px;">"${escapeHtml(respostaContexto.texto.substring(0, 80))}${respostaContexto.texto.length > 80 ? '...' : ''}"</p>` : ''}
             </div>`;
     }
     
@@ -2609,20 +2614,22 @@ async function enviarAudio(audioBlob, respostaContexto = null) {
     }
 }
 
-// RESPONDER COM ÁUDIO
-function responderComAudio(msgId, msgNome) {
+// RESPONDER COM ÁUDIO (CORRIGIDA)
+function responderComAudio(msgId, msgNome, msgTexto = '') {
     if (!currentUser) {
         mostrarLoginPrompt();
         return;
     }
     
+    // Mostrar indicador de resposta no chat
     const replyIndicator = document.getElementById('replyIndicator');
     if (replyIndicator) {
-        document.getElementById('replyToName').innerText = msgNome;
+        document.getElementById('replyToName').innerHTML = `${msgNome}${msgTexto ? `: "${msgTexto.substring(0, 30)}${msgTexto.length > 30 ? '...' : ''}"` : ''}`;
         replyIndicator.style.display = 'flex';
     }
     
-    iniciarGravacao({ id: msgId, nome: msgNome });
+    // Iniciar gravação com contexto de resposta
+    iniciarGravacao({ id: msgId, nome: msgNome, texto: msgTexto });
 }
 
 // CONFIGURAR EVENTOS DO BOTÃO
@@ -5576,26 +5583,44 @@ function mostrarEmojisChat(msgId) {
 
 // ==================== APAGAR MENSAGEM DO CHAT ====================
 
-async function apagarMensagemChat(msgId) {
+// APAGAR MENSAGEM (inclui respostas)
+async function apagarMensagemChat(msgId, isResposta = false, parentMsgId = null) {
     if (!currentUser) {
         mostrarLoginPrompt();
         return;
     }
     
     // Encontrar a mensagem
-    const mensagem = mensagensChat.find(m => m.id === msgId);
+    let mensagem = null;
+    let mensagemIndex = -1;
+    
+    if (isResposta && parentMsgId) {
+        const parentMsg = mensagensChat.find(m => m.id == parentMsgId);
+        if (parentMsg && parentMsg.respostas) {
+            mensagemIndex = parentMsg.respostas.findIndex(r => r.id == msgId || r.createdAt == msgId);
+            if (mensagemIndex !== -1) {
+                mensagem = parentMsg.respostas[mensagemIndex];
+            }
+        }
+    } else {
+        mensagemIndex = mensagensChat.findIndex(m => m.id == msgId);
+        if (mensagemIndex !== -1) {
+            mensagem = mensagensChat[mensagemIndex];
+        }
+    }
+    
     if (!mensagem) {
         Swal.fire('Erro', 'Mensagem não encontrada', 'error');
         return;
     }
     
-    // Verificar se é o autor da mensagem
-    if (mensagem.usuario?.id !== currentUser.id) {
+    // Verificar se é o autor
+    const isAuthor = mensagem.usuario?.id === currentUser.id;
+    if (!isAuthor) {
         Swal.fire('Acesso negado', 'Você só pode apagar suas próprias mensagens', 'error');
         return;
     }
     
-    // Confirmar exclusão
     const result = await Swal.fire({
         title: '🗑️ Apagar mensagem?',
         text: 'Esta ação não pode ser desfeita.',
@@ -5616,7 +5641,11 @@ async function apagarMensagemChat(msgId) {
     });
     
     try {
-        const response = await fetch(`${API_URL}/cliente06/chat-global/mensagens/${msgId}`, {
+        const url = isResposta 
+            ? `${API_URL}/cliente06/chat-global/mensagens/${parentMsgId}/respostas/${msgId}`
+            : `${API_URL}/cliente06/chat-global/mensagens/${msgId}`;
+        
+        const response = await fetch(url, {
             method: 'DELETE',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ userId: currentUser.id })
@@ -5625,7 +5654,6 @@ async function apagarMensagemChat(msgId) {
         Swal.close();
         
         if (response.ok) {
-            // Recarregar o chat
             await carregarChat();
             
             Swal.fire({
@@ -5743,6 +5771,11 @@ function renderMensagem(msg) {
                             onclick="${podeInteragir ? `responderMensagem(${msg.id}, '${escapeHtml(msg.usuario?.nome || 'Usuário')}')` : `mostrarLoginPrompt()`}">
                         <i class="fas fa-reply"></i> Responder
                     </button>
+                    <button class="message-action" 
+        onclick="${podeInteragir ? `responderComAudio(${msg.id}, '${escapeHtml(msg.usuario?.nome || 'Usuário')}', '${escapeHtml((msg.texto || '').substring(0, 50)).replace(/'/g, "\\'")}')` : `mostrarLoginPrompt()`}"
+        style="color: #10b981;">
+    <i class="fas fa-microphone-alt"></i> Áudio
+</button>
                     ${currentUser && msg.usuario?.id === currentUser.id ? `
                         <button class="message-action danger" 
                                 onclick="apagarMensagemChat(${msg.id})"
@@ -5751,29 +5784,43 @@ function renderMensagem(msg) {
                         </button>
                     ` : ''}
                 </div>
-                ${temRespostas ? `
-                    <button class="message-action" onclick="toggleRespostas(${msg.id})">
-                        <i class="fas fa-comment-dots"></i> ${msg.respostas.length} ${msg.respostas.length === 1 ? 'resposta' : 'respostas'}
-                    </button>
-                    <div class="replies-section" id="replies-${msg.id}" style="display: none;">
-                        ${msg.respostas.map(r => `
-                            <div class="reply-message">
-                                <div class="reply-avatar" onclick="event.stopPropagation(); abrirPerfilUsuario('${r.usuario?.id || ''}', '${escapeHtml(r.usuario?.nome || 'Anônimo')}', '${r.usuario?.avatar || ''}')" style="cursor: pointer;">
-                                    <img src="${r.usuario?.avatar || 'https://ui-avatars.com/api/?background=7c4dff&color=fff'}" 
-                                         style="width:100%;height:100%;border-radius:50%;object-fit:cover;" 
-                                         alt="Avatar">
-                                </div>
-                                <div class="reply-content">
-                                    <div class="reply-header">
-                                        <span class="reply-author" style="cursor: pointer;" onclick="event.stopPropagation(); abrirPerfilUsuario('${r.usuario?.id || ''}', '${escapeHtml(r.usuario?.nome || 'Anônimo')}', '${r.usuario?.avatar || ''}')">${escapeHtml(r.usuario?.nome || 'Anônimo')}</span>
-                                        <span class="reply-time">${formatarData(r.createdAt)}</span>
-                                    </div>
-                                    <div class="reply-text">${tornarLinksClicaveis(r.texto)}</div>
-                                </div>
-                            </div>
-                        `).join('')}
+${temRespostas ? `
+    <button class="message-action" onclick="toggleRespostas(${msg.id})">
+        <i class="fas fa-comment-dots"></i> ${msg.respostas.length} ${msg.respostas.length === 1 ? 'resposta' : 'respostas'}
+    </button>
+    <div class="replies-section" id="replies-${msg.id}" style="display: none;">
+        ${msg.respostas.map(r => `
+            <div class="reply-message">
+                <div class="reply-avatar" onclick="event.stopPropagation(); abrirPerfilUsuario('${r.usuario?.id || ''}', '${escapeHtml(r.usuario?.nome || 'Anônimo')}', '${r.usuario?.avatar || ''}')" style="cursor: pointer;">
+                    <img src="${r.usuario?.avatar || 'https://ui-avatars.com/api/?background=7c4dff&color=fff'}" 
+                         style="width:100%;height:100%;border-radius:50%;object-fit:cover;" 
+                         alt="Avatar">
+                </div>
+                <div class="reply-content">
+                    <div class="reply-header">
+                        <span class="reply-author" style="cursor: pointer;" onclick="event.stopPropagation(); abrirPerfilUsuario('${r.usuario?.id || ''}', '${escapeHtml(r.usuario?.nome || 'Anônimo')}', '${r.usuario?.avatar || ''}')">${escapeHtml(r.usuario?.nome || 'Anônimo')}</span>
+                        <span class="reply-time">${formatarData(r.createdAt)}</span>
+                        ${currentUser && r.usuario?.id === currentUser.id ? `
+                            <button class="reply-delete-btn" onclick="event.stopPropagation(); apagarMensagemChat('${r.id || r.createdAt}', true, ${msg.id})" 
+                                    style="background: none; border: none; color: #ef4444; cursor: pointer; margin-left: auto; font-size: 11px;">
+                                <i class="fas fa-trash-alt"></i>
+                            </button>
+                        ` : ''}
                     </div>
-                ` : ''}
+                    ${r.tipo === 'audio' && r.audioUrl ? `
+                        <div class="reply-audio" style="margin: 6px 0;">
+                            <audio controls style="height: 32px; max-width: 180px; border-radius: 16px;">
+                                <source src="${construirUrlAudio(r.audioUrl)}" type="audio/webm">
+                            </audio>
+                        </div>
+                    ` : `
+                        <div class="reply-text">${tornarLinksClicaveis(r.texto)}</div>
+                    `}
+                </div>
+            </div>
+        `).join('')}
+    </div>
+` : ''}
             </div>
         </div>
     `;

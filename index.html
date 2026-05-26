@@ -1464,6 +1464,39 @@ body.light-mode .perfil-menu-btn:hover {
     0%, 100% { transform: scale(1); }
     50% { transform: scale(1.1); }
 }
+/* CORREÇÃO: Evitar que o botão de áudio ultrapasse o limite */
+.chat-options {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+    align-items: center;
+}
+
+.chat-option-btn, .send-btn {
+    flex-shrink: 0;
+}
+
+/* Ajuste do container do input para não quebrar */
+.chat-input-container {
+    flex-wrap: wrap;
+}
+
+@media (max-width: 480px) {
+    .chat-options {
+        gap: 4px;
+    }
+    
+    .chat-option-btn, .send-btn {
+        width: 36px;
+        height: 36px;
+        font-size: 14px;
+    }
+    
+    .chat-input {
+        font-size: 13px;
+        padding: 10px 12px;
+    }
+}
 </style>
 </head>
 <body>
@@ -5030,8 +5063,8 @@ function renderMensagem(msg) {
     const podeInteragir = currentUser !== null;
     const reacoes = msg.reacoes || {};
     
-    // Verificar se tem alguma reação
-    const totalReacoes = Object.values(reacoes).reduce((sum, count) => sum + count, 0);
+    // Verificar se é mensagem de áudio
+    const isAudio = msg.tipo === 'audio';
     
     return `
         <div class="chat-message" data-msg-id="${msg.id}" id="msg-${msg.id}">
@@ -5051,7 +5084,18 @@ function renderMensagem(msg) {
                         </button>
                     ` : ''}
                 </div>
-                <div class="message-text">${tornarLinksClicaveis(escapeHtml(msg.texto))}</div>
+                
+                <!-- CONTEÚDO: Texto OU Áudio -->
+                ${isAudio ? `
+                    <div class="message-audio" style="margin: 8px 0;">
+                        <audio controls src="${msg.audioUrl}" style="width: 100%; max-width: 250px; height: 40px; border-radius: 20px;">
+                            Seu navegador não suporta áudio
+                        </audio>
+                        <span style="font-size: 11px; color: #888; margin-left: 8px;">🎤 ${formatarDuracao(msg.duracao || 0)}</span>
+                    </div>
+                ` : `
+                    <div class="message-text">${tornarLinksClicaveis(escapeHtml(msg.texto))}</div>
+                `}
                 
                 <!-- Reações -->
                 <div style="display: flex; gap: 4px; margin-top: 4px; flex-wrap: wrap; align-items: center;">
@@ -5120,6 +5164,14 @@ function renderMensagem(msg) {
             </div>
         </div>
     `;
+}
+
+// Função auxiliar para formatar duração do áudio
+function formatarDuracao(segundos) {
+    if (!segundos) return '0:00';
+    const min = Math.floor(segundos / 60);
+    const sec = segundos % 60;
+    return `${min}:${sec.toString().padStart(2, '0')}`;
 }
 
     async function likeMensagem(id) {

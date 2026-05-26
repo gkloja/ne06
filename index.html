@@ -2045,7 +2045,7 @@ const tempoDisplay = document.getElementById('tempoGravacao');
 let botaoPressionado = false;
 let timeoutLongPress = null;
 
-// INICIAR GRAVAÇÃO (APENAS UMA VEZ)
+// INICIAR GRAVAÇÃO (SEM ERRO FALSO)
 async function iniciarGravacaoProfissional() {
     if (!currentUser) {
         mostrarLoginPrompt();
@@ -2055,7 +2055,10 @@ async function iniciarGravacaoProfissional() {
     if (gravando || enviandoAudio) return;
     
     try {
-        streamAtual = await navigator.mediaDevices.getUserMedia({ audio: true });
+        const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+        
+        // Só chega aqui se conseguiu o microfone - NÃO mostrar erro!
+        streamAtual = stream;
         
         mediaRecorder = new MediaRecorder(streamAtual, { mimeType: 'audio/webm' });
         audioChunks = [];
@@ -2090,30 +2093,25 @@ async function iniciarGravacaoProfissional() {
         
         audioBtn.classList.add('gravando');
         
-      /*  // Auto-parar após 60 segundos
-        setTimeout(() => {
-            if (gravando) {
-                finalizarGravacaoProfissional();
-                Swal.fire({
-                    icon: 'info',
-                    title: '⏱️ Limite atingido',
-                    text: 'Gravação automática finalizada (60 segundos)',
-                    timer: 2000,
-                    showConfirmButton: false,
-                    toast: true,
-                    position: 'top-end'
-                });
-            }
-        }, 60000);
-        */
     } catch (error) {
-        console.error('Erro microfone:', error);
-        Swal.fire({
-            icon: 'error',
-            title: 'Microfone indisponível',
-            text: 'Verifique se você permitiu o acesso ao microfone',
-            confirmButtonText: 'OK'
-        });
+        // Só mostra erro se for erro REAL de permissão
+        if (error.name === 'NotAllowedError' || error.name === 'PermissionDeniedError') {
+            Swal.fire({
+                icon: 'error',
+                title: 'Microfone bloqueado',
+                text: 'Por favor, permita o acesso ao microfone nas configurações do navegador',
+                confirmButtonText: 'OK'
+            });
+        } else if (error.name === 'NotFoundError') {
+            Swal.fire({
+                icon: 'error',
+                title: 'Nenhum microfone encontrado',
+                text: 'Conecte um microfone ao seu dispositivo',
+                confirmButtonText: 'OK'
+            });
+        }
+        // Se for outro erro (ex: já está gravando), não mostra nada
+        console.log('Erro não crítico:', error.name);
     }
 }
 
@@ -5158,12 +5156,8 @@ async function deletarMidiaAposUso(midiaId) {
         mensagensChat = await res.json();
         console.log('📨 Mensagens carregadas:', mensagensChat.length);
         
-        // Verificar se há mensagens de áudio
-        const audios = mensagensChat.filter(m => m.tipo === 'audio');
-        if (audios.length > 0) {
-            console.log('🎤 Áudios encontrados:', audios.length);
-            audios.forEach(a => console.log('URL do áudio:', a.audioUrl));
-        }
+        // Ordenar por data (mais antigas primeiro)
+        mensagensChat.sort((a, b) => new Date(a.createdAt) - new Date(b.createdAt));
         
         renderizarChat();
     } catch (error) {
@@ -5179,12 +5173,20 @@ async function deletarMidiaAposUso(midiaId) {
         return;
     }
     
-    // Ordenar do mais antigo para o mais novo
-    const mensagensOrdenadas = [...mensagensChat].reverse();
+    // 🔥 ORDEM CORRETA: Do mais antigo (primeiro) para o mais novo (último)
+    // Se vierem do servidor invertidas, inverte aqui
+    const mensagensOrdenadas = [...mensagensChat].sort((a, b) => {
+        return new Date(a.createdAt) - new Date(b.createdAt);
+    });
     
     document.getElementById('mensagemCount').innerText = mensagensOrdenadas.length;
     container.innerHTML = mensagensOrdenadas.map(msg => renderMensagem(msg)).join('');
-    container.scrollTop = container.scrollHeight;
+    
+    // Scroll para o final (última mensagem)
+    setTimeout(() => {
+        container.scrollTop = container.scrollHeight;
+    }, 100);
+    
     atualizarOnlineUsers();
 }
 // ==================== REAÇÕES NO CHAT ====================
@@ -5482,45 +5484,96 @@ function formatarDuracao(segundos) {
     }
 
     async function enviarMensagem() {
-        if (!currentUser) { mostrarLoginPrompt(); return; }
-        const input = document.getElementById('chatInput');
-        const texto = input.value.trim();
-        if (!texto) return;
-        
+    if (!currentUser) { 
+        mostrarLoginPrompt(); 
+        return; 
+    }
+    
+    const input = document.getElementById('chatInput');
+    const texto = input.value.trim();
+    if (!texto) return;
+    
+    // Desabilitar o botão de enviar temporariamente
+    const sendBtn = document.getElementById('sendBtn');
+    sendBtn.disabled = true;
+    sendBtn.style.opacity = '0.5';
+    
+    try {
         if (respondendoPara) {
-            try {
-                const resposta = {
-                    usuario: { id: currentUser.id, nome: currentUser.nome, avatar: currentUser.avatar },
-                    texto: texto,
-                    createdAt: new Date().toISOString()
-                };
-                await fetch(`${API_URL}/cliente06/chat-global/mensagens/${respondendoPara.id}/responder`, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ resposta })
-                });
-                input.value = '';
-                cancelarResposta();
-                carregarChat();
-            } catch (error) { console.error('Erro:', error); }
-            return;
-        }
-        
-        const mensagem = {
-            usuario: { id: currentUser.id, nome: currentUser.nome, avatar: currentUser.avatar },
-            texto: texto,
-            anonimo: anonimoAtivo
-        };
-        try {
-            await fetch(`${API_URL}/cliente06/chat-global/mensagens`, {
+            const resposta = {
+                usuario: { 
+                    id: currentUser.id, 
+                    nome: currentUser.nome, 
+                    avatar: currentUser.avatar 
+                },
+                texto: texto,
+                createdAt: new Date().toISOString()
+            };
+            
+            await fetch(`${API_URL}/cliente06/chat-global/mensagens/${respondendoPara.id}/responder`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ resposta })
+            });
+            
+            input.value = '';
+            cancelarResposta();
+            await carregarChat();
+            
+        } else {
+            const mensagem = {
+                usuario: { 
+                    id: currentUser.id, 
+                    nome: currentUser.nome, 
+                    avatar: currentUser.avatar 
+                },
+                texto: texto,
+                anonimo: anonimoAtivo,
+                createdAt: new Date().toISOString()
+            };
+            
+            const response = await fetch(`${API_URL}/cliente06/chat-global/mensagens`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(mensagem)
             });
-            input.value = '';
-            carregarChat();
-        } catch (error) { console.error('Erro:', error); }
+            
+            if (response.ok) {
+                input.value = '';
+                await carregarChat();
+                
+                // Scroll para o final (última mensagem)
+                setTimeout(() => {
+                    const chatDiv = document.getElementById('chatMessages');
+                    if (chatDiv) {
+                        chatDiv.scrollTop = chatDiv.scrollHeight;
+                    }
+                }, 100);
+            } else {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Erro',
+                    text: 'Não foi possível enviar a mensagem',
+                    timer: 2000,
+                    showConfirmButton: false
+                });
+            }
+        }
+    } catch (error) {
+        console.error('Erro ao enviar mensagem:', error);
+        Swal.fire({
+            icon: 'error',
+            title: 'Erro de conexão',
+            text: 'Verifique sua internet e tente novamente',
+            timer: 2000,
+            showConfirmButton: false
+        });
+    } finally {
+        // Reabilitar o botão de enviar
+        sendBtn.disabled = false;
+        sendBtn.style.opacity = '1';
     }
+}
 
     function abrirEmojis() {
         Swal.fire({ title: 'Emojis', html: '<div style="font-size:30px;">😀 😎 😍 🎉 🔥 💪 🚀</div>', confirmButtonText: 'Fechar' });

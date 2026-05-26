@@ -2093,13 +2093,13 @@ audioBtn.addEventListener('mouseleave', pararGravacao);
 audioBtn.addEventListener('touchstart', iniciarGravacao);
 audioBtn.addEventListener('touchend', pararGravacao);
 
-// Enviar áudio para o servidor
 async function enviarAudioMensagem(audioBlob) {
     const formData = new FormData();
     formData.append('audio', audioBlob, `audio_${Date.now()}.webm`);
     formData.append('userId', currentUser.id);
     formData.append('userName', currentUser.nome);
     formData.append('userAvatar', currentUser.avatar);
+    formData.append('duracao', tempoGravacao);
     
     Swal.fire({
         title: '📤 Enviando áudio...',
@@ -2113,37 +2113,36 @@ async function enviarAudioMensagem(audioBlob) {
             body: formData
         });
         
+        const data = await response.json();
         Swal.close();
         
-        if (response.ok) {
-            const data = await response.json();
-            // Adicionar mensagem de áudio ao chat
-            adicionarAudioMensagemAoChat(data.audioUrl);
+        if (response.ok && data.success) {
+            // ✅ FORÇAR RECARREGAMENTO DO CHAT
+            await carregarChat();
+            
+            Swal.fire({
+                icon: 'success',
+                title: '🎤 Áudio enviado!',
+                timer: 1500,
+                showConfirmButton: false,
+                toast: true,
+                position: 'top-end'
+            });
         } else {
-            Swal.fire('Erro', 'Não foi possível enviar o áudio', 'error');
+            Swal.fire('Erro', data.error || 'Não foi possível enviar o áudio', 'error');
         }
     } catch (error) {
         Swal.close();
+        console.error('Erro:', error);
         Swal.fire('Erro', 'Erro de conexão', 'error');
     }
 }
 
+// Esta função NÃO é mais necessária - o carregarChat já faz tudo
 function adicionarAudioMensagemAoChat(audioUrl) {
-    // Criar mensagem com player de áudio
-    const mensagem = {
-        usuario: { id: currentUser.id, nome: currentUser.nome, avatar: currentUser.avatar },
-        tipo: 'audio',
-        audioUrl: audioUrl,
-        duracao: tempoGravacao,
-        createdAt: new Date().toISOString()
-    };
-    
-    // Enviar para o servidor
-    fetch(`${API_URL}/cliente06/chat-global/mensagens`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(mensagem)
-    });
+    // REMOVA esta função ou deixe vazia
+    console.log('Áudio enviado, recarregando chat...');
+    carregarChat(); // Forçar recarregamento
 }
 // ==================== WATCH PARTY (FUNCIONANDO) ====================
 
@@ -4986,28 +4985,42 @@ async function deletarMidiaAposUso(midiaId) {
     // ==================== CHAT GLOBAL ====================
     
     async function carregarChat() {
-        const messagesContainer = document.getElementById('chatMessages');
-        messagesContainer.innerHTML = `<div class="loading-spinner"><div class="spinner"></div><p>Carregando mensagens...</p></div>`;
-        try {
-            const res = await fetch(`${API_URL}/cliente06/chat-global/mensagens`);
-            mensagensChat = await res.json();
-            renderizarChat();
-        } catch (error) {
-            messagesContainer.innerHTML = `<div class="loading-spinner"><i class="fas fa-exclamation-triangle"></i><p>Erro ao carregar chat</p></div>`;
+    const messagesContainer = document.getElementById('chatMessages');
+    messagesContainer.innerHTML = `<div class="loading-spinner"><div class="spinner"></div><p>Carregando mensagens...</p></div>`;
+    try {
+        const res = await fetch(`${API_URL}/cliente06/chat-global/mensagens`);
+        mensagensChat = await res.json();
+        console.log('📨 Mensagens carregadas:', mensagensChat.length);
+        
+        // Verificar se há mensagens de áudio
+        const audios = mensagensChat.filter(m => m.tipo === 'audio');
+        if (audios.length > 0) {
+            console.log('🎤 Áudios encontrados:', audios.length);
+            audios.forEach(a => console.log('URL do áudio:', a.audioUrl));
         }
+        
+        renderizarChat();
+    } catch (error) {
+        console.error('Erro ao carregar chat:', error);
+        messagesContainer.innerHTML = `<div class="loading-spinner"><i class="fas fa-exclamation-triangle"></i><p>Erro ao carregar chat</p></div>`;
     }
+}
 
     function renderizarChat() {
-        const container = document.getElementById('chatMessages');
-        if (!mensagensChat || mensagensChat.length === 0) {
-            container.innerHTML = `<div class="loading-spinner"><i class="fas fa-comments"></i><p>Nenhuma mensagem. Seja o primeiro!</p>${!currentUser ? '<button class="google-login-btn" onclick="loginGoogle()"><i class="fab fa-google"></i> Entrar para conversar</button>' : ''}</div>`;
-            return;
-        }
-        document.getElementById('mensagemCount').innerText = mensagensChat.length;
-        container.innerHTML = mensagensChat.map(msg => renderMensagem(msg)).join('');
-        container.scrollTop = container.scrollHeight;
-        atualizarOnlineUsers();
+    const container = document.getElementById('chatMessages');
+    if (!mensagensChat || mensagensChat.length === 0) {
+        container.innerHTML = `<div class="loading-spinner"><i class="fas fa-comments"></i><p>Nenhuma mensagem. Seja o primeiro!</p>${!currentUser ? '<button class="google-login-btn" onclick="loginGoogle()"><i class="fab fa-google"></i> Entrar para conversar</button>' : ''}</div>`;
+        return;
     }
+    
+    // Ordenar do mais antigo para o mais novo
+    const mensagensOrdenadas = [...mensagensChat].reverse();
+    
+    document.getElementById('mensagemCount').innerText = mensagensOrdenadas.length;
+    container.innerHTML = mensagensOrdenadas.map(msg => renderMensagem(msg)).join('');
+    container.scrollTop = container.scrollHeight;
+    atualizarOnlineUsers();
+}
 // ==================== REAÇÕES NO CHAT ====================
 
 async function reagirMensagemChat(msgId, emoji) {

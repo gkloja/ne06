@@ -1497,6 +1497,15 @@ body.light-mode .perfil-menu-btn:hover {
         padding: 10px 12px;
     }
 }
+/* Botão de apagar mensagem */
+.message-action.danger {
+    color: #ef4444;
+}
+
+.message-action.danger:hover {
+    background: rgba(239, 68, 68, 0.1);
+    color: #ef4444;
+}
 </style>
 </head>
 <body>
@@ -5070,14 +5079,90 @@ function mostrarEmojisChat(msgId) {
         width: '350px'
     });
 }
+
+// ==================== APAGAR MENSAGEM DO CHAT ====================
+
+async function apagarMensagemChat(msgId) {
+    if (!currentUser) {
+        mostrarLoginPrompt();
+        return;
+    }
+    
+    // Encontrar a mensagem
+    const mensagem = mensagensChat.find(m => m.id === msgId);
+    if (!mensagem) {
+        Swal.fire('Erro', 'Mensagem não encontrada', 'error');
+        return;
+    }
+    
+    // Verificar se é o autor da mensagem
+    if (mensagem.usuario?.id !== currentUser.id) {
+        Swal.fire('Acesso negado', 'Você só pode apagar suas próprias mensagens', 'error');
+        return;
+    }
+    
+    // Confirmar exclusão
+    const result = await Swal.fire({
+        title: '🗑️ Apagar mensagem?',
+        text: 'Esta ação não pode ser desfeita.',
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#ef4444',
+        cancelButtonColor: '#4b5563',
+        confirmButtonText: 'Sim, apagar',
+        cancelButtonText: 'Cancelar'
+    });
+    
+    if (!result.isConfirmed) return;
+    
+    Swal.fire({
+        title: 'Apagando...',
+        allowOutsideClick: false,
+        didOpen: () => Swal.showLoading()
+    });
+    
+    try {
+        const response = await fetch(`${API_URL}/cliente06/chat-global/mensagens/${msgId}`, {
+            method: 'DELETE',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ userId: currentUser.id })
+        });
+        
+        Swal.close();
+        
+        if (response.ok) {
+            // Recarregar o chat
+            await carregarChat();
+            
+            Swal.fire({
+                icon: 'success',
+                title: '✅ Mensagem apagada!',
+                timer: 1500,
+                showConfirmButton: false,
+                toast: true,
+                position: 'top-end'
+            });
+        } else {
+            const data = await response.json();
+            Swal.fire('Erro', data.error || 'Não foi possível apagar', 'error');
+        }
+    } catch (error) {
+        Swal.close();
+        console.error('Erro:', error);
+        Swal.fire('Erro', 'Erro de conexão', 'error');
+    }
+}
 function renderMensagem(msg) {
     const isLiked = currentUser ? (msg.likes?.includes(currentUser.id) || false) : false;
     const temRespostas = msg.respostas && msg.respostas.length > 0;
     const podeInteragir = currentUser !== null;
     const reacoes = msg.reacoes || {};
     
-    // Verificar se é mensagem de áudio
-    const isAudio = msg.tipo === 'audio';
+    // VERIFICAR SE É MENSAGEM DE ÁUDIO (compatível com diferentes formatos)
+    const isAudio = msg.tipo === 'audio' || (msg.audioUrl && msg.audioUrl !== undefined);
+    const audioUrl = msg.audioUrl || (msg.tipo === 'audio' ? msg.audioUrl : null);
+    
+    console.log('🎤 Renderizando mensagem:', { id: msg.id, tipo: msg.tipo, isAudio, audioUrl });
     
     return `
         <div class="chat-message" data-msg-id="${msg.id}" id="msg-${msg.id}">
@@ -5099,15 +5184,16 @@ function renderMensagem(msg) {
                 </div>
                 
                 <!-- CONTEÚDO: Texto OU Áudio -->
-                ${isAudio ? `
-                    <div class="message-audio" style="margin: 8px 0;">
-                        <audio controls src="${msg.audioUrl}" style="width: 100%; max-width: 250px; height: 40px; border-radius: 20px;">
+                ${isAudio && audioUrl ? `
+                    <div class="message-audio" style="margin: 8px 0; display: flex; align-items: center; gap: 10px; flex-wrap: wrap;">
+                        <audio controls preload="metadata" style="min-width: 200px; max-width: 280px; height: 40px; border-radius: 20px;">
+                            <source src="${audioUrl}" type="audio/webm">
                             Seu navegador não suporta áudio
                         </audio>
-                        <span style="font-size: 11px; color: #888; margin-left: 8px;">🎤 ${formatarDuracao(msg.duracao || 0)}</span>
+                        <span style="font-size: 11px; color: #888;">🎤 ${formatarDuracao(msg.duracao || 0)}</span>
                     </div>
                 ` : `
-                    <div class="message-text">${tornarLinksClicaveis(escapeHtml(msg.texto))}</div>
+                    <div class="message-text">${tornarLinksClicaveis(escapeHtml(msg.texto || ''))}</div>
                 `}
                 
                 <!-- Reações -->
@@ -5141,16 +5227,23 @@ function renderMensagem(msg) {
                     ` : ''}
                 </div>
                 
-                <div class="message-actions">
-                    <button class="message-action ${isLiked ? 'liked' : ''}" 
-                            onclick="${podeInteragir ? `likeMensagem(${msg.id})` : `mostrarLoginPrompt()`}">
-                        <i class="fas fa-heart"></i> ${msg.likes?.length || 0}
-                    </button>
-                    <button class="message-action" 
-                            onclick="${podeInteragir ? `responderMensagem(${msg.id}, '${escapeHtml(msg.usuario?.nome || 'Usuário')}')` : `mostrarLoginPrompt()`}">
-                        <i class="fas fa-reply"></i> Responder
-                    </button>
-                </div>
+              <div class="message-actions">
+    <button class="message-action ${isLiked ? 'liked' : ''}" 
+            onclick="${podeInteragir ? `likeMensagem(${msg.id})` : `mostrarLoginPrompt()`}">
+        <i class="fas fa-heart"></i> ${msg.likes?.length || 0}
+    </button>
+    <button class="message-action" 
+            onclick="${podeInteragir ? `responderMensagem(${msg.id}, '${escapeHtml(msg.usuario?.nome || 'Usuário')}')` : `mostrarLoginPrompt()`}">
+        <i class="fas fa-reply"></i> Responder
+    </button>
+    ${currentUser && msg.usuario?.id === currentUser.id ? `
+        <button class="message-action danger" 
+                onclick="apagarMensagemChat(${msg.id})"
+                style="color: #ef4444;">
+            <i class="fas fa-trash-alt"></i> Apagar
+        </button>
+    ` : ''}
+</div>
                 ${temRespostas ? `
                     <button class="message-action" onclick="toggleRespostas(${msg.id})">
                         <i class="fas fa-comment-dots"></i> ${msg.respostas.length} ${msg.respostas.length === 1 ? 'resposta' : 'respostas'}
@@ -5181,12 +5274,11 @@ function renderMensagem(msg) {
 
 // Função auxiliar para formatar duração do áudio
 function formatarDuracao(segundos) {
-    if (!segundos) return '0:00';
+    if (!segundos || segundos === 0) return '0:00';
     const min = Math.floor(segundos / 60);
     const sec = segundos % 60;
     return `${min}:${sec.toString().padStart(2, '0')}`;
 }
-
     async function likeMensagem(id) {
         if (!currentUser) { mostrarLoginPrompt(); return; }
         try {

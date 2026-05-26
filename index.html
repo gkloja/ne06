@@ -1453,6 +1453,17 @@ body.light-mode .perfil-menu-btn:hover {
         font-size: 13px;
     }
 }
+/* Botão de áudio ativo (gravando) */
+#audioMsgBtn.gravando {
+    background: #ef4444 !important;
+    color: white !important;
+    animation: pulseMic 1s infinite;
+}
+
+@keyframes pulseMic {
+    0%, 100% { transform: scale(1); }
+    50% { transform: scale(1.1); }
+}
 </style>
 </head>
 <body>
@@ -1532,20 +1543,26 @@ body.light-mode .perfil-menu-btn:hover {
                 <div class="chat-messages" id="chatMessages">
                     <div class="loading-spinner"><div class="spinner"></div><p>Carregando mensagens...</p></div>
                 </div>
-                <div class="chat-input-container">
-                    <div style="flex:1">
-                        <div id="replyIndicator" class="reply-indicator" style="display: none;">
-                            <span><i class="fas fa-reply"></i> Respondendo para <span id="replyToName"></span></span>
-                            <button class="cancel-reply" onclick="cancelarResposta()"><i class="fas fa-times"></i></button>
-                        </div>
-                        <textarea class="chat-input" id="chatInput" rows="1" placeholder="Digite sua mensagem..."></textarea>
-                    </div>
-                    <div class="chat-options">
-                        <button class="chat-option-btn" id="emojiBtn" onclick="abrirEmojis()"><i class="fas fa-smile"></i></button>
-                        <button class="chat-option-btn" id="anonimoBtn" style="background: rgba(124,77,255,0.2);"><i class="fas fa-user-secret"></i></button>
-                        <button class="send-btn" id="sendBtn"><i class="fas fa-paper-plane"></i></button>
-                    </div>
-                </div>
+<div class="chat-input-container">
+    <div style="flex:1">
+        <div id="replyIndicator" class="reply-indicator" style="display: none;">
+            <span><i class="fas fa-reply"></i> Respondendo para <span id="replyToName"></span></span>
+            <button class="cancel-reply" onclick="cancelarResposta()"><i class="fas fa-times"></i></button>
+        </div>
+        <textarea class="chat-input" id="chatInput" rows="1" placeholder="Digite sua mensagem..."></textarea>
+    </div>
+    <div class="chat-options">
+        <button class="chat-option-btn" id="emojiBtn" onclick="abrirEmojis()"><i class="fas fa-smile"></i></button>
+        <button class="chat-option-btn" id="anonimoBtn" style="background: rgba(124,77,255,0.2);"><i class="fas fa-user-secret"></i></button>
+        
+        <!-- 🎤 BOTÃO DE ÁUDIO - ADICIONE AQUI! -->
+        <button class="chat-option-btn" id="audioMsgBtn" style="background: rgba(16,185,129,0.2);">
+            <i class="fas fa-microphone"></i>
+        </button>
+        
+        <button class="send-btn" id="sendBtn"><i class="fas fa-paper-plane"></i></button>
+    </div>
+</div>
             </div>
         </div>
         
@@ -1969,7 +1986,132 @@ function getNivel(xp) {
         proximoNivel: proximoNivel
     };
 }
-// ==================== WATCH PARTY (SINCRONIZAÇÃO REAL) ====================
+
+
+let mediaRecorder = null;
+let audioChunks = [];
+let gravando = false;
+let tempoGravacao = 0;
+let timerInterval = null;
+
+async function iniciarGravacao() {
+    if (!currentUser) {
+        mostrarLoginPrompt();
+        return;
+    }
+    
+    try {
+        const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+        
+        mediaRecorder = new MediaRecorder(stream);
+        audioChunks = [];
+        
+        mediaRecorder.ondataavailable = (event) => {
+            audioChunks.push(event.data);
+        };
+        
+        mediaRecorder.onstop = async () => {
+            const audioBlob = new Blob(audioChunks, { type: 'audio/webm' });
+            await enviarAudioMensagem(audioBlob);
+            stream.getTracks().forEach(track => track.stop());
+        };
+        
+        mediaRecorder.start();
+        gravando = true;
+        
+        // Mostrar indicador
+        document.getElementById('gravandoIndicator').style.display = 'flex';
+        tempoGravacao = 0;
+        atualizarTempoGravacao();
+        timerInterval = setInterval(atualizarTempoGravacao, 1000);
+        
+        // Auto-parar após 2 minutos
+        setTimeout(() => {
+            if (gravando) pararGravacao();
+        }, 120000);
+        
+    } catch (error) {
+        Swal.fire('Erro', 'Permita o acesso ao microfone', 'error');
+    }
+}
+
+function pararGravacao() {
+    if (mediaRecorder && gravando) {
+        mediaRecorder.stop();
+        gravando = false;
+        clearInterval(timerInterval);
+        document.getElementById('gravandoIndicator').style.display = 'none';
+    }
+}
+
+function atualizarTempoGravacao() {
+    tempoGravacao++;
+    const minutos = Math.floor(tempoGravacao / 60);
+    const segundos = tempoGravacao % 60;
+    document.getElementById('tempoGravacao').textContent = `${minutos}:${segundos.toString().padStart(2, '0')}`;
+}
+
+// Eventos de pressionar e soltar (mobile e desktop)
+const audioBtn = document.getElementById('audioMsgBtn');
+audioBtn.addEventListener('mousedown', iniciarGravacao);
+audioBtn.addEventListener('mouseup', pararGravacao);
+audioBtn.addEventListener('mouseleave', pararGravacao);
+// Para mobile
+audioBtn.addEventListener('touchstart', iniciarGravacao);
+audioBtn.addEventListener('touchend', pararGravacao);
+
+// Enviar áudio para o servidor
+async function enviarAudioMensagem(audioBlob) {
+    const formData = new FormData();
+    formData.append('audio', audioBlob, `audio_${Date.now()}.webm`);
+    formData.append('userId', currentUser.id);
+    formData.append('userName', currentUser.nome);
+    formData.append('userAvatar', currentUser.avatar);
+    
+    Swal.fire({
+        title: '📤 Enviando áudio...',
+        allowOutsideClick: false,
+        didOpen: () => Swal.showLoading()
+    });
+    
+    try {
+        const response = await fetch(`${API_URL}/cliente06/chat-global/audio`, {
+            method: 'POST',
+            body: formData
+        });
+        
+        Swal.close();
+        
+        if (response.ok) {
+            const data = await response.json();
+            // Adicionar mensagem de áudio ao chat
+            adicionarAudioMensagemAoChat(data.audioUrl);
+        } else {
+            Swal.fire('Erro', 'Não foi possível enviar o áudio', 'error');
+        }
+    } catch (error) {
+        Swal.close();
+        Swal.fire('Erro', 'Erro de conexão', 'error');
+    }
+}
+
+function adicionarAudioMensagemAoChat(audioUrl) {
+    // Criar mensagem com player de áudio
+    const mensagem = {
+        usuario: { id: currentUser.id, nome: currentUser.nome, avatar: currentUser.avatar },
+        tipo: 'audio',
+        audioUrl: audioUrl,
+        duracao: tempoGravacao,
+        createdAt: new Date().toISOString()
+    };
+    
+    // Enviar para o servidor
+    fetch(`${API_URL}/cliente06/chat-global/mensagens`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(mensagem)
+    });
+}
 // ==================== WATCH PARTY (FUNCIONANDO) ====================
 
 let watchRoomAtual = null;
@@ -6981,6 +7123,12 @@ function verificarSalaWatchNaUrl() {
             </p>
         </div>
     </div>
+</div>
+<!-- Indicador flutuante de gravação -->
+<div id="gravandoIndicator" style="display: none; position: fixed; bottom: 100px; left: 50%; transform: translateX(-50%); background: #ef4444; color: white; padding: 12px 24px; border-radius: 50px; z-index: 9999; font-weight: 600; box-shadow: 0 4px 15px rgba(0,0,0,0.3);">
+    <i class="fas fa-circle" style="color: #ff0000; animation: pulse 1s infinite; margin-right: 8px;"></i>
+    Gravando... <span id="tempoGravacao">0:00</span>
+    <small style="margin-left: 8px;">(solte para enviar)</small>
 </div>
 </body>
 </html>

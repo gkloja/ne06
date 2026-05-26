@@ -2534,7 +2534,7 @@ function mostrarPreviewAudio(audioBlob, respostaContexto) {
     });
 }
 
-// Enviar áudio para o servidor
+// Enviar áudio para o servidor (com suporte a resposta)
 async function enviarAudio(audioBlob, respostaContexto = null) {
     if (!audioBlob || audioBlob.size < 5000) {
         Swal.fire({
@@ -2555,6 +2555,7 @@ async function enviarAudio(audioBlob, respostaContexto = null) {
     formData.append('userAvatar', currentUser.avatar);
     formData.append('duracao', tempoGravacao);
     
+    // 🔥 IMPORTANTE: Enviar dados da resposta
     if (respostaContexto) {
         formData.append('respostaParaId', respostaContexto.id);
         formData.append('respostaParaNome', respostaContexto.nome);
@@ -2576,6 +2577,12 @@ async function enviarAudio(audioBlob, respostaContexto = null) {
         loadingSwal.close();
         
         if (response.ok && data.success) {
+            // Limpar indicador de resposta
+            const replyIndicator = document.getElementById('replyIndicator');
+            if (replyIndicator) {
+                replyIndicator.style.display = 'none';
+            }
+            
             await carregarChat();
             
             setTimeout(() => {
@@ -2613,7 +2620,14 @@ async function enviarAudio(audioBlob, respostaContexto = null) {
         });
     }
 }
-
+// Construir URL completa do áudio
+function construirUrlAudio(audioUrl) {
+    if (!audioUrl) return '';
+    if (audioUrl.startsWith('http')) return audioUrl;
+    const baseUrl = API_URL.replace(/\/$/, '');
+    const path = audioUrl.startsWith('/') ? audioUrl : '/' + audioUrl;
+    return baseUrl + path;
+}
 // RESPONDER COM ÁUDIO (CORRIGIDA)
 function responderComAudio(msgId, msgNome, msgTexto = '') {
     if (!currentUser) {

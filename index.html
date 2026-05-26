@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
@@ -1506,153 +1507,6 @@ body.light-mode .perfil-menu-btn:hover {
     background: rgba(239, 68, 68, 0.1);
     color: #ef4444;
 }
-/* ========== GRAVAÇÃO DE ÁUDIO PROFISSIONAL ========== */
-
-/* Indicador de gravação moderno */
-#gravandoIndicator {
-    position: fixed;
-    bottom: 100px;
-    left: 50%;
-    transform: translateX(-50%) scale(0.95);
-    background: linear-gradient(135deg, #ef4444, #dc2626);
-    color: white;
-    padding: 14px 28px;
-    border-radius: 60px;
-    z-index: 9999;
-    font-weight: 700;
-    font-size: 14px;
-    box-shadow: 0 8px 32px rgba(239, 68, 68, 0.4);
-    backdrop-filter: blur(8px);
-    align-items: center;
-    gap: 12px;
-    transition: all 0.3s ease;
-    opacity: 0;
-    pointer-events: none;
-}
-
-#gravandoIndicator.gravando-ativo {
-    display: flex !important;
-    opacity: 1;
-    transform: translateX(-50%) scale(1);
-    animation: pulseGlow 1.5s infinite;
-}
-
-@keyframes pulseGlow {
-    0%, 100% { box-shadow: 0 8px 32px rgba(239, 68, 68, 0.4); }
-    50% { box-shadow: 0 8px 48px rgba(239, 68, 68, 0.8); }
-}
-
-#gravandoIndicator i:first-child {
-    font-size: 20px;
-    animation: pulseMicWave 1s infinite;
-}
-
-@keyframes pulseMicWave {
-    0%, 100% { opacity: 1; transform: scale(1); }
-    50% { opacity: 0.7; transform: scale(1.1); }
-}
-
-#gravandoIndicator #tempoGravacao {
-    font-family: monospace;
-    font-size: 16px;
-    font-weight: 700;
-    letter-spacing: 1px;
-    background: rgba(255,255,255,0.2);
-    padding: 4px 10px;
-    border-radius: 30px;
-}
-
-#gravandoIndicator small {
-    font-size: 11px;
-    opacity: 0.9;
-    font-weight: 400;
-}
-
-/* Botão de áudio - efeito hover */
-#audioMsgBtn {
-    transition: all 0.2s ease;
-    position: relative;
-    overflow: hidden;
-}
-
-#audioMsgBtn:hover {
-    background: #10b981 !important;
-    color: white !important;
-    transform: scale(1.05);
-}
-
-#audioMsgBtn.gravando {
-    background: #ef4444 !important;
-    color: white !important;
-    animation: pulseMicBtn 1s infinite;
-}
-
-@keyframes pulseMicBtn {
-    0%, 100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.4); }
-    50% { transform: scale(1.08); box-shadow: 0 0 0 8px rgba(239, 68, 68, 0); }
-}
-
-/* Onda de áudio animada (opcional) */
-.wave-animation {
-    display: inline-flex;
-    align-items: center;
-    gap: 3px;
-    margin-left: 8px;
-}
-
-.wave-animation span {
-    width: 3px;
-    height: 12px;
-    background: white;
-    border-radius: 3px;
-    animation: wave 0.8s ease infinite;
-}
-
-.wave-animation span:nth-child(1) { animation-delay: 0s; height: 8px; }
-.wave-animation span:nth-child(2) { animation-delay: 0.1s; height: 16px; }
-.wave-animation span:nth-child(3) { animation-delay: 0.2s; height: 12px; }
-.wave-animation span:nth-child(4) { animation-delay: 0.3s; height: 20px; }
-.wave-animation span:nth-child(5) { animation-delay: 0.4s; height: 10px; }
-
-@keyframes wave {
-    0%, 100% { height: 8px; }
-    50% { height: 20px; }
-}
-
-/* Player de áudio no chat estilizado */
-.message-audio audio {
-    background: var(--card);
-    border-radius: 30px;
-    height: 42px;
-}
-
-.message-audio audio::-webkit-media-controls-panel {
-    background: var(--card);
-}
-
-.message-audio audio::-webkit-media-controls-play-button {
-    background-color: var(--primary);
-    border-radius: 50%;
-}
-
-/* Responsivo */
-@media (max-width: 768px) {
-    #gravandoIndicator {
-        padding: 10px 20px;
-        font-size: 12px;
-        bottom: 80px;
-    }
-    
-    #gravandoIndicator #tempoGravacao {
-        font-size: 14px;
-        padding: 2px 8px;
-    }
-    
-    .message-audio audio {
-        max-width: 220px;
-        height: 38px;
-    }
-}
 </style>
 </head>
 <body>
@@ -2175,8 +2029,7 @@ function getNivel(xp) {
         proximoNivel: proximoNivel
     };
 }
-
-// ==================== ÁUDIO PROFISSIONAL NO CHAT ====================
+// ==================== ÁUDIO PROFISSIONAL CORRIGIDO ====================
 
 let mediaRecorder = null;
 let audioChunks = [];
@@ -2184,31 +2037,27 @@ let gravando = false;
 let tempoGravacao = 0;
 let timerInterval = null;
 let streamAtual = null;
+let enviandoAudio = false;
 
-// Botões e elementos
 const audioBtn = document.getElementById('audioMsgBtn');
 const gravandoIndicator = document.getElementById('gravandoIndicator');
 const tempoDisplay = document.getElementById('tempoGravacao');
 
-// Estado do botão
 let botaoPressionado = false;
 let timeoutLongPress = null;
 
-// Função para iniciar gravação (pressionar)
+// INICIAR GRAVAÇÃO (APENAS UMA VEZ)
 async function iniciarGravacaoProfissional() {
     if (!currentUser) {
         mostrarLoginPrompt();
         return;
     }
     
-    // Evitar múltiplas gravações
-    if (gravando) return;
+    if (gravando || enviandoAudio) return;
     
     try {
-        // Solicitar microfone
         streamAtual = await navigator.mediaDevices.getUserMedia({ audio: true });
         
-        // Configurar MediaRecorder
         mediaRecorder = new MediaRecorder(streamAtual, { mimeType: 'audio/webm' });
         audioChunks = [];
         
@@ -2219,32 +2068,30 @@ async function iniciarGravacaoProfissional() {
         };
         
         mediaRecorder.onstop = () => {
-            if (audioChunks.length > 0) {
+            if (audioChunks.length > 0 && !enviandoAudio) {
                 const audioBlob = new Blob(audioChunks, { type: 'audio/webm' });
                 enviarAudioProfissional(audioBlob);
             }
-            // Limpar stream
             if (streamAtual) {
                 streamAtual.getTracks().forEach(track => track.stop());
                 streamAtual = null;
             }
         };
         
-        // Iniciar gravação
-        mediaRecorder.start(100); // Coleta dados a cada 100ms
+        mediaRecorder.start(100);
         gravando = true;
         
-        // Mostrar indicador moderno
         gravandoIndicator.style.display = 'flex';
         gravandoIndicator.classList.add('gravando-ativo');
         tempoGravacao = 0;
-        atualizarTempoGravacao();
+        atualizarTempoDisplay();
         
-        // Timer
         if (timerInterval) clearInterval(timerInterval);
-        timerInterval = setInterval(atualizarTempoGravacao, 1000);
+        timerInterval = setInterval(atualizarTempoDisplay, 1000);
         
-        // Auto-parar após 60 segundos (limite)
+        audioBtn.classList.add('gravando');
+        
+        // Auto-parar após 60 segundos
         setTimeout(() => {
             if (gravando) {
                 finalizarGravacaoProfissional();
@@ -2260,11 +2107,8 @@ async function iniciarGravacaoProfissional() {
             }
         }, 60000);
         
-        // Feedback tátil no botão
-        audioBtn.classList.add('gravando');
-        
     } catch (error) {
-        console.error('Erro ao acessar microfone:', error);
+        console.error('Erro microfone:', error);
         Swal.fire({
             icon: 'error',
             title: 'Microfone indisponível',
@@ -2274,42 +2118,37 @@ async function iniciarGravacaoProfissional() {
     }
 }
 
-// Função para finalizar gravação (soltar)
+// FINALIZAR GRAVAÇÃO (APENAS UMA VEZ)
 function finalizarGravacaoProfissional() {
     if (!gravando || !mediaRecorder) return;
     
-    // Pequeno delay para garantir o último chunk
-    setTimeout(() => {
-        if (mediaRecorder && mediaRecorder.state === 'recording') {
-            mediaRecorder.stop();
-        }
-        
-        gravando = false;
-        clearInterval(timerInterval);
-        
-        // Ocultar indicador
-        gravandoIndicator.style.display = 'none';
-        gravandoIndicator.classList.remove('gravando-ativo');
-        
-        // Remover classe do botão
-        audioBtn.classList.remove('gravando');
-        
-    }, 100);
+    // Impedir múltiplas chamadas
+    if (mediaRecorder.state !== 'recording') return;
+    
+    mediaRecorder.stop();
+    gravando = false;
+    clearInterval(timerInterval);
+    
+    gravandoIndicator.style.display = 'none';
+    gravandoIndicator.classList.remove('gravando-ativo');
+    audioBtn.classList.remove('gravando');
 }
 
-// Cancelar gravação (se arrastar o mouse para fora)
+// CANCELAR GRAVAÇÃO
 function cancelarGravacaoProfissional() {
     if (!gravando || !mediaRecorder) return;
     
-    mediaRecorder.onstop = () => {
-        if (streamAtual) {
-            streamAtual.getTracks().forEach(track => track.stop());
-            streamAtual = null;
-        }
-        audioChunks = [];
-    };
+    if (mediaRecorder.state === 'recording') {
+        mediaRecorder.onstop = () => {
+            if (streamAtual) {
+                streamAtual.getTracks().forEach(track => track.stop());
+                streamAtual = null;
+            }
+            audioChunks = [];
+        };
+        mediaRecorder.stop();
+    }
     
-    mediaRecorder.stop();
     gravando = false;
     clearInterval(timerInterval);
     
@@ -2327,7 +2166,7 @@ function cancelarGravacaoProfissional() {
     });
 }
 
-function atualizarTempoGravacao() {
+function atualizarTempoDisplay() {
     tempoGravacao++;
     const minutos = Math.floor(tempoGravacao / 60);
     const segundos = tempoGravacao % 60;
@@ -2336,7 +2175,7 @@ function atualizarTempoGravacao() {
     }
 }
 
-// Eventos para Desktop (mouse)
+// EVENTOS DO BOTÃO (Desktop e Mobile)
 if (audioBtn) {
     audioBtn.addEventListener('mousedown', (e) => {
         e.preventDefault();
@@ -2345,7 +2184,7 @@ if (audioBtn) {
             if (botaoPressionado) {
                 iniciarGravacaoProfissional();
             }
-        }, 150); // Pequeno delay para evitar gravações acidentais
+        }, 150);
     });
     
     audioBtn.addEventListener('mouseup', () => {
@@ -2363,31 +2202,31 @@ if (audioBtn) {
         botaoPressionado = false;
         if (timeoutLongPress) clearTimeout(timeoutLongPress);
     });
+    
+    audioBtn.addEventListener('touchstart', (e) => {
+        e.preventDefault();
+        botaoPressionado = true;
+        timeoutLongPress = setTimeout(() => {
+            if (botaoPressionado) {
+                iniciarGravacaoProfissional();
+            }
+        }, 150);
+    });
+    
+    audioBtn.addEventListener('touchend', (e) => {
+        e.preventDefault();
+        botaoPressionado = false;
+        if (timeoutLongPress) clearTimeout(timeoutLongPress);
+        if (gravando) {
+            finalizarGravacaoProfissional();
+        }
+    });
 }
 
-// Eventos para Mobile (touch)
-audioBtn.addEventListener('touchstart', (e) => {
-    e.preventDefault();
-    botaoPressionado = true;
-    timeoutLongPress = setTimeout(() => {
-        if (botaoPressionado) {
-            iniciarGravacaoProfissional();
-        }
-    }, 150);
-});
-
-audioBtn.addEventListener('touchend', (e) => {
-    e.preventDefault();
-    botaoPressionado = false;
-    if (timeoutLongPress) clearTimeout(timeoutLongPress);
-    if (gravando) {
-        finalizarGravacaoProfissional();
-    }
-});
-
-// Enviar áudio para o servidor
+// ENVIAR ÁUDIO PARA O SERVIDOR
 async function enviarAudioProfissional(audioBlob) {
-    // Verificar tamanho mínimo (evitar áudio vazio)
+    if (enviandoAudio) return;
+    
     if (audioBlob.size < 5000) {
         Swal.fire({
             icon: 'warning',
@@ -2400,6 +2239,8 @@ async function enviarAudioProfissional(audioBlob) {
         return;
     }
     
+    enviandoAudio = true;
+    
     const formData = new FormData();
     formData.append('audio', audioBlob, `audio_${Date.now()}.webm`);
     formData.append('userId', currentUser.id);
@@ -2407,15 +2248,12 @@ async function enviarAudioProfissional(audioBlob) {
     formData.append('userAvatar', currentUser.avatar);
     formData.append('duracao', tempoGravacao);
     
-    // Mostrar loading suave
-    const toastLoading = Swal.fire({
+    const toastId = Swal.fire({
         title: '📤 Enviando áudio...',
         timer: 3000,
         timerProgressBar: true,
         allowOutsideClick: false,
-        didOpen: () => {
-            Swal.showLoading();
-        }
+        didOpen: () => Swal.showLoading()
     });
     
     try {
@@ -2425,18 +2263,17 @@ async function enviarAudioProfissional(audioBlob) {
         });
         
         const data = await response.json();
-        toastLoading.close();
+        toastId.close();
+        enviandoAudio = false;
         
         if (response.ok && data.success) {
-            // Recarregar chat
             await carregarChat();
             
-            // Scroll para o final
             const chatDiv = document.getElementById('chatMessages');
             if (chatDiv) {
                 setTimeout(() => {
                     chatDiv.scrollTop = chatDiv.scrollHeight;
-                }, 100);
+                }, 200);
             }
             
             Swal.fire({
@@ -2456,7 +2293,8 @@ async function enviarAudioProfissional(audioBlob) {
             });
         }
     } catch (error) {
-        toastLoading.close();
+        toastId.close();
+        enviandoAudio = false;
         console.error('Erro:', error);
         Swal.fire({
             icon: 'error',
@@ -2465,6 +2303,13 @@ async function enviarAudioProfissional(audioBlob) {
             confirmButtonText: 'OK'
         });
     }
+}
+
+// Esta função NÃO é mais necessária - o carregarChat já faz tudo
+function adicionarAudioMensagemAoChat(audioUrl) {
+    // REMOVA esta função ou deixe vazia
+    console.log('Áudio enviado, recarregando chat...');
+    carregarChat(); // Forçar recarregamento
 }
 // ==================== WATCH PARTY (FUNCIONANDO) ====================
 

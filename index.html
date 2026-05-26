@@ -5158,11 +5158,23 @@ function renderMensagem(msg) {
     const podeInteragir = currentUser !== null;
     const reacoes = msg.reacoes || {};
     
-    // VERIFICAR SE É MENSAGEM DE ÁUDIO (compatível com diferentes formatos)
-    const isAudio = msg.tipo === 'audio' || (msg.audioUrl && msg.audioUrl !== undefined);
-    const audioUrl = msg.audioUrl || (msg.tipo === 'audio' ? msg.audioUrl : null);
+    // VERIFICAR SE É MENSAGEM DE ÁUDIO
+    const isAudio = msg.tipo === 'audio';
     
-    console.log('🎤 Renderizando mensagem:', { id: msg.id, tipo: msg.tipo, isAudio, audioUrl });
+    // CONSTRUIR URL COMPLETA DO ÁUDIO
+    let audioUrlCompleta = null;
+    if (isAudio && msg.audioUrl) {
+        // Se a URL já começa com http, usa ela, senão adiciona o API_URL
+        if (msg.audioUrl.startsWith('http')) {
+            audioUrlCompleta = msg.audioUrl;
+        } else {
+            // Remove barra duplicada se necessário
+            const baseUrl = API_URL.replace(/\/$/, '');
+            const audioPath = msg.audioUrl.startsWith('/') ? msg.audioUrl : '/' + msg.audioUrl;
+            audioUrlCompleta = baseUrl + audioPath;
+        }
+        console.log('🎤 Áudio URL:', audioUrlCompleta);
+    }
     
     return `
         <div class="chat-message" data-msg-id="${msg.id}" id="msg-${msg.id}">
@@ -5184,13 +5196,14 @@ function renderMensagem(msg) {
                 </div>
                 
                 <!-- CONTEÚDO: Texto OU Áudio -->
-                ${isAudio && audioUrl ? `
-                    <div class="message-audio" style="margin: 8px 0; display: flex; align-items: center; gap: 10px; flex-wrap: wrap;">
-                        <audio controls preload="metadata" style="min-width: 200px; max-width: 280px; height: 40px; border-radius: 20px;">
-                            <source src="${audioUrl}" type="audio/webm">
+                ${isAudio && audioUrlCompleta ? `
+                    <div class="message-audio" style="margin: 8px 0;">
+                        <audio controls preload="metadata" style="min-width: 200px; max-width: 280px; height: 42px; border-radius: 20px;">
+                            <source src="${audioUrlCompleta}" type="audio/webm">
+                            <source src="${audioUrlCompleta}" type="audio/mp4">
                             Seu navegador não suporta áudio
                         </audio>
-                        <span style="font-size: 11px; color: #888;">🎤 ${formatarDuracao(msg.duracao || 0)}</span>
+                        <span style="font-size: 11px; color: #888; margin-left: 8px;">🎤 ${formatarDuracao(msg.duracao || 0)}</span>
                     </div>
                 ` : `
                     <div class="message-text">${tornarLinksClicaveis(escapeHtml(msg.texto || ''))}</div>
@@ -5227,23 +5240,23 @@ function renderMensagem(msg) {
                     ` : ''}
                 </div>
                 
-              <div class="message-actions">
-    <button class="message-action ${isLiked ? 'liked' : ''}" 
-            onclick="${podeInteragir ? `likeMensagem(${msg.id})` : `mostrarLoginPrompt()`}">
-        <i class="fas fa-heart"></i> ${msg.likes?.length || 0}
-    </button>
-    <button class="message-action" 
-            onclick="${podeInteragir ? `responderMensagem(${msg.id}, '${escapeHtml(msg.usuario?.nome || 'Usuário')}')` : `mostrarLoginPrompt()`}">
-        <i class="fas fa-reply"></i> Responder
-    </button>
-    ${currentUser && msg.usuario?.id === currentUser.id ? `
-        <button class="message-action danger" 
-                onclick="apagarMensagemChat(${msg.id})"
-                style="color: #ef4444;">
-            <i class="fas fa-trash-alt"></i> Apagar
-        </button>
-    ` : ''}
-</div>
+                <div class="message-actions">
+                    <button class="message-action ${isLiked ? 'liked' : ''}" 
+                            onclick="${podeInteragir ? `likeMensagem(${msg.id})` : `mostrarLoginPrompt()`}">
+                        <i class="fas fa-heart"></i> ${msg.likes?.length || 0}
+                    </button>
+                    <button class="message-action" 
+                            onclick="${podeInteragir ? `responderMensagem(${msg.id}, '${escapeHtml(msg.usuario?.nome || 'Usuário')}')` : `mostrarLoginPrompt()`}">
+                        <i class="fas fa-reply"></i> Responder
+                    </button>
+                    ${currentUser && msg.usuario?.id === currentUser.id ? `
+                        <button class="message-action danger" 
+                                onclick="apagarMensagemChat(${msg.id})"
+                                style="color: #ef4444;">
+                            <i class="fas fa-trash-alt"></i> Apagar
+                        </button>
+                    ` : ''}
+                </div>
                 ${temRespostas ? `
                     <button class="message-action" onclick="toggleRespostas(${msg.id})">
                         <i class="fas fa-comment-dots"></i> ${msg.respostas.length} ${msg.respostas.length === 1 ? 'resposta' : 'respostas'}
@@ -5272,7 +5285,7 @@ function renderMensagem(msg) {
     `;
 }
 
-// Função auxiliar para formatar duração do áudio
+// Função auxiliar para formatar duração
 function formatarDuracao(segundos) {
     if (!segundos || segundos === 0) return '0:00';
     const min = Math.floor(segundos / 60);

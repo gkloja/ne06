@@ -1635,6 +1635,123 @@ body.light-mode .perfil-menu-btn:hover {
     align-items: center;
     gap: 8px;
 }
+/* ========== MODAL DE PRÉ-VISUALIZAÇÃO DE ÁUDIO ========== */
+.audio-preview-modal {
+    text-align: center;
+}
+
+.audio-preview-wave {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 4px;
+    height: 60px;
+    margin: 20px 0;
+    background: rgba(0,0,0,0.05);
+    border-radius: 30px;
+}
+
+.audio-preview-wave span {
+    width: 4px;
+    height: 20px;
+    background: var(--primary);
+    border-radius: 2px;
+    animation: audioWave 0.8s ease infinite;
+}
+
+.audio-preview-wave span:nth-child(1) { animation-delay: 0s; height: 15px; }
+.audio-preview-wave span:nth-child(2) { animation-delay: 0.1s; height: 30px; }
+.audio-preview-wave span:nth-child(3) { animation-delay: 0.2s; height: 45px; }
+.audio-preview-wave span:nth-child(4) { animation-delay: 0.3s; height: 30px; }
+.audio-preview-wave span:nth-child(5) { animation-delay: 0.4s; height: 15px; }
+
+@keyframes audioWave {
+    0%, 100% { height: 15px; }
+    50% { height: 45px; }
+}
+
+.audio-preview-player {
+    width: 100%;
+    margin: 15px 0;
+    border-radius: 30px;
+}
+
+.audio-preview-actions {
+    display: flex;
+    gap: 12px;
+    justify-content: center;
+    margin-top: 16px;
+}
+
+.audio-preview-actions button {
+    padding: 10px 20px;
+    border-radius: 30px;
+    font-weight: 600;
+    cursor: pointer;
+    border: none;
+    transition: all 0.2s;
+}
+
+.btn-cancel-audio {
+    background: #333;
+    color: white;
+}
+
+.btn-cancel-audio:hover {
+    background: #555;
+}
+
+.btn-send-audio {
+    background: var(--primary);
+    color: white;
+}
+
+.btn-send-audio:hover {
+    background: var(--primary-dark);
+    transform: scale(1.02);
+}
+
+/* Indicador de gravação */
+.recording-indicator {
+    position: fixed;
+    bottom: 100px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: linear-gradient(135deg, #ef4444, #dc2626);
+    color: white;
+    padding: 12px 24px;
+    border-radius: 60px;
+    z-index: 9999;
+    font-weight: 700;
+    font-size: 14px;
+    box-shadow: 0 8px 32px rgba(239,68,68,0.4);
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    animation: slideUp 0.3s ease;
+}
+
+.recording-indicator .recording-dot {
+    width: 12px;
+    height: 12px;
+    background: #ff0000;
+    border-radius: 50%;
+    animation: pulse 1s infinite;
+}
+
+.recording-indicator .recording-timer {
+    font-family: monospace;
+    font-size: 16px;
+    font-weight: 700;
+    background: rgba(255,255,255,0.2);
+    padding: 4px 10px;
+    border-radius: 30px;
+}
+
+@keyframes slideUp {
+    from { transform: translateX(-50%) translateY(100%); opacity: 0; }
+    to { transform: translateX(-50%) translateY(0); opacity: 1; }
+}
 </style>
 </head>
 <body>
@@ -2157,7 +2274,7 @@ function getNivel(xp) {
         proximoNivel: proximoNivel
     };
 }
-// ==================== ÁUDIO PROFISSIONAL COM VIBRAÇÃO E FEEDBACK ====================
+// ==================== ÁUDIO PROFISSIONAL (CLIQUE PARA GRAVAR) ====================
 
 let mediaRecorder = null;
 let audioChunks = [];
@@ -2165,37 +2282,26 @@ let gravando = false;
 let tempoGravacao = 0;
 let timerInterval = null;
 let streamAtual = null;
-let enviandoAudio = false;
+let audioBlobTemp = null;
+let respostaAudioContexto = null;
 
 const audioBtn = document.getElementById('audioMsgBtn');
-const gravandoIndicator = document.getElementById('gravandoIndicator');
-const tempoDisplay = document.getElementById('tempoGravacao');
 
-let botaoPressionado = false;
-let timeoutLongPress = null;
-let respostaAudioPara = null; // Para responder com áudio
-
-// Função para vibrar (se suportado)
-function vibrar(duracao) {
-    if (window.navigator && window.navigator.vibrate) {
-        window.navigator.vibrate(duracao);
-    }
-}
-
-// INICIAR GRAVAÇÃO COM FEEDBACK
-async function iniciarGravacaoProfissional(respondendoParaId = null, respondendoNome = null) {
+// Iniciar gravação (clique único)
+async function iniciarGravacaoProfissional(respostaPara = null) {
     if (!currentUser) {
         mostrarLoginPrompt();
         return;
     }
     
-    if (gravando || enviandoAudio) return;
+    if (gravando) {
+        // Se já está gravando, para e mostra prévia
+        finalizarGravacaoComPreview();
+        return;
+    }
     
-    // Salvar contexto da resposta
-    respostaAudioPara = respondendoParaId ? { id: respondendoParaId, nome: respondendoNome } : null;
-    
-    // Vibração de início
-    vibrar(100);
+    // Salvar contexto de resposta
+    respostaAudioContexto = respostaPara;
     
     try {
         const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
@@ -2211,58 +2317,39 @@ async function iniciarGravacaoProfissional(respondendoParaId = null, respondendo
         };
         
         mediaRecorder.onstop = () => {
-            if (audioChunks.length > 0 && !enviandoAudio) {
-                const audioBlob = new Blob(audioChunks, { type: 'audio/webm' });
-                enviarAudioProfissional(audioBlob, respostaAudioPara);
+            if (audioChunks.length > 0) {
+                audioBlobTemp = new Blob(audioChunks, { type: 'audio/webm' });
+                mostrarPreviewAudio(audioBlobTemp, respostaAudioContexto);
             }
             if (streamAtual) {
                 streamAtual.getTracks().forEach(track => track.stop());
                 streamAtual = null;
             }
-            respostaAudioPara = null;
         };
         
         mediaRecorder.start(100);
         gravando = true;
-        
-        // Mostrar indicador com onda
-        gravandoIndicator.style.display = 'flex';
-        gravandoIndicator.classList.add('gravando-ativo');
-        
-        // Adicionar ondas visuais
-        gravandoIndicator.innerHTML = `
-            <i class="fas fa-microphone-alt" style="font-size: 20px; animation: pulseMicWave 1s infinite;"></i>
-            <span>Gravando</span>
-            <div class="wave-container">
-                <div class="wave-bar"></div>
-                <div class="wave-bar"></div>
-                <div class="wave-bar"></div>
-                <div class="wave-bar"></div>
-                <div class="wave-bar"></div>
-            </div>
-            <span id="tempoGravacao">0:00</span>
-            <small>(solte para enviar)</small>
-        `;
-        
         tempoGravacao = 0;
         
+        // Mostrar indicador de gravação
+        mostrarIndicadorGravacao();
+        
+        // Timer
         if (timerInterval) clearInterval(timerInterval);
         timerInterval = setInterval(() => {
             tempoGravacao++;
-            const minutos = Math.floor(tempoGravacao / 60);
-            const segundos = tempoGravacao % 60;
-            const tempoSpan = document.getElementById('tempoGravacao');
-            if (tempoSpan) {
-                tempoSpan.textContent = `${minutos.toString().padStart(2, '0')}:${segundos.toString().padStart(2, '0')}`;
+            const timerSpan = document.getElementById('recordingTimer');
+            if (timerSpan) {
+                const minutos = Math.floor(tempoGravacao / 60);
+                const segundos = tempoGravacao % 60;
+                timerSpan.textContent = `${minutos.toString().padStart(2, '0')}:${segundos.toString().padStart(2, '0')}`;
             }
         }, 1000);
-        
-        audioBtn.classList.add('gravando');
         
         // Auto-parar após 60 segundos
         setTimeout(() => {
             if (gravando) {
-                finalizarGravacaoProfissional();
+                finalizarGravacaoComPreview();
                 Swal.fire({
                     icon: 'info',
                     title: '⏱️ Limite atingido',
@@ -2275,13 +2362,22 @@ async function iniciarGravacaoProfissional(respondendoParaId = null, respondendo
             }
         }, 60000);
         
+        // Feedback visual no botão
+        audioBtn.classList.add('gravando');
+        audioBtn.innerHTML = '<i class="fas fa-stop"></i>';
+        
+        // Vibrar (se suportado)
+        if (window.navigator && window.navigator.vibrate) {
+            window.navigator.vibrate(50);
+        }
+        
     } catch (error) {
         console.error('Erro microfone:', error);
-        if (error.name === 'NotAllowedError' || error.name === 'PermissionDeniedError') {
+        if (error.name === 'NotAllowedError') {
             Swal.fire({
                 icon: 'error',
                 title: 'Microfone bloqueado',
-                text: 'Permita o acesso ao microfone nas configurações do navegador',
+                text: 'Permita o acesso ao microfone nas configurações',
                 confirmButtonText: 'OK'
             });
         } else if (error.name === 'NotFoundError') {
@@ -2295,31 +2391,57 @@ async function iniciarGravacaoProfissional(respondendoParaId = null, respondendo
     }
 }
 
-// FINALIZAR GRAVAÇÃO
-function finalizarGravacaoProfissional() {
-    if (!gravando || !mediaRecorder) return;
+// Mostrar indicador de gravação
+function mostrarIndicadorGravacao() {
+    let indicator = document.getElementById('recordingIndicator');
+    if (!indicator) {
+        indicator = document.createElement('div');
+        indicator.id = 'recordingIndicator';
+        indicator.className = 'recording-indicator';
+        document.body.appendChild(indicator);
+    }
     
-    if (mediaRecorder.state !== 'recording') return;
-    
-    // Vibração de fim
-    vibrar(50);
-    
-    mediaRecorder.stop();
-    gravando = false;
-    clearInterval(timerInterval);
-    
-    gravandoIndicator.style.display = 'none';
-    gravandoIndicator.classList.remove('gravando-ativo');
-    audioBtn.classList.remove('gravando');
+    indicator.innerHTML = `
+        <span class="recording-dot"></span>
+        <span>🔴 Gravando</span>
+        <span class="recording-timer" id="recordingTimer">00:00</span>
+        <span>🎙️</span>
+    `;
+    indicator.style.display = 'flex';
 }
 
-// CANCELAR GRAVAÇÃO
-function cancelarGravacaoProfissional() {
+// Ocultar indicador de gravação
+function ocultarIndicadorGravacao() {
+    const indicator = document.getElementById('recordingIndicator');
+    if (indicator) {
+        indicator.style.display = 'none';
+    }
+}
+
+// Finalizar gravação e mostrar prévia
+function finalizarGravacaoComPreview() {
     if (!gravando || !mediaRecorder) return;
     
-    vibrar(50);
-    
     if (mediaRecorder.state === 'recording') {
+        mediaRecorder.stop();
+    }
+    
+    gravando = false;
+    clearInterval(timerInterval);
+    ocultarIndicadorGravacao();
+    
+    audioBtn.classList.remove('gravando');
+    audioBtn.innerHTML = '<i class="fas fa-microphone"></i>';
+    
+    // Vibrar
+    if (window.navigator && window.navigator.vibrate) {
+        window.navigator.vibrate(50);
+    }
+}
+
+// Cancelar gravação
+function cancelarGravacao() {
+    if (mediaRecorder && mediaRecorder.state === 'recording') {
         mediaRecorder.onstop = () => {
             if (streamAtual) {
                 streamAtual.getTracks().forEach(track => track.stop());
@@ -2332,26 +2454,76 @@ function cancelarGravacaoProfissional() {
     
     gravando = false;
     clearInterval(timerInterval);
-    
-    gravandoIndicator.style.display = 'none';
-    gravandoIndicator.classList.remove('gravando-ativo');
+    ocultarIndicadorGravacao();
     audioBtn.classList.remove('gravando');
+    audioBtn.innerHTML = '<i class="fas fa-microphone"></i>';
+    audioBlobTemp = null;
+    respostaAudioContexto = null;
+}
+
+// Mostrar prévia do áudio antes de enviar
+function mostrarPreviewAudio(audioBlob, respostaContexto) {
+    const audioUrl = URL.createObjectURL(audioBlob);
+    const duracao = tempoGravacao;
+    const minutos = Math.floor(duracao / 60);
+    const segundos = duracao % 60;
+    const duracaoTexto = `${minutos.toString().padStart(2, '0')}:${segundos.toString().padStart(2, '0')}`;
+    
+    let htmlPreview = `
+        <div class="audio-preview-modal">
+            <div class="audio-preview-wave">
+                <span></span><span></span><span></span><span></span><span></span>
+            </div>
+            <audio controls class="audio-preview-player" src="${audioUrl}"></audio>
+            <p style="font-size: 13px; color: var(--text2);">
+                🎤 Duração: ${duracaoTexto}
+            </p>`;
+    
+    // Se for resposta a uma mensagem
+    if (respostaContexto) {
+        htmlPreview += `
+            <div style="background: rgba(37,99,235,0.1); padding: 8px; border-radius: 12px; margin: 12px 0;">
+                <i class="fas fa-reply"></i> Respondendo para <strong>${escapeHtml(respostaContexto.nome)}</strong>
+            </div>`;
+    }
+    
+    htmlPreview += `
+            <div class="audio-preview-actions">
+                <button class="btn-cancel-audio" id="cancelAudioBtn">
+                    <i class="fas fa-trash-alt"></i> Cancelar
+                </button>
+                <button class="btn-send-audio" id="sendAudioBtn">
+                    <i class="fas fa-paper-plane"></i> Enviar
+                </button>
+            </div>
+        </div>
+    `;
     
     Swal.fire({
-        icon: 'info',
-        title: 'Gravação cancelada',
-        timer: 1500,
+        title: '🎤 Prévia do Áudio',
+        html: htmlPreview,
         showConfirmButton: false,
-        toast: true,
-        position: 'top-end'
+        showCancelButton: false,
+        didOpen: () => {
+            document.getElementById('cancelAudioBtn').onclick = () => {
+                URL.revokeObjectURL(audioUrl);
+                Swal.close();
+                audioBlobTemp = null;
+                respostaAudioContexto = null;
+            };
+            
+            document.getElementById('sendAudioBtn').onclick = () => {
+                URL.revokeObjectURL(audioUrl);
+                Swal.close();
+                enviarAudioProfissional(audioBlob, respostaContexto);
+            };
+        }
     });
 }
 
-// ENVIAR ÁUDIO (suporta resposta)
-async function enviarAudioProfissional(audioBlob, respostaPara = null) {
-    if (enviandoAudio) return;
-    
-    if (audioBlob.size < 5000) {
+// Enviar áudio para o servidor
+async function enviarAudioProfissional(audioBlob, respostaContexto = null) {
+    if (!audioBlob || audioBlob.size < 5000) {
         Swal.fire({
             icon: 'warning',
             title: 'Áudio muito curto',
@@ -2363,14 +2535,6 @@ async function enviarAudioProfissional(audioBlob, respostaPara = null) {
         return;
     }
     
-    enviandoAudio = true;
-    
-    // Mostrar indicador de envio
-    const enviandoDiv = document.createElement('div');
-    enviandoDiv.className = 'enviando-audio-indicator';
-    enviandoDiv.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Enviando áudio...';
-    document.body.appendChild(enviandoDiv);
-    
     const formData = new FormData();
     formData.append('audio', audioBlob, `audio_${Date.now()}.webm`);
     formData.append('userId', currentUser.id);
@@ -2378,10 +2542,17 @@ async function enviarAudioProfissional(audioBlob, respostaPara = null) {
     formData.append('userAvatar', currentUser.avatar);
     formData.append('duracao', tempoGravacao);
     
-    if (respostaPara) {
-        formData.append('respostaParaId', respostaPara.id);
-        formData.append('respostaParaNome', respostaPara.nome);
+    if (respostaContexto) {
+        formData.append('respostaParaId', respostaContexto.id);
+        formData.append('respostaParaNome', respostaContexto.nome);
     }
+    
+    // Mostrar loading
+    const loadingSwal = Swal.fire({
+        title: '📤 Enviando áudio...',
+        allowOutsideClick: false,
+        didOpen: () => Swal.showLoading()
+    });
     
     try {
         const response = await fetch(`${API_URL}/cliente06/chat-global/audio`, {
@@ -2390,21 +2561,15 @@ async function enviarAudioProfissional(audioBlob, respostaPara = null) {
         });
         
         const data = await response.json();
-        enviandoDiv.remove();
-        enviandoAudio = false;
+        loadingSwal.close();
         
         if (response.ok && data.success) {
             await carregarChat();
             
             const chatDiv = document.getElementById('chatMessages');
             if (chatDiv) {
-                setTimeout(() => {
-                    chatDiv.scrollTop = chatDiv.scrollHeight;
-                }, 200);
+                setTimeout(() => chatDiv.scrollTop = chatDiv.scrollHeight, 200);
             }
-            
-            // Vibração de sucesso
-            vibrar(100);
             
             Swal.fire({
                 icon: 'success',
@@ -2414,6 +2579,11 @@ async function enviarAudioProfissional(audioBlob, respostaPara = null) {
                 toast: true,
                 position: 'top-end'
             });
+            
+            // Limpar
+            audioBlobTemp = null;
+            respostaAudioContexto = null;
+            
         } else {
             Swal.fire({
                 icon: 'error',
@@ -2423,8 +2593,7 @@ async function enviarAudioProfissional(audioBlob, respostaPara = null) {
             });
         }
     } catch (error) {
-        enviandoDiv.remove();
-        enviandoAudio = false;
+        loadingSwal.close();
         console.error('Erro:', error);
         Swal.fire({
             icon: 'error',
@@ -2435,6 +2604,34 @@ async function enviarAudioProfissional(audioBlob, respostaPara = null) {
     }
 }
 
+// FUNÇÃO PARA RESPONDER COM ÁUDIO
+function responderComAudio(msgId, msgNome) {
+    if (!currentUser) {
+        mostrarLoginPrompt();
+        return;
+    }
+    
+    // Mostrar indicador de resposta
+    const replyIndicator = document.getElementById('replyIndicator');
+    if (replyIndicator) {
+        document.getElementById('replyToName').innerText = msgNome;
+        replyIndicator.style.display = 'flex';
+    }
+    
+    // Iniciar gravação com contexto
+    iniciarGravacaoProfissional({ id: msgId, nome: msgNome });
+}
+
+// CONFIGURAR BOTÃO DE ÁUDIO (evento de clique único)
+if (audioBtn) {
+    audioBtn.onclick = () => {
+        if (gravando) {
+            finalizarGravacaoComPreview();
+        } else {
+            iniciarGravacaoProfissional();
+        }
+    };
+}
 // FUNÇÃO PARA RESPONDER COM ÁUDIO (chamada do chat)
 function responderComAudio(msgId, msgNome) {
     if (!currentUser) {
